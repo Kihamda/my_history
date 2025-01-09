@@ -1,0 +1,13 @@
+My Historyアプリ
+
+【使用パッケージ】
+・React + vite
+・React-Browser-Router
+ 
+
+データベース構造
+
+groups/
+      /
+
+users/
