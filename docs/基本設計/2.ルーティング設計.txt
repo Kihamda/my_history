@@ -26,8 +26,8 @@
 
      myinfo/ ユーザーの情報を確認
            /editor
-           
-     group/ 団体処女く者の情報を表示
+
+     group/ 団体所属者の情報を表示
      admin/ 団体管理者のオペレーション 
      setting/ 設定画面
 
