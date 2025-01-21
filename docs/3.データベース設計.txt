@@ -10,7 +10,23 @@
     scout:["",""]
  }
       
+
+
+ scouts/{ID}/
+ {
+    firstname:"", 名字
+    lastname:"",  名前
+ }
+
+
+
+
  group/{ID}/
  {
-   name:"", 名前
+   name:"", グループの名前
  }
+ 
+           /admins/{UID}/
+           {
+              UID:""
+           }
