@@ -1,4 +1,0 @@
-/documents/databases(default)
-
-/users
-    ・各ユーザーの情報を確認
