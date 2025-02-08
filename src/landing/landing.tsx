@@ -1,4 +1,5 @@
 import About from "./parts/about";
+import Features from "./parts/features";
 import Header from "./parts/header";
 import LandTop from "./parts/top";
 
@@ -16,8 +17,11 @@ const Landing = () => {
       <div className="vh-100">
         <LandTop />
       </div>
-      <div id="about">
+      <div id="about" className="mt-5 pb-3">
         <About />
+      </div>
+      <div id="features" className="mt-5 pb-3">
+        <Features />
       </div>
     </>
   );

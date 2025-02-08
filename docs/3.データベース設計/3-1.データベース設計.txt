@@ -16,6 +16,10 @@
  {
     firstname:"", 名字
     lastname:"",  名前
+    graduation: {
+      bvs:[],
+      cs:{}
+    }
  }
 
 

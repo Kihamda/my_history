@@ -1,7 +1,6 @@
 import { NavLink } from "react-router-dom";
 import SignInUp from "./signiniup";
-import { Link } from "react-scroll";
-
+import LinkWithOffset from "./linkwithoffset";
 /**
  * ランディングページ用のヘッダー
  * アプリ側では使いません
@@ -26,24 +25,24 @@ const Header = () => {
           <div className="offcanvas-body">
             <ul className="navbar-nav">
               <li className="nav-item" data-bs-dismiss="offcanvas">
-                <Link className="nav-link" to="about">
+                <LinkWithOffset className="nav-link" to="about">
                   ABOUT
-                </Link>
+                </LinkWithOffset>
               </li>
               <li className="nav-item" data-bs-dismiss="offcanvas">
-                <Link className="nav-link" to="id">
+                <LinkWithOffset className="nav-link" to="features">
                   できること
-                </Link>
+                </LinkWithOffset>
               </li>
               <li className="nav-item" data-bs-dismiss="offcanvas">
-                <Link className="nav-link" to="id">
+                <LinkWithOffset className="nav-link" to="id">
                   制作記録
-                </Link>
+                </LinkWithOffset>
               </li>
               <li className="nav-item" data-bs-dismiss="offcanvas">
-                <Link className="nav-link" to="id">
+                <LinkWithOffset className="nav-link" to="id">
                   制作者について
-                </Link>
+                </LinkWithOffset>
               </li>
             </ul>
             <ul className="navbar-nav ms-auto d-none d-lg-flex">

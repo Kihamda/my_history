@@ -1,6 +1,11 @@
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
+/**
+ * サインインボタンだけ共通化
+ * @returns ログイン・新規登録ボタン
+ */
+
 const SignInUp = () => {
   return (
     <>
