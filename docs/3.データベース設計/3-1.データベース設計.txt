@@ -1,36 +1,37 @@
-/documents/databases(default)/
+基本指針
 
- users/{UID}/
- {
-    firstname:"", 名字
-    lastname:"",  名前
-    mail:"",      メアド
-    join_id:"",   所属団のID
-    inited:false, 初期化済みかどうか
-    scout:["",""]
- }
-      
-
-
- scouts/{ID}/
- {
-    firstname:"", 名字
-    lastname:"",  名前
-    graduation: {
-      bvs:[],
-      cs:{}
-    }
- }
+DBはFirestoreを利用する。コレクションを3つに分割して、それぞれ
+・UIDと1対1対応のデータを保存するusersコレクション
+・スカウトの情報を保存するscoutsコレクション
+・グループ利用者のそれぞれのデータを保管するgroupsコレクション
+とする。
 
 
 
+usersコレクションについて
 
- group/{ID}/
- {
-   name:"", グループの名前
- }
- 
-           /admins/{UID}/
-           {
-              UID:""
-           }
+usersコレクションの中では、すべてのデータはキーがUIDと一致し、またそのUIDがauth.uidと一致する場合にのみ
+　すべての編集が可能となる。ただし、メールアドレスを保存するmailの項目の変更については、auth.emailVerified
+　がtrueの場合のみ編集が可能となる。
+クライアントサイドでauthから取れる情報とusersから取れる情報に差異があるときは、emailVerifiedがfalseなら
+　メール認証が未完了としてユーザーにメールボックスを見るよう促す。trueならログイン処理の中でdb側を書き換える。
+
+
+
+scoutsコレクションについて
+
+scoutsコレクションでは、スカウト単位のデータ（進級状況など）を保存する。
+authed_user配列の中のオブジェクトのmailキーがusersのmailと一致する場合に限り、そのオブジェクトのrole
+　に見合った操作が許容される。ただし、groupsで定める方とは異なりVIEWとEDITの二種類しかない。これは
+　グループの管理ができる/できないの違いがここにおいては不要だからである。
+また、belongsに登録されたIDと、userが所属する団体のUIDが一致し、groups/{id}/admins/{各uid}が存在する場合に限り、
+　その記録のroleに相当する操作が可能になる。
+
+
+
+groupsコレクションについて
+
+groupsコレクションでは各グループの情報（団体名：吹田9団、茨城n団など）を保存する。
+各グループのadmins/{各uid}のroleがADMINだった場合にのみ、groupsの情報の編集のみが可能となる。
+admins以下については、uidが一致する場合に閲覧のみ可能、roleがADMINなら新規作成・列挙とroleがadmin以外の対象
+　の編集・削除が可能である。

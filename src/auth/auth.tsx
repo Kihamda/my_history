@@ -4,6 +4,21 @@ import BlurCard from "../common/style/cardDesign";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 
+/**
+ * `Auth`コンポーネントは認証ルートとホームページに戻るリンクをレンダリングします。
+ * `FillBackgroundDesign`コンポーネントを使用して、背景画像を設定し、ビューポートの高さを埋めます。
+ *
+ * ルート:
+ * - `/` は `/auth/login` にリダイレクトします
+ * - `/registar` は空の要素をレンダリングします
+ * - `/signin` は空の要素をレンダリングします
+ * - `/reset` は空の要素をレンダリングします
+ *
+ * ホームリンクはビューポートの左上隅に絶対位置で配置されます。
+ *
+ * @returns {JSX.Element} レンダリングされた認証コンポーネント。
+ */
+
 const Auth = () => {
   return (
     <FillBackgroundDesign

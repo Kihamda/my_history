@@ -1,0 +1,10 @@
+scouts/{ID}/
+{
+    firstname:"", 名字
+    lastname:"",  名前
+    graduation: {
+      bvs:[],
+      cs:{}
+    }
+    authed_user:["",""]
+}

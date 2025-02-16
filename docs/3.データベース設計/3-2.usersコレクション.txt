@@ -1,0 +1,9 @@
+users/{UID}/
+{
+    firstname:"", 名字
+    lastname:"",  名前
+    mail:"",      メアド
+    join_id:"",   所属団のID
+    inited:false, 初期化済みかどうか
+    scouts:["",""]
+}
