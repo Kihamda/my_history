@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 const SignInUp = () => {
   return (
     <>
-      <Link to="/auth/signup" className="me-2">
+      <Link to="/auth/registar" className="me-2">
         <Button>新規登録</Button>
       </Link>
       <Link to="/auth/login">

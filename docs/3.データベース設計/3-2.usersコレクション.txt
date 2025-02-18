@@ -1,5 +1,6 @@
 users/{UID}/
 {
+    uid:"",
     firstname:"", 名字
     lastname:"",  名前
     mail:"",      メアド
@@ -7,3 +8,5 @@ users/{UID}/
     inited:false, 初期化済みかどうか
     scouts:["",""]
 }
+
+/common/firebase/userAuth/usertype.tsで型実装

@@ -3,7 +3,7 @@ group/{ID}/
    name:"", グループの名前
 }
  
-           /admins/{UID}/
-           {
-              UID:""
-           }
+/admins/{UID}/
+{
+   uid:""
+}

@@ -4,6 +4,9 @@ import BlurCard from "../common/style/cardDesign";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 
+import Registar from "./Registar/registar";
+import Reset from "./Reset/reset";
+
 /**
  * `Auth`コンポーネントは認証ルートとホームページに戻るリンクをレンダリングします。
  * `FillBackgroundDesign`コンポーネントを使用して、背景画像を設定し、ビューポートの高さを埋めます。
@@ -27,9 +30,9 @@ const Auth = () => {
     >
       <Routes>
         <Route path="/" element={<Navigate to={"/auth/login"} />} />
-        <Route path="/registar" element={<></>} />
+        <Route path="/registar" element={<Registar />} />
         <Route path="/signin" element={<></>} />
-        <Route path="/reset" element={<></>} />
+        <Route path="/reset" element={<Reset />} />
       </Routes>
       <Link
         to="/"
@@ -45,7 +48,7 @@ const Auth = () => {
             padding: "0.5rem 1rem",
           }}
         >
-          <FontAwesomeIcon icon={faHouseChimney} />
+          <FontAwesomeIcon icon={faHouseChimney} className="me-2" />
           ホームに戻る
         </BlurCard>
       </Link>

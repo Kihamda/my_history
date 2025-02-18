@@ -15,7 +15,6 @@ interface LinkWithOffsetProps {
   children: ReactNode;
   to: string;
   className?: string;
-  [key: string]: any;
 }
 
 const LinkWithOffset = ({
@@ -23,7 +22,6 @@ const LinkWithOffset = ({
   children,
   to,
   className,
-  ...props
 }: LinkWithOffsetProps) => {
   return (
     <Link
@@ -32,7 +30,7 @@ const LinkWithOffset = ({
       duration={300}
       offset={offset}
       className={className}
-      {...props}
+      aria-label={`Link to ${to}`}
     >
       {children}
     </Link>
