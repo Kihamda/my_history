@@ -1,0 +1,21 @@
+common領域では共通して使用するCSSのコンポーネントやfirebaseと連携するのに関係するコードを書く。
+
+style以下には背景透過でLandingとAuth系で使用するカードデザインのインラインCSSとdivの枠組みがある
+
+
+firebase以下には、
+
+firebase.tsで、firebaseのinit系を実行している。
+
+authContext.tsxで、Firebase Authencationから供給される情報と、各データベースから得られる情報を
+それぞれまとめて供給している。また、データベースにアクセスするまでの間はそこで隠す。
+
+
+以下ディレクトリ3つにある*type.tsでは、データベース設計に即した型が定義されている。
+
+userAuthでは、Authencationの新規ユーザー作成やログイン処理、サインアウト処理、usersコレクションの
+内容を変更する処理などを記述する
+
+scoutDbでは、スカウトの情報のCRUDを実装
+
+groupDbでも同様。

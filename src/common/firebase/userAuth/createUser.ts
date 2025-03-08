@@ -1,6 +1,8 @@
-import { db, app } from "../firebase";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { auth } from "../firebase";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
 
 /**
  * 指定されたメールアドレスとパスワードで新しいユーザーを作成し、ユーザー情報をFirestoreデータベースに保存します。
@@ -11,8 +13,6 @@ import { doc, setDoc } from "firebase/firestore";
  * @throws ユーザー作成に失敗した場合にエラーをスローします。
  */
 const createUser = async (email: string, password: string) => {
-  const auth = getAuth(app);
-
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
@@ -20,12 +20,7 @@ const createUser = async (email: string, password: string) => {
       password
     );
     const user = userCredential.user;
-
-    await setDoc(doc(db, "users", user.uid), {
-      email: user.email,
-      createdAt: new Date(),
-    });
-
+    await sendEmailVerification(user);
     return user;
   } catch (error) {
     console.error("Error creating user:", error);

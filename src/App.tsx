@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import Landing from "./landing/landing";
 import Auth from "./auth/auth";
 import App from "./app/app";
+import { AuthProvider } from "./common/firebase/authContext";
 
 /*
  * このアプリケーションのルートファイル
@@ -13,8 +14,17 @@ function MainApp() {
     <>
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/auth/*" element={<Auth />} />
-        <Route path="/app/*" element={<App />} />
+        <Route
+          path="/*"
+          element={
+            <AuthProvider>
+              <Routes>
+                <Route path="/auth/*" element={<Auth />} />
+                <Route path="/app/*" element={<App />} />
+              </Routes>
+            </AuthProvider>
+          }
+        />
       </Routes>
     </>
   );

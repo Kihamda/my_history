@@ -6,6 +6,9 @@ import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 
 import Registar from "./Registar/registar";
 import Reset from "./Reset/reset";
+import Signin from "./Signin/signin";
+import MoveCard from "./moveCard";
+import { useAuthContext } from "../common/firebase/authContext";
 
 /**
  * `Auth`コンポーネントは認証ルートとホームページに戻るリンクをレンダリングします。
@@ -23,35 +26,49 @@ import Reset from "./Reset/reset";
  */
 
 const Auth = () => {
+  // ユーザーの認証状態を取得
+  const { user } = useAuthContext();
+
+  if (user) {
+    return <Navigate to="/app" />;
+  }
+
   return (
     <FillBackgroundDesign
       className="vh-100"
       backgroundImagePath="/assets/auth/bg.webp"
     >
-      <Routes>
-        <Route path="/" element={<Navigate to={"/auth/login"} />} />
-        <Route path="/registar" element={<Registar />} />
-        <Route path="/signin" element={<></>} />
-        <Route path="/reset" element={<Reset />} />
-      </Routes>
-      <Link
-        to="/"
-        className="position-absolute"
-        style={{
-          top: "1%",
-          left: "1%",
-          textDecoration: "none",
-        }}
-      >
-        <BlurCard
+      <div className="row w-100">
+        <BlurCard className="col-10 col-md-6 col-lg-4 mx-auto">
+          <Routes>
+            <Route path="/*" element={<Navigate to={"/auth/login"} />} />
+            <Route path="/registar" element={<Registar />} />
+            <Route path="/login" element={<Signin />} />
+            <Route path="/reset" element={<Reset />} />
+          </Routes>
+        </BlurCard>
+      </div>
+      <div>
+        <MoveCard />
+        <Link
+          to="/"
+          className="position-absolute"
           style={{
-            padding: "0.5rem 1rem",
+            top: "1%",
+            left: "1%",
+            textDecoration: "none",
           }}
         >
-          <FontAwesomeIcon icon={faHouseChimney} className="me-2" />
-          ホームに戻る
-        </BlurCard>
-      </Link>
+          <BlurCard
+            style={{
+              padding: "0.5rem 1rem",
+            }}
+          >
+            <FontAwesomeIcon icon={faHouseChimney} className="me-2" />
+            ホームに戻る
+          </BlurCard>
+        </Link>
+      </div>
     </FillBackgroundDesign>
   );
 };

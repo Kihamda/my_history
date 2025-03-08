@@ -12,7 +12,6 @@
 
       login/ ログインページ
             ・firebaseでログインする
-            ・googleログイン対応。
 
       register/ 新規登録
             ・アカウントを作れるようにする
