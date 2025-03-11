@@ -14,7 +14,7 @@ const Landing = () => {
   return (
     <>
       <Header />
-      <div className="vh-100">
+      <div id="top" className="vh-100">
         <LandTop />
       </div>
       <div id="about" className="mt-5 pb-3">

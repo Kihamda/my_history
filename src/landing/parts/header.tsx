@@ -1,4 +1,3 @@
-import { NavLink } from "react-router-dom";
 import SignInUp from "./signiniup";
 import LinkWithOffset from "./linkwithoffset";
 /**
@@ -10,12 +9,12 @@ const Header = () => {
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom border-bottom-dark fixed-top">
       <div className="container">
-        <NavLink
+        <LinkWithOffset
           className="navbar-brand fw-bold d-flex align-items-center"
-          to={"/"}
+          to="top"
         >
           My History
-        </NavLink>
+        </LinkWithOffset>
 
         <div
           className="offcanvas offcanvas-start"
