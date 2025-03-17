@@ -29,6 +29,7 @@ const Auth = () => {
   // ユーザーの認証状態を取得
   const { user } = useAuthContext();
 
+  //ログインしているのにもう一回ログインしようとした人を/appに送る
   if (user) {
     return <Navigate to="/app" />;
   }
