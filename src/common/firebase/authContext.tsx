@@ -20,13 +20,6 @@ interface AuthContextProps {
   userData: userData | null;
 }
 
-/**
- * 難しいところ:
- * Firebase Auth の onAuthStateChanged を使ってユーザーの状態を取得し、
- * Firestore ドキュメントを読み込んでユーザーデータを取得しています。
- * ここでは非同期処理と状態更新が混在するため、コードの流れを理解するのが
- * 少し複雑になります。
- */
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
