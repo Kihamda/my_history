@@ -1,6 +1,6 @@
 import { Link, Navigate, Route, Routes } from "react-router-dom";
-import FillBackgroundDesign from "../common/style/fillBackgroundDesign";
-import BlurCard from "../common/style/cardDesign";
+import FillBackgroundDesign from "@/style/fillBackgroundDesign";
+import BlurCard from "@/style/cardDesign";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 
@@ -8,7 +8,7 @@ import Registar from "./Registar/registar";
 import Reset from "./Reset/reset";
 import Signin from "./Signin/signin";
 import MoveCard from "./moveCard";
-import { useAuthContext } from "../common/firebase/authContext";
+import { useAuthContext } from "@/firebase/authContext";
 
 /**
  * `Auth`コンポーネントは認証ルートとホームページに戻るリンクをレンダリングします。

@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 
-import { logout } from "../../common/firebase/userAuth/login";
+import { logout } from "@/firebase/userAuth/login";
 
 const Header = () => {
   // ログアウト処理

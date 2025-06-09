@@ -2,7 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import Landing from "./landing/landing";
 import Auth from "./auth/auth";
 import App from "./app/app";
-import { AuthProvider } from "./common/firebase/authContext";
+import { AuthProvider } from "@/firebase/authContext";
 
 /*
  * このアプリケーションのルートファイル

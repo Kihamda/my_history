@@ -1,4 +1,4 @@
-import { useAuthContext } from "../common/firebase/authContext";
+import { useAuthContext } from "@/firebase/authContext";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Header from "./parts/header";
 

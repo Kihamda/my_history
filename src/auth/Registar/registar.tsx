@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
 import FormGroup from "../formGroup";
-import createUser from "../../common/firebase/userAuth/createUser";
+import createUser from "@/firebase/userAuth/createUser";
 
 /**
  * @fileoverview

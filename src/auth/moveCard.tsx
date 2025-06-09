@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import BlurCard from "../common/style/cardDesign";
+import BlurCard from "../style/cardDesign";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 

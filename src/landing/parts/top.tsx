@@ -2,9 +2,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LinkWithOffset from "./linkwithoffset";
 import SignInUp from "./signiniup";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons/faChevronDown";
-import BlurCard from "../../common/style/cardDesign";
+import BlurCard from "../../style/cardDesign";
 import React from "react";
-import FillBackgroundDesign from "../../common/style/fillBackgroundDesign";
+import FillBackgroundDesign from "../../style/fillBackgroundDesign";
 
 /**
  * ランディングページの一番上の表示用

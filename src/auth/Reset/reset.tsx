@@ -1,7 +1,7 @@
 import { FC, FormEvent, useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
 import FormGroup from "../formGroup";
-import resetPassword from "../../common/firebase/userAuth/reset";
+import resetPassword from "@/firebase/userAuth/reset";
 
 const Reset: FC = () => {
   const [email, setEmail] = useState("");

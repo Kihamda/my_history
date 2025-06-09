@@ -1,7 +1,7 @@
 import { FC, FormEvent, useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
 import FormGroup from "../formGroup";
-import { login } from "../../common/firebase/userAuth/login";
+import { login } from "@/firebase/userAuth/login";
 
 /**
  * @fileoverview

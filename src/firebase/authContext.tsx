@@ -10,7 +10,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { userData } from "./userAuth/usertype";
-import LoadingSplash from "../style/loadingSprash";
+import LoadingSplash from "@/style/loadingSplash";
 
 /**
  * AuthContextProps は認証状態とユーザーデータを保持するための型です。
