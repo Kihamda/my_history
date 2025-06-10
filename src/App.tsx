@@ -1,8 +1,9 @@
 import { Route, Routes } from "react-router-dom";
-import Landing from "./landing/landing";
-import Auth from "./auth/auth";
-import App from "./app/app";
+import Landing from "@/landing/landing";
+import Auth from "@/auth/auth";
+import App from "@/app/app";
 import { AuthProvider } from "@/firebase/authContext";
+import Admin from "@/admin/admin";
 
 /*
  * このアプリケーションのルートファイル
@@ -21,6 +22,7 @@ function MainApp() {
               <Routes>
                 <Route path="/auth/*" element={<Auth />} />
                 <Route path="/app/*" element={<App />} />
+                <Route path="/admin/*" element={<Admin />} />
               </Routes>
             </AuthProvider>
           }
