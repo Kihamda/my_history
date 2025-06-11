@@ -15,6 +15,9 @@ export interface ScoutRecord {
 
   /** スカウトの役割 */
   authedUser: AuthedUser[];
+
+  /** スカウトに関するコメント */
+  comment: string;
 }
 
 interface AuthedUser {
