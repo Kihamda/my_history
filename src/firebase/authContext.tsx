@@ -9,7 +9,7 @@ import {
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
-import { userData } from "./userAuth/usertype";
+import { UserRecord } from "@/types/users/userRecord";
 import LoadingSplash from "@/style/loadingSplash";
 
 /**
@@ -17,14 +17,14 @@ import LoadingSplash from "@/style/loadingSplash";
  */
 interface AuthContextProps {
   user: User | null;
-  userData: userData | null;
+  userData: UserRecord | null;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<userData | null>(null);
+  const [userData, setUserData] = useState<UserRecord | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
           // Firestore のドキュメントからユーザーデータを取得しています
           const userDoc = await getDoc(doc(db, "users", users.uid));
           if (userDoc.exists()) {
-            setUserData(userDoc.data() as userData);
+            setUserData(userDoc.data() as UserRecord);
           } else {
             console.error("No user data found for user:", users.uid);
             setUserData(null);

@@ -18,6 +18,29 @@ export interface ScoutRecord {
 
   /** スカウトに関するコメント */
   comment: string;
+
+  /**ちかい */
+  declare: {
+    /** ちかいを立てた日 */
+    date: Date;
+
+    /** ちかいを立てた場所 */
+    place: string;
+  };
+
+  /** スカウトの履歴 */
+  history: {
+    [key: string]: {
+      /** スカウトがそのユニットに参加したかどうか */
+      was: boolean;
+
+      /** スカウトがそのユニットに参加した日 */
+      joinedAt: Date;
+
+      /** スカウトがそのユニットを卒業した日 */
+      graduatedAt?: Date;
+    };
+  };
 }
 
 interface AuthedUser {

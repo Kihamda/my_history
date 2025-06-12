@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 
-import { logout } from "@/firebase/userAuth/login";
+import { logout } from "@/firebase/userAuth/loginLogout";
 
 const Header = () => {
   // ログアウト処理
@@ -50,13 +50,11 @@ const Header = () => {
                   スカウト検索
                 </NavLink>
               </li>
-              {true && (
-                <li className="nav-item" data-bs-dismiss="offcanvas">
-                  <NavLink className="nav-link" to="/app/group">
-                    グループ管理
-                  </NavLink>
-                </li>
-              )}
+              <li className="nav-item" data-bs-dismiss="offcanvas">
+                <NavLink className="nav-link" to="/app/group">
+                  グループ管理
+                </NavLink>
+              </li>
               <li className="nav-item" data-bs-dismiss="offcanvas">
                 <NavLink className="nav-link" to="/app/setting">
                   設定
@@ -99,6 +97,7 @@ const Header = () => {
                     className="noAtag ms-3"
                     href="https://kihamda.net/"
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Dai.M
                   </a>
