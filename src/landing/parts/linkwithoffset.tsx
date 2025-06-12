@@ -1,5 +1,5 @@
 import { Link } from "react-scroll";
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 
 /**
  * スクロール時にオフセットを設定できるリンクコンポーネント
@@ -15,14 +15,16 @@ interface LinkWithOffsetProps {
   children: ReactNode;
   to: string;
   className?: string;
+  style?: React.CSSProperties; // 他のプロパティを許可するためのインデックスシグネチャ
 }
 
-const LinkWithOffset = ({
+const LinkWithOffset: React.FC<LinkWithOffsetProps> = ({
   offset = -50,
   children,
   to,
   className,
-}: LinkWithOffsetProps) => {
+  style,
+}) => {
   return (
     <Link
       to={to}
@@ -31,6 +33,7 @@ const LinkWithOffset = ({
       offset={offset}
       className={className}
       aria-label={`Link to ${to}`}
+      style={style}
     >
       {children}
     </Link>

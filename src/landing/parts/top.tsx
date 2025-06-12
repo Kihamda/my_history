@@ -1,10 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LinkWithOffset from "./linkwithoffset";
-import SignInUp from "./signiniup";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons/faChevronDown";
 import BlurCard from "../../style/cardDesign";
 import React from "react";
 import FillBackgroundDesign from "../../style/fillBackgroundDesign";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons/faArrowRight";
+import { Link } from "react-router-dom";
 
 /**
  * ランディングページの一番上の表示用
@@ -14,20 +15,41 @@ import FillBackgroundDesign from "../../style/fillBackgroundDesign";
 const LandTop: React.FC = () => {
   return (
     <FillBackgroundDesign backgroundImagePath="/assets/landing/bg.webp">
-      <BlurCard>
+      <div className="container text-white d-flex justify-content-left align-items-center position-relative">
         <div
-          className="text-center"
+          className="p-5 "
           style={{
-            padding: "3rem",
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            borderLeft: "5px solid rgb(255, 255, 255)",
+            backdropFilter: "blur(5px)",
           }}
         >
-          <h1>My Historyアプリ</h1>
-          <p>My History of Scouting プロジェクト</p>
-          <div className="mt-3">
-            <SignInUp />
+          <h1 style={{ fontSize: "4rem" }}>ボーイスカウト活動に革新を</h1>
+          <p>
+            デジタル技術による団運営の円滑化で未来のスカウト活動を創造していく
+          </p>
+          <p>
+            スカウトによって作られた、スカウトのための情報管理アプリである
+            <br />「<span className="fw-bold">My Historyアプリ</span>」 は
+            ボーイスカウトの活動記録をデジタルで管理し、団の運営をサポートします。
+          </p>
+          <div className="mt-3 d-flex">
+            <Link to="/auth/register" className="text-decoration-none">
+              <BlurCard
+                className="d-flex justify-content-center align-items-center"
+                style={{
+                  marginTop: "1rem",
+                  cursor: "pointer",
+                }}
+                aria-label="Get Started"
+              >
+                Get Started：今すぐ始めよう
+                <FontAwesomeIcon icon={faArrowRight} />
+              </BlurCard>
+            </Link>
           </div>
         </div>
-      </BlurCard>
+      </div>
       <LinkWithOffset
         to="about"
         className="text-center position-absolute bottom-0 mb-3"

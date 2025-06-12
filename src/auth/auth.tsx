@@ -4,7 +4,7 @@ import BlurCard from "@/style/cardDesign";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 
-import Registar from "./Registar/registar";
+import Register from "./Register/register";
 import Reset from "./Reset/reset";
 import Signin from "./Signin/signin";
 import MoveCard from "./moveCard";
@@ -43,7 +43,7 @@ const Auth = () => {
         <BlurCard className="col-10 col-md-6 col-lg-4 mx-auto">
           <Routes>
             <Route path="/*" element={<Navigate to={"/auth/login"} />} />
-            <Route path="/registar" element={<Registar />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Signin />} />
             <Route path="/reset" element={<Reset />} />
           </Routes>

@@ -5,13 +5,13 @@ import createUser from "@/firebase/userAuth/createUser";
 
 /**
  * @fileoverview
- * `Registar`コンポーネントは新規登録フォームを提供します。
+ * `Register`コンポーネントは新規登録フォームを提供します。
  * ユーザーはメールアドレス、パスワード、パスワードの確認を入力し、
  * 利用規約とプライバシーポリシーに同意する必要があります。
  *
  * @component
  * @example
- * <Registar />
+ * <Register />
  *
  * @returns {React.FC} 新規登録フォームを含むReactコンポーネント
  *
@@ -23,7 +23,7 @@ import createUser from "@/firebase/userAuth/createUser";
  * - 登録ボタンは利用規約とプライバシーポリシーに同意しない限り無効になります。
  */
 
-const Registar: React.FC = () => {
+const Register: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -113,4 +113,4 @@ const Registar: React.FC = () => {
   );
 };
 
-export default Registar;
+export default Register;
