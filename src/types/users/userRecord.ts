@@ -1,15 +1,12 @@
 export interface UserRecord {
-  /** ユーザーの一意識別子 */
-  uid: string;
-
   /** ユーザーの表示名 */
   displayName: string;
 
   /** ユーザーの参加グループID */
   joinGroupId: string;
 
-  /** 初期化の完了フラグ */
-  inited: boolean;
+  /** ユーザーのリーダーシップフラグ */
+  isLeader: boolean;
 
   /** ユーザーが知っているスカウトのIDのリスト */
   knownScoutIds: string[];

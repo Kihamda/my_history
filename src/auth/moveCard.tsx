@@ -18,7 +18,7 @@ const MoveCard = () => {
 
   let links = [
     { path: "/auth/login", text: "ログインはこちら" },
-    { path: "/auth/registar", text: "登録はこちら" },
+    { path: "/auth/register", text: "登録はこちら" },
     { path: "/auth/reset", text: "パスワードリセットはこちら" },
   ];
 

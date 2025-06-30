@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom";
 
 import { logout } from "@/firebase/userAuth/loginLogout";
+import { FC } from "react";
 
-const Header = () => {
+const Header: FC<{ name: string }> = ({ name }) => {
   // ログアウト処理
   const handleLogout = () => {
     logout();
@@ -73,7 +74,7 @@ const Header = () => {
             </ul>
             <ul className="navbar-nav ms-auto d-none d-lg-flex">
               <span className="d-grid align-content-center me-3">
-                {"username" + " さん"}
+                {name + " さん"}
               </span>
               <li className="nav-item d-flex">
                 <button className="btn btn-primary" onClick={handleLogout}>
@@ -83,8 +84,8 @@ const Header = () => {
             </ul>
           </div>
           <div className="offcanvas-footer d-lg-none text-center">
-            <div className="d-grid align-contet-center justify-content-center mb-3">
-              <span>{"username" + " さん"}</span>
+            <div className="d-grid align-content-center justify-content-center mb-3">
+              <span>{name + " さん"}</span>
               <button className="btn btn-primary" onClick={handleLogout}>
                 ログアウト
               </button>

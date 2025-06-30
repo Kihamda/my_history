@@ -1,14 +1,16 @@
-import { Link, Navigate, Route, Routes } from "react-router-dom";
-import FillBackgroundDesign from "@/style/fillBackgroundDesign";
-import BlurCard from "@/style/cardDesign";
+import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
+
+import BlurCard from "@/style/cardDesign";
+import FillBackgroundDesign from "@/style/fillBackgroundDesign";
+import { useAuthContext } from "@/firebase/authContext";
 
 import Register from "./Register/register";
 import Reset from "./Reset/reset";
 import Signin from "./Signin/signin";
 import MoveCard from "./moveCard";
-import { useAuthContext } from "@/firebase/authContext";
+import VerifyEmail from "./VerifyEmail/verifyEmail";
 
 /**
  * `Auth`コンポーネントは認証ルートとホームページに戻るリンクをレンダリングします。
@@ -28,10 +30,17 @@ import { useAuthContext } from "@/firebase/authContext";
 const Auth = () => {
   // ユーザーの認証状態を取得
   const { user } = useAuthContext();
+  const url = useLocation();
 
   //ログインしているのにもう一回ログインしようとした人を/appに送る
-  if (user) {
-    return <Navigate to="/app" />;
+  if (url.pathname !== "/auth/verify") {
+    if (user) {
+      if (user.emailVerified) {
+        // メールアドレスが確認済みの場合、アプリケーションのホームにリダイレクト
+        return <Navigate to="/app" />;
+      }
+      return <Navigate to="/auth/verify" />;
+    }
   }
 
   return (
@@ -46,6 +55,7 @@ const Auth = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Signin />} />
             <Route path="/reset" element={<Reset />} />
+            <Route path="/verify" element={<VerifyEmail />} />
           </Routes>
         </BlurCard>
       </div>

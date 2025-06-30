@@ -11,6 +11,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { UserRecord } from "@/types/users/userRecord";
 import LoadingSplash from "@/style/loadingSplash";
+import { raiseError } from "@/errorHandler";
 
 /**
  * AuthContextProps は認証状態とユーザーデータを保持するための型です。
@@ -37,11 +38,19 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
           if (userDoc.exists()) {
             setUserData(userDoc.data() as UserRecord);
           } else {
-            console.error("No user data found for user:", users.uid);
+            raiseError(
+              `ユーザーデータが見つかりませんでした: ${users.uid}`,
+              "ユーザー情報の取得に失敗しました。"
+            );
             setUserData(null);
           }
         } catch (error) {
-          console.error("Error fetching user data:", error);
+          if (error instanceof Error) {
+            raiseError(
+              `ユーザーデータの取得に失敗しました: ${error.message}`,
+              "ユーザー情報の取得中にエラーが発生しました。"
+            );
+          }
           setUserData(null);
         }
         setIsLoaded(true);

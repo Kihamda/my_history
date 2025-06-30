@@ -4,6 +4,7 @@ import Auth from "@/auth/auth";
 import App from "@/app/app";
 import { AuthProvider } from "@/firebase/authContext";
 import Admin from "@/admin/admin";
+import { ErrorProvider } from "./errorHandler";
 
 /*
  * このアプリケーションのルートファイル
@@ -12,7 +13,7 @@ import Admin from "@/admin/admin";
 
 function MainApp() {
   return (
-    <>
+    <ErrorProvider>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route
@@ -28,7 +29,7 @@ function MainApp() {
           }
         />
       </Routes>
-    </>
+    </ErrorProvider>
   );
 }
 
