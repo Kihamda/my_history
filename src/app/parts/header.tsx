@@ -47,6 +47,11 @@ const Header: FC<{ name: string }> = ({ name }) => {
           <div className="offcanvas-body">
             <ul className="navbar-nav">
               <li className="nav-item" data-bs-dismiss="offcanvas">
+                <NavLink className="nav-link" to="/app">
+                  ホーム
+                </NavLink>
+              </li>
+              <li className="nav-item" data-bs-dismiss="offcanvas">
                 <NavLink className="nav-link" to="/app/scouts">
                   スカウト検索
                 </NavLink>
