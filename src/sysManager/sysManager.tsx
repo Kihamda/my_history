@@ -3,8 +3,9 @@ import { FC } from "react";
 import { Container } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 
-const Admin: FC = () => {
+const SysManager: FC = () => {
   //ユーザIDが私であるかどうかを判別してそうでなかったらappに転送
+  //どうせ私じゃなきゃDBいじれないのでコード自体は晒してOKです
 
   const auth = useAuthContext();
 
@@ -57,4 +58,4 @@ const Admin: FC = () => {
   );
 };
 
-export default Admin;
+export default SysManager;

@@ -1,6 +1,8 @@
 import { useAuthContext } from "@/firebase/authContext";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Header from "./parts/header";
+import AdminHome from "./home/adminHome";
+import VisitorHome from "./home/visitorHome";
 
 const App = () => {
   // ログアウト状態なのに/appにアクセスした人をログインページに送還する
@@ -22,11 +24,14 @@ const App = () => {
 
   return (
     <>
-      <Header name={userName} />
+      <Header name={userName} isAdmin={isAdmin} />
       <div className="container" style={{ marginTop: "3.5rem" }}>
         <Routes>
-          <Route path="/" element={<>home{isAdmin && " (管理者)"}</>} />
-          <Route path="/scouts" element={<>{uid + "\n" + user}</>} />
+          <Route
+            path="/"
+            element={<>{isAdmin ? <AdminHome /> : <VisitorHome />}</>}
+          />
+          <Route path="/scouts/*" element={<>{uid + "\n" + user}</>} />
           <Route path="/group" element={<>group</>} />
           <Route path="/setting" element={<>setting</>} />
         </Routes>

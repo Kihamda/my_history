@@ -3,7 +3,7 @@ import Landing from "@/landing/landing";
 import Auth from "@/auth/auth";
 import App from "@/app/app";
 import { AuthProvider } from "@/firebase/authContext";
-import Admin from "@/admin/admin";
+import SysManager from "@/sysManager/sysManager";
 import { ErrorProvider } from "./errorHandler";
 
 /*
@@ -23,7 +23,7 @@ function MainApp() {
               <Routes>
                 <Route path="/auth/*" element={<Auth />} />
                 <Route path="/app/*" element={<App />} />
-                <Route path="/admin/*" element={<Admin />} />
+                <Route path="/sysmanager/*" element={<SysManager />} />
               </Routes>
             </AuthProvider>
           }
