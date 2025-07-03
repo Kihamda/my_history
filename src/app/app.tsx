@@ -16,7 +16,7 @@ const App = () => {
   const userName = userData?.displayName || "名称未設定";
   const emailVerified = user.emailVerified; // メールアドレスの確認状態
   const isLeader = userData?.joinGroupId ? true : false; // リーダーかどうかのフラグ。joinGroupIdが存在する場合はリーダーとみなす
-  const isAdmin = userData?.isLeader || false; // 管理者かどうかのフラグ。isLeaderがtrueの場合は管理者とみなす
+  //  const isAdmin = userData?.isLeader || false; // 管理者かどうかのフラグ。isLeaderがtrueの場合は管理者とみなす。※未使用なのでコメントアウト
 
   if (emailVerified === false) {
     // メールアドレスが未確認の場合、設定ページにリダイレクト
