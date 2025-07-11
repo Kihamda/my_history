@@ -50,7 +50,7 @@ const Header: FC<{ name: string; isLeader: boolean }> = ({
           <div className="offcanvas-body">
             <ul className="navbar-nav">
               <li className="nav-item" data-bs-dismiss="offcanvas">
-                <NavLink className="nav-link" to="/app/header">
+                <NavLink className="nav-link" to="/app/home">
                   ホーム
                 </NavLink>
               </li>
