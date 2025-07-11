@@ -6,17 +6,17 @@ import VisitorHome from "./home/visitorHome";
 
 const App = () => {
   // ログアウト状態なのに/appにアクセスした人をログインページに送還する
-  const { user, userData } = useAuthContext();
+  const user = useAuthContext();
   if (!user) {
     return <Navigate to="/auth/login" />;
   }
 
   //基本的にここでログインユーザーの情報をconstにして子コンポーネントに渡していく。
   const uid = user.uid;
-  const userName = userData?.displayName || "名称未設定";
+  const userName = user.displayName || "名称未設定";
   const emailVerified = user.emailVerified; // メールアドレスの確認状態
-  const isLeader = userData?.joinGroupId ? true : false; // リーダーかどうかのフラグ。joinGroupIdが存在する場合はリーダーとみなす
-  //  const isAdmin = userData?.isLeader || false; // 管理者かどうかのフラグ。isLeaderがtrueの場合は管理者とみなす。※未使用なのでコメントアウト
+  const isLeader = user.joinGroupId ? true : false; // リーダーかどうかのフラグ。joinGroupIdが存在する場合はリーダーとみなす
+  const isAdmin = user.joinGroupId ? true : false; // 管理者かどうかのフラグ。isLeaderがtrueの場合は管理者とみなす。
 
   if (emailVerified === false) {
     // メールアドレスが未確認の場合、設定ページにリダイレクト
@@ -25,7 +25,7 @@ const App = () => {
 
   return (
     <>
-      <Header name={userName} isLeader={isLeader} />
+      <Header name={userName} isLeader={isLeader} isAdmin={isAdmin} />
       <div className="container" style={{ marginTop: "3.5rem" }}>
         <Routes>
           <Route path="/" element={<Navigate to="/app/home" />} />

@@ -29,7 +29,7 @@ import VerifyEmail from "./VerifyEmail/verifyEmail";
 
 const Auth = () => {
   // ユーザーの認証状態を取得
-  const { user } = useAuthContext();
+  const user = useAuthContext();
   const url = useLocation();
 
   //ログインしているのにもう一回ログインしようとした人を/appに送る

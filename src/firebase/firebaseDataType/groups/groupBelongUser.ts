@@ -2,7 +2,10 @@
 
 export interface GroupBelongsUser {
   /** ユーザーの一意識別子 */
-  uid: string;
+  mail: string;
+
+  /** ユーザーの表示名 */
+  displayName: string;
 
   /** ユーザーの役割 */
   role: "admin" | "edit" | "view";

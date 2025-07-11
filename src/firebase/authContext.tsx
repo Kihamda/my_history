@@ -6,78 +6,42 @@ import {
   ReactNode,
   FC,
 } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "./firebase";
-import { UserRecord } from "@/firebase/firebaseDataType/users/userRecord";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
 import LoadingSplash from "@/style/loadingSplash";
-import { raiseError } from "@/errorHandler";
 
-/**
- * AuthContextProps は認証状態とユーザーデータを保持するための型です。
- */
-interface AuthContextProps {
-  user: User | null;
-  userData: UserRecord | null;
-}
+import User from "@/types/user"; // ユーザーデータの型をインポート
+import getUserData from "./userData/getUserData";
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+const AuthContext = createContext<User | null>(null);
 
 export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<UserRecord | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (users) => {
-      setUser(users);
-      if (users) {
-        try {
-          // Firestore のドキュメントからユーザーデータを取得しています
-          const userDoc = await getDoc(doc(db, "users", users.uid));
-          if (userDoc.exists()) {
-            setUserData(userDoc.data() as UserRecord);
-          } else {
-            raiseError(
-              `ユーザーデータが見つかりませんでした: ${users.uid}`,
-              "ユーザー情報の取得に失敗しました。"
-            );
-            setUserData(null);
-          }
-        } catch (error) {
-          if (error instanceof Error) {
-            raiseError(
-              `ユーザーデータの取得に失敗しました: ${error.message}`,
-              "ユーザー情報の取得中にエラーが発生しました。"
-            );
-          }
-          setUserData(null);
-        }
+      if (!users) {
+        setUser(null);
         setIsLoaded(true);
-      } else {
-        setUserData(null);
-        setIsLoaded(true);
+        return;
       }
+      const userData = await getUserData(users);
+      setUser(userData);
+      setIsLoaded(true);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const value = { user, userData };
-
   if (!isLoaded) {
     return <LoadingSplash />;
   } else {
-    return (
-      <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={user}>{children}</AuthContext.Provider>;
   }
 };
 
-export const useAuthContext = (): AuthContextProps => {
+export const useAuthContext = (): User | null => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuthContext must be used within an AuthProvider");
-  }
   return context;
 };

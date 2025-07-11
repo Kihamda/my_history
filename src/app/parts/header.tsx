@@ -3,9 +3,10 @@ import { NavLink } from "react-router-dom";
 import { logout } from "@/firebase/userAuth/loginLogout";
 import { FC } from "react";
 
-const Header: FC<{ name: string; isLeader: boolean }> = ({
+const Header: FC<{ name: string; isLeader: boolean; isAdmin: boolean }> = ({
   name,
   isLeader,
+  isAdmin,
 }) => {
   // ログアウト処理
   const handleLogout = () => {
@@ -61,11 +62,13 @@ const Header: FC<{ name: string; isLeader: boolean }> = ({
                   </NavLink>
                 </li>
               )}
-              <li className="nav-item" data-bs-dismiss="offcanvas">
-                <NavLink className="nav-link" to="/app/group">
-                  グループ管理
-                </NavLink>
-              </li>
+              {isAdmin && (
+                <li className="nav-item" data-bs-dismiss="offcanvas">
+                  <NavLink className="nav-link" to="/app/group">
+                    グループ管理
+                  </NavLink>
+                </li>
+              )}
               <li className="nav-item" data-bs-dismiss="offcanvas">
                 <NavLink className="nav-link" to="/app/setting">
                   設定
