@@ -9,7 +9,7 @@ import {
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
-import { UserRecord } from "@/types/users/userRecord";
+import { UserRecord } from "@/firebase/firebaseDataType/users/userRecord";
 import LoadingSplash from "@/style/loadingSplash";
 import { raiseError } from "@/errorHandler";
 

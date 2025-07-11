@@ -28,8 +28,9 @@ const App = () => {
       <Header name={userName} isLeader={isLeader} />
       <div className="container" style={{ marginTop: "3.5rem" }}>
         <Routes>
+          <Route path="/" element={<Navigate to="/app/home" />} />
           <Route
-            path="/"
+            path="/home"
             element={<>{isLeader ? <LeaderHome /> : <VisitorHome />}</>}
           />
           <Route path="/scouts/*" element={<>{uid + "\n" + user}</>} />

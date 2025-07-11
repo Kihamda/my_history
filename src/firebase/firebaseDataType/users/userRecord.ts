@@ -5,9 +5,6 @@ export interface UserRecord {
   /** ユーザーの参加グループID */
   joinGroupId: string;
 
-  /** ユーザーのリーダーシップフラグ */
-  isLeader: boolean;
-
   /** ユーザーが知っているスカウトのIDのリスト */
   knownScoutIds: string[];
 }
