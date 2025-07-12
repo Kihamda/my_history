@@ -37,6 +37,8 @@ const getUserData = async (userinfo: User): Promise<UserData | null> => {
         emailVerified: userinfo.emailVerified,
         displayName: userDataRecord.displayName,
         joinGroupId: userDataRecord.joinGroupId,
+        isLeader: userDataRecord.joinGroupId ? true : false, // デフォルト値を設定
+        isAdmin: userDataRecord.joinGroupId ? true : false, // デフォルト値を設定 || false, // デフォルト値を設定
       };
 
       return user;
