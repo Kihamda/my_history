@@ -7,9 +7,9 @@ const SysManager: FC = () => {
   //ユーザIDが私であるかどうかを判別してそうでなかったらappに転送
   //どうせ私じゃなきゃDBいじれないのでコード自体は晒してOKです
 
-  const auth = useAuthContext();
+  const user = useAuthContext();
 
-  const userId = auth.user?.email;
+  const userId = user?.email;
   if (userId !== "work@kihamda.net") {
     return <Navigate to="/app" />;
   }

@@ -2,7 +2,7 @@ import { FC } from "react";
 import { Button, Card } from "react-bootstrap";
 import { useAuthContext } from "@/firebase/authContext";
 import { Navigate } from "react-router-dom";
-import { sendEmailVerification } from "firebase/auth";
+import resetPassword from "@/firebase/userAuth/reset";
 
 /**
  * @fileoverview
@@ -22,7 +22,7 @@ import { sendEmailVerification } from "firebase/auth";
  */
 
 const VerifyEmail: FC = () => {
-  const { user } = useAuthContext();
+  const user = useAuthContext();
 
   if (!user) {
     return <Navigate to="/auth/login" />;
@@ -48,11 +48,7 @@ const VerifyEmail: FC = () => {
           <div className="mt-3 d-flex flex-column align-items-center col-12 col-md-6">
             <Button
               onClick={() => {
-                sendEmailVerification(user).then(() => {
-                  alert(
-                    "認証メールを再送信しました。メールを確認してください。"
-                  );
-                });
+                resetPassword(user.email);
               }}
             >
               認証メールの再送信
