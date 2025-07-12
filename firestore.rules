@@ -1,0 +1,185 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // Helper Functions  
+    // ========================================
+    
+    function isAuthenticated() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+    
+    function getUserEmail() {
+      return request.auth.token.email;
+    }
+    
+    // グループ管理者権限をチェック  
+    function hasGroupPermission(groupId, requiredRole) {
+      let userUid = request.auth.uid;
+      let adminDocPath = /databases/$(database)/documents/groups/$(groupId)/admins/$(userUid);
+      
+      if (!exists(adminDocPath)) {
+        return false;
+      }
+      
+      if (requiredRole == 'view') {
+        return true;
+      }
+      
+      let adminData = get(adminDocPath).data;
+      return adminData.role == 'edit' || adminData.role == 'admin';
+    }
+    
+    // アプリ管理者かチェック
+    function isAppAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/app_admins/$(request.auth.uid));
+    }
+    
+    // authedUser配列に含まれているかチェック
+    function isInAuthedUserList(authedUsers) {
+      return authedUsers != null && getUserEmail() in authedUsers.map(user => user.email);
+    }
+    
+    // authedUser配列で編集権限があるかチェック（簡易版）
+    function hasEditPermissionInAuthedUsers(authedUsers) {
+      // ユーザーがリストに含まれている場合、一旦編集可能とする
+      // より詳細なroleチェックは将来の拡張で対応
+      return isInAuthedUserList(authedUsers);
+    }
+
+    // ========================================
+    // Users Collection
+    // ========================================
+    
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ========================================
+    // Scouts Collection
+    // ========================================
+    
+    match /scouts/{scoutId} {
+      // 読み取り権限：authedUser配列にメールアドレスが含まれているか、グループ権限がある
+      allow read: if isAuthenticated() && (
+        isInAuthedUserList(resource.data.authedUser) ||
+        hasGroupPermission(resource.data.groupId, 'view')
+      );
+      
+      // 書き込み権限：authedUserに含まれているか、グループの編集権限があるか、アプリ管理者
+      allow write: if isAuthenticated() && (
+        hasEditPermissionInAuthedUsers(resource.data.authedUser) ||
+        hasGroupPermission(resource.data.groupId, 'edit') ||
+        isAppAdmin()
+      );
+      
+      // 新規作成時の権限
+      allow create: if isAuthenticated() && (
+        hasGroupPermission(request.resource.data.groupId, 'edit') ||
+        isAppAdmin()
+      );
+      
+      // スキル進捗サブコレクション
+      match /skill_progress/{progressId} {
+        function getParentScout() {
+          return get(/databases/$(database)/documents/scouts/$(scoutId)).data;
+        }
+        
+        allow read: if isAuthenticated() && (
+          isInAuthedUserList(getParentScout().authedUser) ||
+          hasGroupPermission(getParentScout().groupId, 'view')
+        );
+        
+        allow write: if isAuthenticated() && (
+          hasEditPermissionInAuthedUsers(getParentScout().authedUser) ||
+          hasGroupPermission(getParentScout().groupId, 'edit') ||
+          isAppAdmin()
+        );
+        
+        // スキル細目サブコレクション
+        match /items/{itemId} {
+          allow read: if isAuthenticated() && (
+            isInAuthedUserList(getParentScout().authedUser) ||
+            hasGroupPermission(getParentScout().groupId, 'view')
+          );
+          
+          allow write: if isAuthenticated() && (
+            hasEditPermissionInAuthedUsers(getParentScout().authedUser) ||
+            hasGroupPermission(getParentScout().groupId, 'edit') ||
+            isAppAdmin()
+          );
+        }
+      }
+    }
+
+    // ========================================
+    // Groups Collection
+    // ========================================
+    
+    match /groups/{groupId} {
+      allow read: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid));
+      
+      allow write: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)).data.role == 'admin';
+      
+      // 新規グループ作成（誰でも可能）
+      allow create: if isAuthenticated();
+      
+      // 管理者サブコレクション
+      match /admins/{adminId} {
+        allow read: if isAuthenticated() && (
+          request.auth.uid == adminId ||
+          (exists(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)) &&
+           get(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)).data.role == 'admin')
+        );
+        
+        allow write: if isAuthenticated() && 
+          exists(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)).data.role == 'admin';
+        
+        // 最初の管理者登録（グループ作成者）
+        allow create: if isAuthenticated() && request.auth.uid == adminId;
+      }
+    }
+
+    // ========================================
+    // Master Data Collections
+    // ========================================
+    
+    match /skill_badges/{badgeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAppAdmin();
+    }
+    
+    match /skill_items/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if isAppAdmin();
+    }
+
+    // ========================================
+    // App Admins Collection
+    // ========================================
+    
+    match /app_admins/{adminId} {
+      allow read: if isOwner(adminId);
+      allow write: if isAppAdmin();
+    }
+
+    // ========================================
+    // Default Deny All
+    // ========================================
+    
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
