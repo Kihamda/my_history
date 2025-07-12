@@ -28,15 +28,15 @@ const getUserData = async (userinfo: User): Promise<UserData | null> => {
     const userSnapshot = await getDoc(userDoc);
 
     if (userSnapshot.exists()) {
-      const userDoc = userSnapshot.data() as UserRecord;
+      const userDataRecord = userSnapshot.data() as UserRecord;
 
       // UserRecordからUser型に変換
       const user: UserData = {
         uid: userinfo.uid,
         email: userinfo.email,
         emailVerified: userinfo.emailVerified,
-        displayName: userDoc.displayName,
-        joinGroupId: userDoc.joinGroupId,
+        displayName: userDataRecord.displayName,
+        joinGroupId: userDataRecord.joinGroupId,
       };
 
       return user;
