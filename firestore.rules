@@ -21,19 +21,11 @@ service cloud.firestore {
     
     // グループ管理者権限をチェック  
     function hasGroupPermission(groupId, requiredRole) {
-      let userUid = request.auth.uid;
-      let adminDocPath = /databases/$(database)/documents/groups/$(groupId)/admins/$(userUid);
-      
-      if (!exists(adminDocPath)) {
-        return false;
-      }
-      
-      if (requiredRole == 'view') {
-        return true;
-      }
-      
-      let adminData = get(adminDocPath).data;
-      return adminData.role == 'edit' || adminData.role == 'admin';
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)) &&
+        (requiredRole == 'view' || 
+         get(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)).data.role == 'edit' ||
+         get(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)).data.role == 'admin');
     }
     
     // アプリ管理者かチェック
@@ -44,7 +36,7 @@ service cloud.firestore {
     
     // authedUser配列に含まれているかチェック
     function isInAuthedUserList(authedUsers) {
-      return authedUsers != null && getUserEmail() in authedUsers.map(user => user.email);
+      return authedUsers != null && getUserEmail() in authedUsers;
     }
     
     // authedUser配列で編集権限があるかチェック（簡易版）
@@ -69,13 +61,13 @@ service cloud.firestore {
     match /scouts/{scoutId} {
       // 読み取り権限：authedUser配列にメールアドレスが含まれているか、グループ権限がある
       allow read: if isAuthenticated() && (
-        isInAuthedUserList(resource.data.authedUser) ||
+        (resource.data.authedUser != null && isInAuthedUserList(resource.data.authedUser)) ||
         hasGroupPermission(resource.data.groupId, 'view')
       );
       
       // 書き込み権限：authedUserに含まれているか、グループの編集権限があるか、アプリ管理者
       allow write: if isAuthenticated() && (
-        hasEditPermissionInAuthedUsers(resource.data.authedUser) ||
+        (resource.data.authedUser != null && hasEditPermissionInAuthedUsers(resource.data.authedUser)) ||
         hasGroupPermission(resource.data.groupId, 'edit') ||
         isAppAdmin()
       );
@@ -93,12 +85,12 @@ service cloud.firestore {
         }
         
         allow read: if isAuthenticated() && (
-          isInAuthedUserList(getParentScout().authedUser) ||
+          (getParentScout().authedUser != null && isInAuthedUserList(getParentScout().authedUser)) ||
           hasGroupPermission(getParentScout().groupId, 'view')
         );
         
         allow write: if isAuthenticated() && (
-          hasEditPermissionInAuthedUsers(getParentScout().authedUser) ||
+          (getParentScout().authedUser != null && hasEditPermissionInAuthedUsers(getParentScout().authedUser)) ||
           hasGroupPermission(getParentScout().groupId, 'edit') ||
           isAppAdmin()
         );
@@ -106,12 +98,12 @@ service cloud.firestore {
         // スキル細目サブコレクション
         match /items/{itemId} {
           allow read: if isAuthenticated() && (
-            isInAuthedUserList(getParentScout().authedUser) ||
+            (getParentScout().authedUser != null && isInAuthedUserList(getParentScout().authedUser)) ||
             hasGroupPermission(getParentScout().groupId, 'view')
           );
           
           allow write: if isAuthenticated() && (
-            hasEditPermissionInAuthedUsers(getParentScout().authedUser) ||
+            (getParentScout().authedUser != null && hasEditPermissionInAuthedUsers(getParentScout().authedUser)) ||
             hasGroupPermission(getParentScout().groupId, 'edit') ||
             isAppAdmin()
           );
