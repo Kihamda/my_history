@@ -13,25 +13,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
+      - name: Setup Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Authenticate with Firebase
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MY_HISTORY_V2 }}' > /tmp/firebase-service-account.json
+
+      - name: Validate Firestore rules
+        id: firestore_rules
+        run: |
+          firebase deploy --only firestore:rules --dry-run --project my-history-v2
+          echo "rules_status=success" >> $GITHUB_OUTPUT
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-service-account.json
+        continue-on-error: true
+
       - name: Build project
         id: build
         run: |
           npm run build
           echo "build_status=success" >> $GITHUB_OUTPUT
         continue-on-error: true
-      
+
       - name: Comment PR - Success
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && steps.firestore_rules.outcome == 'success'
         uses: actions/github-script@v7
         with:
           script: |
@@ -39,21 +54,30 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '✅ ビルドテスト成功しました'
+              body: '✅ ビルドテストとFirestoreルール構文チェックが成功しました'
             })
-      
+
       - name: Comment PR - Failure
-        if: steps.build.outcome == 'failure'
+        if: steps.build.outcome == 'failure' || steps.firestore_rules.outcome == 'failure'
         uses: actions/github-script@v7
         with:
           script: |
+            let message = '❌ テストが失敗しました:\n';
+            if ('${{ steps.build.outcome }}' === 'failure') {
+              message += '- ビルドテストが失敗\n';
+            }
+            if ('${{ steps.firestore_rules.outcome }}' === 'failure') {
+              message += '- Firestoreルール構文チェックが失敗\n';
+            }
+            message += 'ログを確認してください';
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '❌ ビルドテストが失敗しました ログを確認してください'
+              body: message
             })
-      
-      - name: Fail job if build failed
-        if: steps.build.outcome == 'failure'
+
+      - name: Fail job if tests failed
+        if: steps.build.outcome == 'failure' || steps.firestore_rules.outcome == 'failure'
         run: exit 1
