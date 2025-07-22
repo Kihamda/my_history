@@ -2,9 +2,6 @@
  * 団の基本情報を表す型定義
  */
 export interface GroupRecord {
-  /** 団の一意識別子 */
-  id: string;
-
   /** 団名 */
   name: string;
 

@@ -10,8 +10,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import LoadingSplash from "@/style/loadingSplash";
 
-import User from "@/types/user"; // ユーザーデータの型をインポート
+import User from "@/types/user/user"; // ユーザーデータの型をインポート
 import getUserData from "./userData/getUserData";
+import getCurrentGroupData from "./groupDb/getCurrentGroupData";
 
 const AuthContext = createContext<User | null>(null);
 
@@ -27,7 +28,24 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
         return;
       }
       const userData = await getUserData(users);
-      setUser(userData);
+
+      // ユーザーデータのnullチェック
+      if (userData) {
+        // ユーザーデータが存在する場合、現在のグループ情報を取得
+        if (userData.joinGroupId) {
+          const currentGroup = await getCurrentGroupData(userData.joinGroupId);
+          setUser({ ...userData, currentGroup: currentGroup });
+        } else {
+          // ユーザーデータは存在するが、グループに参加していない場合
+          // currentGroupはnullのままにする
+          setUser({ ...userData, currentGroup: null });
+        }
+      } else {
+        // userDataがnullならUserDataはnullである。
+        // userDataのnull値チェックの副産物として追加。
+        setUser(null);
+      }
+
       setIsLoaded(true);
     });
 
