@@ -1,6 +1,6 @@
 import { db } from "@/firebase/firebase";
-import { doc, getDoc } from "firebase/firestore";
 
+import { doc, getDoc } from "firebase/firestore";
 import { User } from "firebase/auth";
 
 import { UserRecord } from "@/firebase/firebaseDataType/users/userRecord";
@@ -29,6 +29,25 @@ const getUserData = async (userinfo: User): Promise<UserData | null> => {
 
     if (userSnapshot.exists()) {
       const userDataRecord = userSnapshot.data() as UserRecord;
+
+      // joinGroupIdが存在する場合は、グループのドキュメントを取得
+      if (userDataRecord.joinGroupId) {
+        try {
+          const groupDoc = doc(db, "groups", userDataRecord.joinGroupId);
+          const groupSnapshot = await getDoc(groupDoc);
+          if (groupSnapshot.exists()) {
+            const groupData = groupSnapshot.data();
+            // グループデータを使用して何らかの処理を行う
+          }
+        } catch {
+          // エラーハンドリング
+          // エラーが帰る場合は登録されてない場合が含まれるので、このときはどこにも所属せず、
+          raiseError(
+            `グループデータの取得中にエラーが発生しました: ${userDataRecord.joinGroupId}`,
+            "グループデータの取得に失敗しました。\n所属グループの設定が間違っている可能性があります。"
+          );
+        }
+      }
 
       // UserRecordからUser型に変換
       const user: UserData = {
