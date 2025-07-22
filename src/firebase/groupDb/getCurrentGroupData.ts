@@ -4,14 +4,18 @@ import { raiseError } from "@/errorHandler";
 import { GroupRecord } from "../firebaseDataType/groups/groupRecord";
 import CurrentGroup from "@/types/user/currentGroup";
 import { GroupMemberRecord } from "../firebaseDataType/groups/groupMemberRecord";
+import User from "@/types/user/user";
 
 const getCurrentGroupData = async (
-  groupId: string
+  UserData: User
 ): Promise<CurrentGroup | null> => {
   // ユーザーのjoinGroupIdが存在しない場合は、何もしない
-  if (!groupId) {
+  if (!UserData.joinGroupId) {
     return null;
   }
+
+  const groupId = UserData.joinGroupId;
+  const email = UserData.email;
 
   // リーダーや管理者のフラグを初期化
   let isLeader = false;
@@ -30,7 +34,7 @@ const getCurrentGroupData = async (
       const groupName = groupData.name;
 
       //読み込めたときのみ、roleを確認する
-      const groupMemberDoc = doc(db, "groups", groupId, "members", groupId);
+      const groupMemberDoc = doc(db, "groups", groupId, "members", email);
       const groupMemberSnapshot = await getDoc(groupMemberDoc);
 
       const groupMemberData = groupMemberSnapshot.data() as GroupMemberRecord;
@@ -63,12 +67,12 @@ const getCurrentGroupData = async (
       );
       return null;
     }
-  } catch {
+  } catch (error) {
     // エラーが帰る場合は登録されてない場合が含まれる
     // このときはどこにも所属せず、何の権限も持たないユーザーとして扱う
     // 要するにisLeaderとisAdminはfalseのまま何もしない。
     raiseError(
-      `グループデータの取得中にエラーが発生しました: ${groupId}`,
+      `グループデータの取得中にエラーが発生しました: ${groupId}, ${error}`,
       "グループデータの取得に失敗しました。\n所属グループの設定が間違っている可能性があります。"
     );
     return null;

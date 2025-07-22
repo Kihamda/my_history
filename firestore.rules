@@ -19,32 +19,14 @@ service cloud.firestore {
       return request.auth.token.email;
     }
     
-    // グループ管理者権限をチェック  
-    function hasGroupPermission(groupId, requiredRole) {
-      return isAuthenticated() &&
-        exists(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)) &&
-        (requiredRole == 'view' || 
-         get(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)).data.role == 'edit' ||
-         get(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)).data.role == 'admin');
-    }
-    
     // アプリ管理者かチェック
     function isAppAdmin() {
       return isAuthenticated() && 
         exists(/databases/$(database)/documents/app_admins/$(request.auth.uid));
     }
     
-    // authedUser配列に含まれているかチェック
-    function isInAuthedUserList(authedUsers) {
-      return authedUsers != null && getUserEmail() in authedUsers;
-    }
-    
-    // authedUser配列で編集権限があるかチェック（簡易版）
-    function hasEditPermissionInAuthedUsers(authedUsers) {
-      // ユーザーがリストに含まれている場合、一旦編集可能とする
-      // より詳細なroleチェックは将来の拡張で対応
-      return isInAuthedUserList(authedUsers);
-    }
+
+
 
     // ========================================
     // Users Collection
@@ -55,107 +37,34 @@ service cloud.firestore {
     }
 
     // ========================================
-    // Scouts Collection
-    // ========================================
-    
-    match /scouts/{scoutId} {
-      // 読み取り権限：authedUser配列にメールアドレスが含まれているか、グループ権限がある
-      allow read: if isAuthenticated() && (
-        (resource.data.authedUser != null && isInAuthedUserList(resource.data.authedUser)) ||
-        hasGroupPermission(resource.data.groupId, 'view')
-      );
-      
-      // 書き込み権限：authedUserに含まれているか、グループの編集権限があるか、アプリ管理者
-      allow write: if isAuthenticated() && (
-        (resource.data.authedUser != null && hasEditPermissionInAuthedUsers(resource.data.authedUser)) ||
-        hasGroupPermission(resource.data.groupId, 'edit') ||
-        isAppAdmin()
-      );
-      
-      // 新規作成時の権限
-      allow create: if isAuthenticated() && (
-        hasGroupPermission(request.resource.data.groupId, 'edit') ||
-        isAppAdmin()
-      );
-      
-      // スキル進捗サブコレクション
-      match /skill_progress/{progressId} {
-        function getParentScout() {
-          return get(/databases/$(database)/documents/scouts/$(scoutId)).data;
-        }
-        
-        allow read: if isAuthenticated() && (
-          (getParentScout().authedUser != null && isInAuthedUserList(getParentScout().authedUser)) ||
-          hasGroupPermission(getParentScout().groupId, 'view')
-        );
-        
-        allow write: if isAuthenticated() && (
-          (getParentScout().authedUser != null && hasEditPermissionInAuthedUsers(getParentScout().authedUser)) ||
-          hasGroupPermission(getParentScout().groupId, 'edit') ||
-          isAppAdmin()
-        );
-        
-        // スキル細目サブコレクション
-        match /items/{itemId} {
-          allow read: if isAuthenticated() && (
-            (getParentScout().authedUser != null && isInAuthedUserList(getParentScout().authedUser)) ||
-            hasGroupPermission(getParentScout().groupId, 'view')
-          );
-          
-          allow write: if isAuthenticated() && (
-            (getParentScout().authedUser != null && hasEditPermissionInAuthedUsers(getParentScout().authedUser)) ||
-            hasGroupPermission(getParentScout().groupId, 'edit') ||
-            isAppAdmin()
-          );
-        }
-      }
-    }
-
-    // ========================================
     // Groups Collection
     // ========================================
     
     match /groups/{groupId} {
       allow read: if isAuthenticated() && 
-        exists(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid));
-      
-      allow write: if isAuthenticated() && 
-        exists(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)).data.role == 'admin';
-      
-      // 新規グループ作成（誰でも可能）
-      allow create: if isAuthenticated();
+        exists(/databases/$(database)/documents/groups/$(groupId)/members/$(getUserEmail()));
+
+      allow write, create: if isAuthenticated() &&
+        exists(/databases/$(database)/documents/groups/$(groupId)/members/$(getUserEmail())) &&
+        get(/databases/$(database)/documents/groups/$(groupId)/members/$(getUserEmail())).data.role == 'admin';
+
+
       
       // 管理者サブコレクション
-      match /admins/{adminId} {
+      match /members/{adminId} {
         allow read: if isAuthenticated() && (
-          request.auth.uid == adminId ||
-          (exists(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)) &&
-           get(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)).data.role == 'admin')
+          getUserEmail() == adminId
         );
         
         allow write: if isAuthenticated() && 
-          exists(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/groups/$(groupId)/admins/$(request.auth.uid)).data.role == 'admin';
-        
+          exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.email)) &&
+          get(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.email)).data.role == 'admin';
+
         // 最初の管理者登録（グループ作成者）
         allow create: if isAuthenticated() && request.auth.uid == adminId;
       }
     }
 
-    // ========================================
-    // Master Data Collections
-    // ========================================
-    
-    match /skill_badges/{badgeId} {
-      allow read: if isAuthenticated();
-      allow write: if isAppAdmin();
-    }
-    
-    match /skill_items/{itemId} {
-      allow read: if isAuthenticated();
-      allow write: if isAppAdmin();
-    }
 
     // ========================================
     // App Admins Collection
@@ -174,4 +83,4 @@ service cloud.firestore {
       allow read, write: if false;
     }
   }
-}
+} 

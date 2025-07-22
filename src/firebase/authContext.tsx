@@ -31,18 +31,10 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
       // ユーザーデータのnullチェック
       if (userData) {
-        // ユーザーデータが存在する場合、現在のグループ情報を取得
-        if (userData.joinGroupId) {
-          const currentGroup = await getCurrentGroupData(userData.joinGroupId);
-          setUser({ ...userData, currentGroup: currentGroup });
-        } else {
-          // ユーザーデータは存在するが、グループに参加していない場合
-          // currentGroupはnullのままにする
-          setUser({ ...userData, currentGroup: null });
-        }
+        const currentGroup = await getCurrentGroupData(userData);
+        setUser({ ...userData, currentGroup: currentGroup });
       } else {
         // userDataがnullならUserDataはnullである。
-        // userDataのnull値チェックの副産物として追加。
         setUser(null);
       }
 
