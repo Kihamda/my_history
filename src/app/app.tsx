@@ -1,8 +1,11 @@
 import { useAuthContext } from "@/firebase/authContext";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Header from "./parts/header";
-import LeaderHome from "./home/leaderHome";
-import VisitorHome from "./home/visitorHome";
+
+import { lazy } from "react";
+// 遅延読み込みするコンポーネント
+const LeaderHome = lazy(() => import("./home/leaderHome"));
+const VisitorHome = lazy(() => import("./home/visitorHome"));
 
 const App = () => {
   // ログアウト状態なのに/appにアクセスした人をログインページに送還する

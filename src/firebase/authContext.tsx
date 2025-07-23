@@ -45,7 +45,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }, []);
 
   if (!isLoaded) {
-    return <LoadingSplash />;
+    return <LoadingSplash message="ユーザー情報を読み込み中..." />;
   } else {
     return <AuthContext.Provider value={user}>{children}</AuthContext.Provider>;
   }

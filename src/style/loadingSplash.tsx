@@ -6,7 +6,7 @@ type LoadingSplashProps = {
 };
 
 const LoadingSplash: React.FC<LoadingSplashProps> = ({
-  message = "Now Loading..  .",
+  message = "アプリケーションを読み込み中...",
   fullScreen = true,
 }) => {
   const containerStyle: React.CSSProperties = fullScreen
