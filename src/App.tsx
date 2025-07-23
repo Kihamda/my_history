@@ -1,34 +1,47 @@
 import { Route, Routes } from "react-router-dom";
-import Landing from "@/landing/landing";
-import Auth from "@/auth/auth";
-import App from "@/app/app";
 import { AuthProvider } from "@/firebase/authContext";
-import SysManager from "@/sysManager/sysManager";
 import { ErrorProvider } from "./errorHandler";
 
 /*
  * このアプリケーションのルートファイル
  * Routes以下でランディングページ、認証ページ、アプリ画面を振り分ける
+ *
+ * 各コンポーネントはパフォーマンス向上のため遅延読み込みする
  */
+import { lazy, Suspense } from "react";
+import LoadingSplash from "@/style/loadingSplash";
 
+const SysManager = lazy(() => import("@/sysManager/sysManager"));
+const Landing = lazy(() => import("@/landing/landing"));
+const Auth = lazy(() => import("@/auth/auth"));
+const App = lazy(() => import("@/app/app"));
+
+// メインアプリケーションコンポーネント
 function MainApp() {
   return (
     <ErrorProvider>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route
-          path="/*"
-          element={
-            <AuthProvider>
-              <Routes>
-                <Route path="/auth/*" element={<Auth />} />
-                <Route path="/app/*" element={<App />} />
-                <Route path="/sysmanager/*" element={<SysManager />} />
-              </Routes>
-            </AuthProvider>
-          }
-        />
-      </Routes>
+      <Suspense fallback={<LoadingSplash />}>
+        <Routes>
+          {/* 公開ページ（認証不要） */}
+          <Route path="/" element={<Landing />} />
+
+          {/* 認証が必要なページ（AuthProvider内） */}
+          <Route
+            path="/*"
+            element={
+              <AuthProvider>
+                <Suspense fallback={<div>Loading...</div>}>
+                  <Routes>
+                    <Route path="/auth/*" element={<Auth />} />
+                    <Route path="/app/*" element={<App />} />
+                    <Route path="/sysmanager/*" element={<SysManager />} />
+                  </Routes>
+                </Suspense>
+              </AuthProvider>
+            }
+          />
+        </Routes>
+      </Suspense>
     </ErrorProvider>
   );
 }

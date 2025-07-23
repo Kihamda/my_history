@@ -10,8 +10,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import LoadingSplash from "@/style/loadingSplash";
 
-import User from "@/types/user"; // ユーザーデータの型をインポート
+import User from "@/types/user/user"; // ユーザーデータの型をインポート
 import getUserData from "./userData/getUserData";
+import getCurrentGroupData from "./groupDb/getCurrentGroupData";
 
 const AuthContext = createContext<User | null>(null);
 
@@ -27,7 +28,16 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
         return;
       }
       const userData = await getUserData(users);
-      setUser(userData);
+
+      // ユーザーデータのnullチェック
+      if (userData) {
+        const currentGroup = await getCurrentGroupData(userData);
+        setUser({ ...userData, currentGroup: currentGroup });
+      } else {
+        // userDataがnullならUserDataはnullである。
+        setUser(null);
+      }
+
       setIsLoaded(true);
     });
 
@@ -35,7 +45,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }, []);
 
   if (!isLoaded) {
-    return <LoadingSplash />;
+    return <LoadingSplash message="ユーザー情報を読み込み中..." />;
   } else {
     return <AuthContext.Provider value={user}>{children}</AuthContext.Provider>;
   }

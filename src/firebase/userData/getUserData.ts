@@ -1,10 +1,11 @@
 import { db } from "@/firebase/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { UserRecord } from "@/firebase/firebaseDataType/users/userRecord";
 
 import { User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
-import { UserRecord } from "@/firebase/firebaseDataType/users/userRecord";
-import UserData from "@/types/user";
+import UserData from "@/types/user/user";
+
 import { raiseError } from "@/errorHandler";
 
 /**
@@ -37,8 +38,7 @@ const getUserData = async (userinfo: User): Promise<UserData | null> => {
         emailVerified: userinfo.emailVerified,
         displayName: userDataRecord.displayName,
         joinGroupId: userDataRecord.joinGroupId,
-        isLeader: userDataRecord.joinGroupId ? true : false, // デフォルト値を設定
-        isAdmin: userDataRecord.joinGroupId ? true : false, // デフォルト値を設定 || false, // デフォルト値を設定
+        currentGroup: null,
       };
 
       return user;
