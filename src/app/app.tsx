@@ -2,7 +2,8 @@ import { useAuthContext } from "@/firebase/authContext";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Header from "./parts/header";
 
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
+import LoadingSplash from "@/style/loadingSplash";
 // 遅延読み込みするコンポーネント
 const LeaderHome = lazy(() => import("./home/leaderHome"));
 const VisitorHome = lazy(() => import("./home/visitorHome"));
@@ -31,17 +32,19 @@ const App = () => {
     <>
       <Header name={userName} isLeader={isLeader} isAdmin={isAdmin} />
       <div className="container" style={{ marginTop: "3.5rem" }}>
-        <Routes>
-          <Route path="/" element={<Navigate to="/app/home" />} />
-          <Route
-            path="/home"
-            element={<>{isLeader ? <LeaderHome /> : <VisitorHome />}</>}
-          />
-          <Route path="/scouts" element={<>{uid + "\n" + user}</>} />
-          <Route path="/scouts/*" element={<>{uid + "\n" + isEditable}</>} />
-          <Route path="/group" element={<>group</>} />
-          <Route path="/setting" element={<>setting</>} />
-        </Routes>
+        <Suspense fallback={<LoadingSplash message="読み込み中" />}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/app/home" />} />
+            <Route
+              path="/home"
+              element={<>{isLeader ? <LeaderHome /> : <VisitorHome />}</>}
+            />
+            <Route path="/scouts" element={<>{uid + "\n" + user}</>} />
+            <Route path="/scouts/*" element={<>{uid + "\n" + isEditable}</>} />
+            <Route path="/group" element={<>group</>} />
+            <Route path="/setting" element={<>setting</>} />
+          </Routes>
+        </Suspense>
       </div>
     </>
   );

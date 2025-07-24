@@ -30,7 +30,7 @@ function MainApp() {
             path="/*"
             element={
               <AuthProvider>
-                <Suspense fallback={<div>Loading...</div>}>
+                <Suspense fallback={<LoadingSplash />}>
                   <Routes>
                     <Route path="/auth/*" element={<Auth />} />
                     <Route path="/app/*" element={<App />} />
