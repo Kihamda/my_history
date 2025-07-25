@@ -1,7 +1,7 @@
 import { useAuthContext } from "@/firebase/authContext";
 import { FC } from "react";
 import { Container } from "react-bootstrap";
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router";
 
 const SysManager: FC = () => {
   //ユーザIDが私であるかどうかを判別してそうでなかったらappに転送

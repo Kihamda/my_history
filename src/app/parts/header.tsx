@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 
 import { logout } from "@/firebase/userAuth/loginLogout";
 import { FC } from "react";
@@ -20,7 +20,12 @@ const Header: FC<{ name: string; isLeader: boolean; isAdmin: boolean }> = ({
           className="navbar-brand fw-bold d-flex align-items-center"
           to="/app/home"
         >
-          My History
+          <img
+            src="/logos/nohaikei.svg"
+            alt="My History"
+            className="d-inline-block align-text-top"
+            style={{ height: "1.9rem" }}
+          />
         </NavLink>
 
         <button

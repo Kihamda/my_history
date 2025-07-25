@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Button, Card } from "react-bootstrap";
 import { useAuthContext } from "@/firebase/authContext";
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router";
 import resetPassword from "@/firebase/userAuth/reset";
 
 /**

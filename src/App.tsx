@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router";
 import { AuthProvider } from "@/firebase/authContext";
 import { ErrorProvider } from "./errorHandler";
 
