@@ -19,12 +19,12 @@ const App = () => {
   }
 
   //基本的にここでログインユーザーの情報をconstにして子コンポーネントに渡していく。
-  const uid = user.uid;
+  // const uid = user.uid;
   const userName = user.displayName || "名称未設定";
   const emailVerified = user.emailVerified; // メールアドレスの確認状態
   const isLeader = user.currentGroup?.isLeader || false; // リーダーかどうかのフラグ。
   const isAdmin = user.currentGroup?.isAdmin || false; // 管理者かどうかのフラグ。userオブジェクトのisAdminプロパティを使用して判定
-  const isEditable = user.currentGroup?.isEditable || false; // スカウトを編集可能かどうかのフラグ。userオブジェクトのisEditableプロパティを使用して判定
+  // const isEditable = user.currentGroup?.isEditable || false; // スカウトを編集可能かどうかのフラグ。userオブジェクトのisEditableプロパティを使用して判定
 
   if (emailVerified === false) {
     // メールアドレスが未確認の場合、設定ページにリダイレクト
