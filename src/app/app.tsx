@@ -4,6 +4,7 @@ import Header from "./parts/header";
 
 import { lazy, Suspense } from "react";
 import LoadingSplash from "@/style/loadingSplash";
+import ScoutDetail from "./scoutDetail/scoutDetail";
 
 // 遅延読み込みするコンポーネント
 const LeaderHome = lazy(() => import("./home/leaderHome"));
@@ -42,7 +43,7 @@ const App = () => {
               element={<>{isLeader ? <LeaderHome /> : <VisitorHome />}</>}
             />
             <Route path="/scouts" element={<Scouts />} />
-            <Route path="/scouts/*" element={<>{uid + "\n" + isEditable}</>} />
+            <Route path="/scouts/*" element={<ScoutDetail />} />
             <Route path="/group" element={<>group</>} />
             <Route path="/setting" element={<>setting</>} />
           </Routes>
