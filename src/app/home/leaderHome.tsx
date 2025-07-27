@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
 const LeaderHome = () => {
   const nav = useNavigate();
+
+  const [searchBox, setSearchBox] = useState<string>("");
 
   return (
     <div
@@ -19,21 +22,34 @@ const LeaderHome = () => {
             type="text"
             className="form-control mt-3"
             placeholder="情報を知りたい人の名前をここに入力しましょう"
+            value={searchBox}
+            onChange={(e) => setSearchBox(e.target.value)}
           />
           <div className="d-flex justify-content-center">
-            <button className="btn btn-primary mt-3">検索</button>
+            <button
+              className="btn btn-primary mt-3"
+              onClick={() =>
+                nav("/app/scouts", { state: { searchName: searchBox } })
+              }
+            >
+              検索
+            </button>
             <button
               className="btn btn-outline-secondary mt-3 ms-2"
               onClick={() => nav("/app/scouts")}
             >
-              より詳細な検索▶
+              より詳細な検索をする
             </button>
           </div>
         </div>
       </div>
       <div className="d-flex flex-column align-items-center mt-4 justify-self-bottom">
-        <h2>リーダーのホーム</h2>
-        <p>ここでは、リーダーとしての機能や情報を提供します。</p>
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => nav("/app/scouts/new")}
+        >
+          新しいスカウトの情報を記録する
+        </button>
       </div>
     </div>
   );
