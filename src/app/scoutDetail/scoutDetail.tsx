@@ -1,4 +1,4 @@
-import { useLocation } from "react-router";
+//import { useLocation } from "react-router";
 
 const ScoutDetail = () => {
   // URLを取得→参照するスカウトの情報を決定。無かったら検索フォームへ

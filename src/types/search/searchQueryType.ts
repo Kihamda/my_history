@@ -4,5 +4,5 @@ export default interface SearchQuery {
   scoutId: string;
   name: string;
   currentUnit: ScoutUnit[];
-  expectedUnit: ScoutUnit[];
+  experiencedUnit: ScoutUnit[];
 }

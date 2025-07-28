@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import SearchQuery from "@/types/search/searchQueryType";
 import SearchboxCard from "./parts/searchBoxCard";
@@ -13,33 +13,54 @@ const Scouts: React.FC = () => {
     scoutId: "",
     name: "",
     currentUnit: [],
-    expectedUnit: [],
+    experiencedUnit: [],
   };
 
   if (searchBox) {
-    const { scoutId, name, currentUnit, expectedUnit } = queryParser(searchBox);
+    const { scoutId, name, currentUnit, experiencedUnit } =
+      queryParser(searchBox);
 
     initialSearchQuery = {
       scoutId: scoutId,
       name: name,
       currentUnit: currentUnit,
-      expectedUnit: expectedUnit,
+      experiencedUnit: experiencedUnit,
     };
   }
 
   const [searchQuery, setSearchQuery] =
     useState<SearchQuery>(initialSearchQuery);
 
+  // const [result, setResult] = useState<SearchQuery[]>([]);
+  const [result, setResult] = useState<Object[]>([]); // 仮の初期値として空のオブジェクトを設定
+
+  useEffect(() => {
+    if (
+      searchQuery.name ||
+      searchQuery.scoutId ||
+      searchQuery.currentUnit.length ||
+      searchQuery.experiencedUnit.length
+    ) {
+      // Queryが空だったときに検索を行わないようにする
+      // SearchQueryが変更されたときに検索クエリを更新
+      setResult([...result, { name: searchQuery.name }]);
+    }
+  }, [searchQuery]);
   // 検索結果の状態
-  //const [result, setResult] = useState<SearchQuery[]>([]);
 
   return (
     <div>
-      <h1>{JSON.stringify(searchQuery)}</h1>
       <SearchboxCard
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />
+      <div className="mt-2">
+        {result.map((item, index) => (
+          <div key={index + JSON.stringify(item)}>
+            {JSON.stringify(searchQuery)}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

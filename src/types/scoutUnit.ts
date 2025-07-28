@@ -7,3 +7,11 @@ export const ScoutUnitList: ScoutUnit[] = [
   "vs", // ヴァイキングスカウト
   "rs", // ローバースカウト
 ];
+
+export const ScoutUnitNameMap: Record<ScoutUnit, string> = {
+  bvs: "ビーバー隊",
+  cs: "カブ隊",
+  bs: "ボーイ隊",
+  vs: "ベンチャー隊",
+  rs: "ローバー隊",
+};
