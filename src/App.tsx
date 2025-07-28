@@ -11,18 +11,18 @@ import { ErrorProvider } from "./errorHandler";
 import { lazy, Suspense } from "react";
 import LoadingSplash from "@/style/loadingSplash";
 
-const Landing = lazy(() => import("@/landing/landing"));
+import Landing from "@/landing/landing";
 const ProtectedRouter = lazy(() => import("@/protectedRouter"));
 
 // メインアプリケーションコンポーネント
 function MainApp() {
   return (
     <ErrorProvider>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+      </Routes>
       <Suspense fallback={<LoadingSplash />}>
         <Routes>
-          {/* 公開ページ（認証不要） */}
-          <Route path="/" element={<Landing />} />
-
           {/* 認証が必要なページ（AuthProvider内） */}
           <Route path="/*" element={<ProtectedRouter />} />
         </Routes>
