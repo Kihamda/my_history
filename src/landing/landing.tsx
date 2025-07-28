@@ -1,7 +1,10 @@
-import About from "./parts/about";
-import Features from "./parts/features";
 import Header from "./parts/header";
 import LandTop from "./parts/top";
+
+import { lazy } from "react";
+
+const About = lazy(() => import("./parts/about"));
+const Features = lazy(() => import("./parts/features"));
 
 /**
  *
