@@ -5,7 +5,7 @@ import BlurCard from "../../style/cardDesign";
 import React from "react";
 import FillBackgroundDesign from "../../style/fillBackgroundDesign";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons/faArrowRight";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 /**
  * ランディングページの一番上の表示用

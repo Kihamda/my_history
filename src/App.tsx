@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router";
 import { AuthProvider } from "@/firebase/authContext";
 import { ErrorProvider } from "./errorHandler";
 
@@ -30,7 +30,7 @@ function MainApp() {
             path="/*"
             element={
               <AuthProvider>
-                <Suspense fallback={<div>Loading...</div>}>
+                <Suspense fallback={<LoadingSplash />}>
                   <Routes>
                     <Route path="/auth/*" element={<Auth />} />
                     <Route path="/app/*" element={<App />} />

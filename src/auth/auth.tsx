@@ -1,4 +1,4 @@
-import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useLocation } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 

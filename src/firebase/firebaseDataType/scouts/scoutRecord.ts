@@ -1,4 +1,4 @@
-import { ScoutUnit } from "./scoutUnit";
+import { ScoutUnit } from "@/types/scoutUnit";
 
 export interface ScoutRecord {
   /** スカウトの一意識別子 */

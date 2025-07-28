@@ -22,7 +22,7 @@ const LoadingSplash: React.FC<LoadingSplashProps> = ({
   return (
     <div style={containerStyle}>
       <div className="text-center">
-        <div className="spinner-border" role="status">
+        <div className="spinner-grow" role="status">
           <span className="visually-hidden">Loading</span>
         </div>
         <div className="mt-2">{message}</div>
