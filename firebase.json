@@ -9,7 +9,8 @@
     "redirects": [
       {
         "source": "/viteBuilt/**",
-        "destination": "/**"
+        "destination": "/**",
+        "type": 301
       }
     ],
     "rewrites": [
