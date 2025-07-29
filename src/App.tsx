@@ -16,6 +16,8 @@ const SysManager = lazy(() => import("@/sysManager/sysManager"));
 const Auth = lazy(() => import("@/auth/auth"));
 const App = lazy(() => import("@/app/app"));
 
+// ここで/〇〇/の変更が生じるときはfirebase.jsonのrewritesも変更すること
+
 // メインアプリケーションコンポーネント
 function MainApp() {
   return (
