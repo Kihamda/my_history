@@ -28,6 +28,19 @@ const copyToDist = () => {
   const sourcePath = path.join(__dirname, "dist");
   const destPath = path.join(__dirname, "../dist");
 
+  fs.cpSync(
+    path.join(destPath, "index.html"),
+    path.join(destPath, "spa.html"),
+    {
+      recursive: true,
+    }
+  );
+
+  fs.rmSync(path.join(destPath, "index.html"), {
+    recursive: true,
+    force: true,
+  });
+
   fs.cpSync(sourcePath, destPath, { recursive: true });
 };
 
@@ -39,6 +52,9 @@ const createDistDir = () => {
     fs.rmSync(distPath, { recursive: true, force: true });
     fs.mkdirSync(distPath);
   }
+  fs.mkdirSync(path.join(distPath, "help"), { recursive: true });
+
+  console.log(`Created or cleared directory: ${distPath}`);
 };
 
 const main = async () => {
