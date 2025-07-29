@@ -1,10 +1,10 @@
+import React from "react";
+
 import Header from "./parts/header";
 import LandTop from "./parts/top";
 
-import { lazy } from "react";
-
-const About = lazy(() => import("./parts/about"));
-const Features = lazy(() => import("./parts/features"));
+import About from "./parts/about";
+import Features from "./parts/features";
 
 /**
  *
@@ -13,7 +13,7 @@ const Features = lazy(() => import("./parts/features"));
  *
  */
 
-const Landing = () => {
+const Landing = (): React.ReactElement => {
   return (
     <>
       <Header />
@@ -30,4 +30,13 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+//性的に出力したい
+
+import { renderToString } from "react-dom/server";
+const staticLandingPage = (): string => {
+  const html = renderToString(<Landing />);
+
+  return html;
+};
+
+export default staticLandingPage;

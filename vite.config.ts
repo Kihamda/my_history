@@ -1,11 +1,7 @@
 import { defineConfig } from "vite";
-import path from "path";
 
 import { VitePWA } from "vite-plugin-pwa";
 import react from "@vitejs/plugin-react-swc";
-import vitePrerender from "vite-plugin-prerender-k";
-
-const Renderer = vitePrerender.PuppeteerRenderer;
 
 export default defineConfig({
   plugins: [
@@ -45,24 +41,6 @@ export default defineConfig({
         ],
       },
     }),
-    vitePrerender({
-      // Required - The path to the vite-outputted app to prerender.
-      staticDir: path.join(__dirname, "dist"),
-      // Required - Routes to render.
-      routes: ["/"],
-      minify: {
-        collapseBooleanAttributes: true,
-        collapseWhitespace: true,
-        decodeEntities: true,
-        keepClosingSlash: true,
-        sortAttributes: true,
-      },
-      renderer: new Renderer({
-        // Optional - Wait to render until a certain amount of time has passed.
-        // NOT RECOMMENDED
-        renderAfterTime: 5000, // Wait 5 seconds.
-      }),
-    }),
   ],
   resolve: {
     alias: {
@@ -71,6 +49,7 @@ export default defineConfig({
   },
 
   build: {
+    outDir: "dist/viteBuilt",
     rollupOptions: {
       output: {
         manualChunks: {

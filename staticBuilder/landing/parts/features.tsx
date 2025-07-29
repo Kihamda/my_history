@@ -1,3 +1,5 @@
+import React from "react";
+
 import { Button } from "react-bootstrap";
 import { Link } from "react-scroll";
 
@@ -6,7 +8,7 @@ import { Link } from "react-scroll";
  * Featuresコンポーネント
  */
 
-const Features = () => {
+const Features = (): React.ReactElement => {
   return (
     <div className="container text-center">
       <div className="row">

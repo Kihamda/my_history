@@ -1,3 +1,5 @@
+import React from "react";
+
 /**
  * containerの中にrowを入れてlg以上の画面サイズで2つのコンポーネントを並べる
  * @returns Aboutコンポーネント
@@ -6,7 +8,7 @@
 import { Button } from "react-bootstrap";
 import LinkWithOffset from "./linkwithoffset";
 
-const About = () => {
+const About = (): React.ReactElement => {
   return (
     <div className="container text-center">
       <div className="row">
