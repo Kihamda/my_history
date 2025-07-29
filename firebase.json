@@ -15,7 +15,15 @@
     ],
     "rewrites": [
       {
-        "source": "**",
+        "source": "/app/**",
+        "destination": "viteBuilt/index.html"
+      },
+      {
+        "source": "/auth/**",
+        "destination": "viteBuilt/index.html"
+      },
+      {
+        "source": "/sysmanager/**",
         "destination": "viteBuilt/index.html"
       }
     ]
