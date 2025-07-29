@@ -30,7 +30,19 @@ const copyToDist = () => {
 
   fs.cpSync(sourcePath, destPath, { recursive: true });
 };
+
+const createDistDir = () => {
+  const distPath = path.join(__dirname, "dist");
+  if (!fs.existsSync(distPath)) {
+    fs.mkdirSync(distPath);
+  } else {
+    fs.rmSync(distPath, { recursive: true, force: true });
+    fs.mkdirSync(distPath);
+  }
+};
+
 const main = async () => {
+  createDistDir();
   buildLandingPage();
   copyToDist();
 };
