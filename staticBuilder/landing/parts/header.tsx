@@ -1,3 +1,5 @@
+import React from "react";
+
 import SignInUp from "./signiniup";
 import LinkWithOffset from "./linkwithoffset";
 /**
@@ -5,7 +7,7 @@ import LinkWithOffset from "./linkwithoffset";
  * アプリ側では使いません
  */
 
-const Header = () => {
+const Header = (): React.ReactElement => {
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom border-bottom-dark fixed-top">
       <div className="container">

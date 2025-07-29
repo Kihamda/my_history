@@ -6,10 +6,16 @@
   "hosting": {
     "public": "dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "redirects": [
+      {
+        "source": "/viteBuilt/**",
+        "destination": "/**"
+      }
+    ],
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "destination": "viteBuilt/index.html"
       }
     ]
   }

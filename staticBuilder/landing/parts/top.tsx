@@ -1,11 +1,10 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LinkWithOffset from "./linkwithoffset";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons/faChevronDown";
-import BlurCard from "../../style/cardDesign";
+import BlurCard from "@/style/cardDesign";
 import React from "react";
-import FillBackgroundDesign from "../../style/fillBackgroundDesign";
+import FillBackgroundDesign from "@/style/fillBackgroundDesign";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons/faArrowRight";
-import { Link } from "react-router";
 
 /**
  * ランディングページの一番上の表示用
@@ -34,7 +33,7 @@ const LandTop: React.FC = () => {
             ボーイスカウトの活動記録をデジタルで管理し、団の運営をサポートします。
           </p>
           <div className="mt-3 d-flex">
-            <Link to="/auth/register" className="text-decoration-none">
+            <a href="/auth/register" className="text-decoration-none">
               <BlurCard
                 className="d-flex justify-content-center align-items-center"
                 style={{
@@ -44,9 +43,13 @@ const LandTop: React.FC = () => {
                 aria-label="Get Started"
               >
                 Get Started：今すぐ始めよう
-                <FontAwesomeIcon icon={faArrowRight} />
+                <FontAwesomeIcon
+                  icon={faArrowRight}
+                  className="ms-2"
+                  style={{ height: "1em" }}
+                />
               </BlurCard>
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -60,7 +63,7 @@ const LandTop: React.FC = () => {
         <BlurCard>
           詳細はこちら
           <br />
-          <FontAwesomeIcon icon={faChevronDown} />
+          <FontAwesomeIcon icon={faChevronDown} style={{ height: "1.5em" }} />
         </BlurCard>
       </LinkWithOffset>
     </FillBackgroundDesign>
