@@ -1,5 +1,5 @@
 import UnitSelector from "@/tools/components/unitSelector";
-import { ScoutUnitList, ScoutUnitNameMap } from "@/types/scoutUnit";
+import { ScoutUnitList, ScoutUnitNameMap } from "@/types/scout/scoutUnit";
 import SearchQuery from "@/types/search/searchQueryType";
 import { useState } from "react";
 import { Card, FormControl, InputGroup } from "react-bootstrap";

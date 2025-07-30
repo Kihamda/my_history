@@ -1,46 +1,115 @@
-import { ScoutUnit } from "@/types/scoutUnit";
+import { ScoutUnit } from "@/types/scout/scoutUnit";
 
 export interface ScoutRecord {
-  /** スカウトの一意識別子 */
-  id: string;
+  personal: {
+    /** スカウトの登録番号 */
+    ScoutId: string;
 
-  /** スカウトの名前 */
-  name: string;
+    /** スカウトの名前 */
+    name: string;
 
-  /** スカウトの所属団 */
-  groupId: string;
+    /** スカウトのちかいについて */
+    declare: {
+      /** ちかいをたてた場所 */
+      place: string;
 
-  /** スカウトの所属隊 */
-  unit: ScoutUnit;
+      /** ちかいをたてた日 */
+      date: Date;
+    };
 
-  /** スカウトの役割 */
-  authedUser: AuthedUser[];
+    //** 信仰奨励章＆宗教章 */
+    religion: {
+      /** 信仰奨励章を持っているか */
+      faith: {
+        //所有
+        has: boolean;
 
-  /** スカウトに関するコメント */
-  comment: string;
+        //日時
+        date: Date;
+      };
 
-  /**ちかい */
-  declare: {
-    /** ちかいを立てた日 */
-    date: Date;
+      /** 宗教章を持っているか */
+      religion: {
+        //所有
+        has: boolean;
 
-    /** ちかいを立てた場所 */
-    place: string;
+        //種類
+        type: string;
+
+        // 日時
+        date: Date;
+      };
+    };
+
+    /** スカウトの生年月日 */
+    birthday: Date;
+
+    ///** スカウトの所属 */
+    currentUnit: ScoutUnit;
+
+    /** スカウトのメモ */
+    memo: string;
   };
-
-  /** スカウトの履歴 */
-  history: {
-    [key: string]: {
-      /** スカウトがそのユニットに参加したかどうか */
-      was: boolean;
-
-      /** スカウトがそのユニットに参加した日 */
-      joinedAt: Date;
-
-      /** スカウトがそのユニットを卒業した日 */
-      graduatedAt?: Date;
+  bvs: {
+    experienced: boolean; // 経験済みかどうか
+    joinedDate: Date;
+  };
+  cs: {
+    joinedDate: Date;
+    grade: {
+      1: Date;
+      2: Date;
+      3: Date;
+    };
+    work: {
+      chief: {
+        begin: Date; //組長
+        end: Date; //組長
+      };
+      assistant: {
+        begin: Date; //次長
+        end: Date; //次長
+      };
     };
   };
+  bs: {
+    joinedDate: Date;
+    grade: {
+      1: Date; //初級
+      2: Date; //2級
+      3: Date; //1級
+      4: Date; //菊
+    };
+    works: Work[];
+  };
+  vs: {
+    joinedDate: Date;
+    grade: {
+      1: Date; //VS
+      2: Date; //はやぶさ
+      3: Date; //ふじ
+    };
+    work: {
+      topchief: {
+        begin: Date; //隊長
+        end: Date; //隊長
+      };
+      bsleader: {
+        begin: Date; //BS隊付
+        end: Date; //BS隊付
+      };
+      csleader: {
+        begin: Date; //JL
+        end: Date; //JL
+      };
+    };
+  };
+}
+
+interface Work {
+  type: string; // 役職名
+  begin: Date; // 開始日
+  end: Date; // 終了日
 }
 
 interface AuthedUser {

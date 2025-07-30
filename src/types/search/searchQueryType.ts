@@ -1,4 +1,4 @@
-import { ScoutUnit } from "@/types/scoutUnit";
+import { ScoutUnit } from "@/types/scout/scoutUnit";
 
 export default interface SearchQuery {
   scoutId: string;
