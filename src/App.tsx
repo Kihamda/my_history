@@ -40,7 +40,10 @@ function MainApp() {
 const Reload = () => {
   useEffect(() => {
     // ページが読み込まれたときにリロードする
-    window.location.reload();
+    setTimeout(() => {
+      // 1秒後にリロード
+      window.location.reload();
+    }, 1000);
   }, []);
 
   return (
