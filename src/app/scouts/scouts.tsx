@@ -13,18 +13,15 @@ const Scouts: React.FC = () => {
     scoutId: "",
     name: "",
     currentUnit: [],
-    experiencedUnit: [],
   };
 
   if (searchBox) {
-    const { scoutId, name, currentUnit, experiencedUnit } =
-      queryParser(searchBox);
+    const { scoutId, name, currentUnit } = queryParser(searchBox);
 
     initialSearchQuery = {
       scoutId: scoutId,
       name: name,
       currentUnit: currentUnit,
-      experiencedUnit: experiencedUnit,
     };
   }
 
@@ -38,8 +35,7 @@ const Scouts: React.FC = () => {
     if (
       searchQuery.name ||
       searchQuery.scoutId ||
-      searchQuery.currentUnit.length ||
-      searchQuery.experiencedUnit.length
+      searchQuery.currentUnit.length
     ) {
       // Queryが空だったときに検索を行わないようにする
       // SearchQueryが変更されたときに検索クエリを更新

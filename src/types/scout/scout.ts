@@ -1,7 +1,7 @@
 import { ScoutUnit, UnitExperience } from "@/types/scout/scoutUnit";
 
 export interface Scout {
-  uid: string; // スカウトのユニークID
+  id: string; // スカウトのユニークID
 
   personal: ScoutPersonalData;
 
@@ -16,7 +16,7 @@ export interface Work {
   end: Date; // 終了日
 }
 
-interface AuthedUser {
+export interface AuthedUser {
   /** 認証されたユーザーのメールアドレス */
   email: string;
 

@@ -1,5 +1,5 @@
 import UnitSelector from "@/tools/components/unitSelector";
-import { ScoutUnitList, ScoutUnitNameMap } from "@/types/scout/scoutUnit";
+import { ScoutUnitNameMap } from "@/types/scout/scoutUnit";
 import SearchQuery from "@/types/search/searchQueryType";
 import { useState } from "react";
 import { Card, FormControl, InputGroup } from "react-bootstrap";
@@ -23,6 +23,11 @@ const SearchboxCard = ({
 
   const getExplain = (current: SearchQuery) => {
     let explainMessage: string[] = [];
+
+    if (!current.name && !current.scoutId && current.currentUnit.length === 0) {
+      return "検索条件が設定されていません。";
+    }
+
     if (current.scoutId && current.scoutId.length < 9) {
       explainMessage.push("登録番号は9桁以上で入力してください。");
       return explainMessage.join("");
@@ -31,27 +36,9 @@ const SearchboxCard = ({
     if (current.currentUnit.length > 0) {
       explainMessage.push(
         current.currentUnit.map((unit) => ScoutUnitNameMap[unit]).join(", ") +
-          "に所属している"
+          "の"
       );
-      if (current.experiencedUnit.length > 0) {
-        explainMessage.push("か、");
-      }
     }
-
-    if (current.experiencedUnit.length > 0) {
-      explainMessage.push(
-        current.experiencedUnit
-          .map((unit) => ScoutUnitNameMap[unit])
-          .join(", ") + "に所属していた"
-      );
-      if (
-        current.currentUnit.length === 0 &&
-        current.experiencedUnit.length > 0
-      ) {
-        explainMessage.push("OB・OG(既卒)の");
-      }
-    }
-
     explainMessage.push("スカウトの");
 
     if (current.name && current.scoutId) {
@@ -123,51 +110,6 @@ const SearchboxCard = ({
                 })
               }
               id="currentUnitSelector"
-            />
-          </div>
-          <div className="col-12 col-md-6">
-            <label className="form-label">
-              経験した隊
-              {searchQueryInput?.experiencedUnit.length > 0 ? (
-                <>
-                  {searchQueryInput?.experiencedUnit.length}件
-                  <span
-                    onClick={() =>
-                      setSearchQueryInput({
-                        ...searchQueryInput,
-                        experiencedUnit: [],
-                      })
-                    }
-                    className="link-primary"
-                  >
-                    ＜選択解除＞
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span
-                    onClick={() =>
-                      setSearchQueryInput({
-                        ...searchQueryInput,
-                        experiencedUnit: ScoutUnitList,
-                      })
-                    }
-                    className="link-primary"
-                  >
-                    ＜すべて選択＞
-                  </span>
-                </>
-              )}
-            </label>
-            <UnitSelector
-              units={searchQueryInput?.experiencedUnit}
-              onChange={(units) =>
-                setSearchQueryInput({
-                  ...searchQueryInput,
-                  experiencedUnit: units,
-                })
-              }
-              id="experiencedUnitSelector"
             />
           </div>
         </div>

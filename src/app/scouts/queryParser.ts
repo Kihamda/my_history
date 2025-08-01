@@ -6,7 +6,6 @@ const queryParser = (searchName: string): SearchQuery => {
   let scoutId: string = "";
   let name: string = "";
   let currentUnit: ScoutUnit[] = [];
-  let experiencedUnit: ScoutUnit[] = [];
 
   if (searchName) {
     /* 条件
@@ -57,7 +56,6 @@ const queryParser = (searchName: string): SearchQuery => {
     scoutId,
     name,
     currentUnit,
-    experiencedUnit,
   };
 };
 
