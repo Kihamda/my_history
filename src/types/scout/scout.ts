@@ -6,14 +6,6 @@ export interface Scout {
   personal: ScoutPersonalData;
 
   unit: UnitExperience;
-
-  authedUser: AuthedUser[];
-}
-
-export interface Work {
-  type: string; // 役職名
-  begin: Date; // 開始日
-  end: Date; // 終了日
 }
 
 export interface AuthedUser {
@@ -81,3 +73,28 @@ export interface ScoutPersonalData {
     };
   };
 }
+
+export const ScoutPersonalDataDefault: ScoutPersonalData = {
+  ScoutId: "",
+  belongs: "",
+  name: "",
+  joinedDate: new Date(),
+  declare: {
+    place: "",
+    date: new Date(),
+  },
+  birthday: new Date(new Date().getFullYear() - 10, 3, 1),
+  currentUnit: "bs",
+  memo: "",
+  religion: {
+    faith: {
+      has: false,
+      date: new Date(),
+    },
+    religion: {
+      has: false,
+      type: "",
+      date: new Date(),
+    },
+  },
+};

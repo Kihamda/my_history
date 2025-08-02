@@ -11,8 +11,16 @@ import {
 import { ScoutRecord } from "../firebaseDataType/scouts/scoutRecord";
 
 import { SearchResultScoutData } from "@/types/search/searchQueryType";
+import { raiseError } from "@/errorHandler";
+
+/**
+ * スカウトを検索する関数
+ * @param searchQuery 検索クエリ
+ * @returns 検索結果のスカウトデータの配列
+ */
 export const searchScout = async (
-  searchQuery: SearchQuery
+  searchQuery: SearchQuery,
+  groupId: string
 ): Promise<SearchResultScoutData[]> => {
   const scoutsRef = collection(db, "scouts");
 
@@ -40,41 +48,50 @@ export const searchScout = async (
   }
 
   // クエリを構築
+  // 自分のグループに所属している必要がある
+  conditions.push(where("personal.belongs", "==", groupId));
   let q: Query<DocumentData>;
-  if (conditions.length > 0) {
+  if (conditions.length > 1) {
+    // この1はグループIDの1
     q = query(scoutsRef, ...conditions);
   } else {
     // 検索条件がない場合は全件取得
-    q = query(scoutsRef);
+    raiseError("検索条件が設定されませんでした。");
+    return [];
   }
 
-  const snapshot = await getDocs(q);
+  try {
+    const snapshot = await getDocs(q);
 
-  const scouts: SearchResultScoutData[] = [];
-  snapshot.forEach((doc) => {
-    const scoutData = doc.data() as ScoutRecord;
+    const scouts: SearchResultScoutData[] = [];
+    snapshot.forEach((doc) => {
+      const scoutData = doc.data() as ScoutRecord;
 
-    // FirestoreのTimestampをDateオブジェクトに変換
-    const scout: SearchResultScoutData = {
-      id: doc.id,
-      personal: scoutData.personal,
-    };
+      const scout: SearchResultScoutData = {
+        id: doc.id,
+        personal: scoutData.personal,
+      };
 
-    // 名前での部分一致フィルタリング（Firestoreの制限を補完）
-    if (searchQuery.name && searchQuery.name.trim() !== "") {
-      if (
-        scout.personal.name
-          .toLowerCase()
-          .includes(searchQuery.name.toLowerCase())
-      ) {
+      // 名前での部分一致フィルタリング（Firestoreの制限を補完）
+      if (searchQuery.name && searchQuery.name.trim() !== "") {
+        if (
+          scout.personal.name
+            .toLowerCase()
+            .includes(searchQuery.name.toLowerCase())
+        ) {
+          scouts.push(scout);
+        }
+      } else {
         scouts.push(scout);
       }
-    } else {
-      scouts.push(scout);
-    }
-  });
+    });
 
-  return scouts;
+    return scouts;
+  } catch (error) {
+    raiseError("スカウトデータの検索に失敗しました。", "" + error);
+    console.error("Error fetching scout data:", error);
+    return [];
+  }
 };
 
 export default searchScout;

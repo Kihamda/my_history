@@ -33,6 +33,7 @@ export interface UnitExperience {
         date: Date; // ビッグビーバーを取得した日
       }; // ビッグビーバー
     };
+    works: Work[]; // ビーバースカウトの活動記録
   };
 
   // カブスカウト
@@ -53,6 +54,7 @@ export interface UnitExperience {
         date: Date; // クマを取得した日
       }; // クマ
     };
+    works: Work[]; // カブスカウトの活動記録
   }; // カブスカウト
   bs: {
     experienced: boolean; // 経験済みかどうか
@@ -75,6 +77,7 @@ export interface UnitExperience {
         date: Date; // 菊を取得した日
       };
     };
+    works: Work[]; // ボーイスカウトの活動記録
   }; // ボーイスカウト
   vs: {
     experienced: boolean; // 経験済みかどうか
@@ -93,9 +96,102 @@ export interface UnitExperience {
         date: Date; // ファーストを取得した日
       }; // ファースト
     };
+    works: Work[]; // ベンチャースカウトの活動記録
   }; // ベンチャースカウト
   rs: {
     experienced: boolean; // 経験済みかどうか
     joinedDate: Date; // ローバースカウト
+    works: Work[]; // ローバースカウトの活動記録
   }; // ローバースカウト
 }
+
+export interface Work {
+  type: string; // 役職名
+  begin: Date; // 開始日
+  end: Date; // 終了日
+  memo: string; // メモ
+}
+
+export const ScoutUnitDataDefault: UnitExperience = {
+  bvs: {
+    experienced: false,
+    joinedDate: new Date(),
+    grade: {
+      beaver: {
+        has: false,
+        date: new Date(),
+      },
+      bigbeaver: {
+        has: false,
+        date: new Date(),
+      },
+    },
+    works: [],
+  },
+  cs: {
+    experienced: false,
+    joinedDate: new Date(),
+    grade: {
+      rabbit: {
+        has: false,
+        date: new Date(),
+      },
+      deer: {
+        has: false,
+        date: new Date(),
+      },
+      bear: {
+        has: false,
+        date: new Date(),
+      },
+    },
+    works: [],
+  },
+  bs: {
+    experienced: false,
+    joinedDate: new Date(),
+    grade: {
+      beginner: {
+        has: false,
+        date: new Date(),
+      },
+      second: {
+        has: false,
+        date: new Date(),
+      },
+      first: {
+        has: false,
+        date: new Date(),
+      },
+      mum: {
+        has: false,
+        date: new Date(),
+      },
+    },
+    works: [],
+  },
+  vs: {
+    experienced: false,
+    joinedDate: new Date(),
+    grade: {
+      venture: {
+        has: false,
+        date: new Date(),
+      },
+      falcon: {
+        has: false,
+        date: new Date(),
+      },
+      fuji: {
+        has: false,
+        date: new Date(),
+      },
+    },
+    works: [],
+  },
+  rs: {
+    experienced: false,
+    joinedDate: new Date(),
+    works: [],
+  },
+};

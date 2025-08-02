@@ -41,8 +41,12 @@ const SearchboxCard = ({
     }
     explainMessage.push("スカウトの");
 
+    if (current.name || current.scoutId) {
+      explainMessage.push("うち、");
+    }
+
     if (current.name && current.scoutId) {
-      explainMessage.push("うち、\n");
+      explainMessage.push("\n");
     }
 
     if (current.name) {
@@ -63,8 +67,8 @@ const SearchboxCard = ({
   return (
     <Card>
       <div className="card-body">
-        <h3 className="card-title text-center">スカウトを検索する</h3>
-        <div className="row mb-2">
+        <h3 className="card-title">スカウトを検索する</h3>
+        <div className="row mt-3 mb-2">
           <div className="col-12 col-md-6">
             <InputGroup className="mb-2">
               <InputGroup.Text>名前</InputGroup.Text>
@@ -80,8 +84,6 @@ const SearchboxCard = ({
                 }
               />
             </InputGroup>
-          </div>
-          <div className="col-12 col-md-6">
             <InputGroup className="mb-2">
               <InputGroup.Text>登録番号</InputGroup.Text>
               <FormControl
@@ -97,8 +99,6 @@ const SearchboxCard = ({
               />
             </InputGroup>
           </div>
-        </div>
-        <div className="row mb-2">
           <div className="col-12 col-md-6">
             <label className="form-label">現在の所属隊</label>
             <UnitSelector
@@ -113,24 +113,28 @@ const SearchboxCard = ({
             />
           </div>
         </div>
-        <p className="text-center mb-3" style={{ whiteSpace: "pre-line" }}>
-          <b>検索条件</b>
-          <br />
-          {getExplain(searchQueryInput)}
-        </p>
-        <div className="d-flex align-items-center justify-content-center">
-          <button
-            className="btn btn-primary me-2"
-            onClick={() => handleSearch(searchQueryInput)}
-          >
-            検索
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => setSearchQueryInput(searchQuery)}
-          >
-            リセット
-          </button>
+      </div>
+      <div className="card-footer">
+        <div className="row">
+          <div className="col-12 col-md-9">
+            <span style={{ whiteSpace: "pre-line" }}>
+              {getExplain(searchQueryInput)}
+            </span>
+          </div>
+          <div className="col-12 col-md-3 d-flex justify-content-end align-items-center">
+            <button
+              className="btn btn-primary me-2 text-nowrap"
+              onClick={() => handleSearch(searchQueryInput)}
+            >
+              検索
+            </button>
+            <button
+              className="btn btn-secondary text-nowrap"
+              onClick={() => setSearchQueryInput(searchQuery)}
+            >
+              リセット
+            </button>
+          </div>
         </div>
       </div>
     </Card>
