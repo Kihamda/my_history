@@ -1,4 +1,4 @@
-import { Link, Navigate, Route, Routes, useLocation } from "react-router";
+import { Navigate, Route, Routes, useLocation } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 
@@ -61,8 +61,8 @@ const Auth = () => {
       </div>
       <div>
         <MoveCard />
-        <Link
-          to="/"
+        <a
+          href="/"
           className="position-absolute"
           style={{
             top: "1%",
@@ -78,7 +78,7 @@ const Auth = () => {
             <FontAwesomeIcon icon={faHouseChimney} className="me-2" />
             ホームに戻る
           </BlurCard>
-        </Link>
+        </a>
       </div>
     </FillBackgroundDesign>
   );

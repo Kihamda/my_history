@@ -49,7 +49,7 @@ export default defineConfig({
   },
 
   build: {
-    outDir: "dist/viteBuilt",
+    outDir: "dist",
     rollupOptions: {
       output: {
         manualChunks: {

@@ -1,4 +1,4 @@
-import { ScoutUnit, ScoutUnitList } from "@/types/scoutUnit";
+import { ScoutUnit, ScoutUnitList } from "@/types/scout/scoutUnit";
 import SearchQuery from "@/types/search/searchQueryType";
 
 const queryParser = (searchName: string): SearchQuery => {
@@ -6,7 +6,6 @@ const queryParser = (searchName: string): SearchQuery => {
   let scoutId: string = "";
   let name: string = "";
   let currentUnit: ScoutUnit[] = [];
-  let experiencedUnit: ScoutUnit[] = [];
 
   if (searchName) {
     /* 条件
@@ -57,7 +56,6 @@ const queryParser = (searchName: string): SearchQuery => {
     scoutId,
     name,
     currentUnit,
-    experiencedUnit,
   };
 };
 

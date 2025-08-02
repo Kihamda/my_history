@@ -19,13 +19,50 @@ service cloud.firestore {
       return request.auth.token.email;
     }
     
+    // GroupIdで渡されたグループのロールを返す
+    function getGroupRole(groupId){
+      return get(/databases/$(database)/documents/groups/$(groupId)/members/$(getUserEmail())).data.role
+    }
+    
+    // GroupIdで渡されたグループのMember（trueならview↑が確定する）
+    function isGroupMember(groupId){
+      return exists(/databases/$(database)/documents/groups/$(groupId)/members/$(getUserEmail()))
+    }
+    
+    // ScoutIdで渡されたスカウトの所属団がわかる
+    function getScoutIdGroup(scoutId){
+    	return get(/databases/$(database)/documents/scouts/$(scoutId)).data.personal.belongs
+    }
+    
+    function isTheScoutEditable(scoutId){
+    	let scoutBelongs = getScoutIdGroup(scoutId);
+      let userBelongsId = getGroupRole(scoutBelongs);
+      return userBelongsId == "admin" || userBelongsId == "edit"
+    }
+    
     // アプリ管理者かチェック
     function isAppAdmin() {
       return isAuthenticated() && 
-        exists(/databases/$(database)/documents/app_admins/$(request.auth.uid));
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
     
-
+    // ========================================
+    // Scouts Collection
+    // ========================================
+    match /scouts/{scoutId}{
+    	allow read :if isAuthenticated() && 
+      	isGroupMember(getScoutIdGroup(scoutId));
+        
+      allow update, delete:if isAuthenticated() && isTheScoutEditable(scoutId)
+      
+      allow create:if isAuthenticated() && isTheScoutEditable(request.resource.data.personal.belongs);
+      
+      match /{document=**} {
+      	allow read :if isAuthenticated() && 
+      		isGroupMember(getScoutIdGroup(scoutId)); 
+	      allow write:if isAuthenticated() && isTheScoutEditable(scoutId)
+      }
+    }
 
 
     // ========================================
@@ -42,12 +79,12 @@ service cloud.firestore {
     
     match /groups/{groupId} {
       allow read: if isAuthenticated() && 
-        exists(/databases/$(database)/documents/groups/$(groupId)/members/$(getUserEmail()));
+        isGroupMember(groupId);
 
-      allow write, create: if isAuthenticated() &&
-        exists(/databases/$(database)/documents/groups/$(groupId)/members/$(getUserEmail())) &&
-        get(/databases/$(database)/documents/groups/$(groupId)/members/$(getUserEmail())).data.role == 'admin';
-
+      allow update: if isAuthenticated() &&
+        getGroupRole(groupId) == 'admin';
+			
+      allow create, delete: if isAppAdmin()
 
       
       // 管理者サブコレクション
@@ -70,9 +107,8 @@ service cloud.firestore {
     // App Admins Collection
     // ========================================
     
-    match /app_admins/{adminId} {
-      allow read: if isOwner(adminId);
-      allow write: if isAppAdmin();
+    match /admins/{adminId} {
+      allow read , write: if isAppAdmin()
     }
 
     // ========================================

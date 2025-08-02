@@ -1,4 +1,10 @@
-export interface Group {}
+export interface Group {
+  /** グループのID */
+  id: string;
+
+  /** グループの名前 */
+  name: string;
+}
 
 export interface GroupMember {
   // Groupのサブコレクションのメンバとして登録されたユーザー情報を表す型定義

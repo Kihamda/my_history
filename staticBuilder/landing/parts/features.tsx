@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Button } from "react-bootstrap";
-import { Link } from "react-scroll";
+import Link from "./linkwithoffset";
 
 /**
  * containerの中にrowを入れてlg以上の画面サイズで2つのコンポーネントを並べる
@@ -34,7 +34,7 @@ const Features = (): React.ReactElement => {
             <li>活動報告の作成と共有</li>
             <li>写真や動画の保存と共有</li>
           </ul>
-          <Link className="mt-3" to="contact" smooth={true} duration={500}>
+          <Link className="mt-3" to="contact">
             <Button variant="outline-secondary">次へ↓</Button>
           </Link>
         </div>

@@ -6,25 +6,10 @@
   "hosting": {
     "public": "dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "redirects": [
-      {
-        "source": "/viteBuilt/**",
-        "destination": "/**",
-        "type": 301
-      }
-    ],
     "rewrites": [
       {
-        "source": "/app/**",
-        "destination": "viteBuilt/index.html"
-      },
-      {
-        "source": "/auth/**",
-        "destination": "viteBuilt/index.html"
-      },
-      {
-        "source": "/sysmanager/**",
-        "destination": "viteBuilt/index.html"
+        "source": "**",
+        "destination": "/spa.html"
       }
     ]
   }
