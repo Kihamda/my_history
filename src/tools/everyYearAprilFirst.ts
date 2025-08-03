@@ -6,7 +6,7 @@ const everyYearAprilFirst = (date: Date): Date[] => {
     date.getMonth() <= 2 ? date.getFullYear() - 1 : date.getFullYear();
 
   for (let i = 0; i < 15; i++) {
-    days.push(new Date(baseYear + i + 7, 3, 1)); // 月: 3 = 4月
+    days.push(new Date(baseYear + i + 7, 3, 1, 12)); // 月: 3 = 4月
   }
 
   return days;

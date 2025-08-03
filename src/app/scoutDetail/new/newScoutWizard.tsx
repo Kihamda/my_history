@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Scout, ScoutPersonalDataDefault } from "@/types/scout/scout";
+import {
+  ScoutPersonalData,
+  ScoutPersonalDataDefault,
+} from "@/types/scout/scout";
 import {
   ScoutUnit,
   ScoutUnitDataDefault,
   ScoutUnitNameMap,
 } from "@/types/scout/scoutUnit";
-import getRandomStr from "@/tools/getRandomStr";
 import { InputGroup } from "react-bootstrap";
 import { useAuthContext } from "@/firebase/authContext";
 import { Navigate } from "react-router";
@@ -19,15 +21,17 @@ const NewScoutWizard = () => {
     return <Navigate to="/login" replace />;
   }
 
-  const [scoutData, setScoutData] = useState<Scout>({
-    id: getRandomStr(20), // ユニークIDを生成
-    personal: { ...ScoutPersonalDataDefault, belongs: user?.joinGroupId },
-    unit: ScoutUnitDataDefault,
+  const [scoutData, setScoutData] = useState<ScoutPersonalData>({
+    ...ScoutPersonalDataDefault,
+    belongs: user?.joinGroupId,
   });
 
   const [everGuessed, setEverGuessed] = useState(false);
   const handleGuessDates = () => {
-    setScoutData(guessDates(scoutData));
+    setScoutData(
+      guessDates({ id: "", personal: scoutData, unit: ScoutUnitDataDefault })
+        .personal
+    );
     setEverGuessed(true);
   };
 
@@ -59,15 +63,12 @@ const NewScoutWizard = () => {
                 <input
                   type="text"
                   className="form-control"
-                  value={scoutData.personal.name}
+                  value={scoutData.name}
                   placeholder="松田 太郎"
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
-                      personal: {
-                        ...scoutData.personal,
-                        name: e.target.value,
-                      },
+                      name: e.target.value,
                     })
                   }
                 />
@@ -77,15 +78,12 @@ const NewScoutWizard = () => {
                 <input
                   type="number"
                   className="form-control"
-                  value={scoutData.personal.ScoutId}
+                  value={scoutData.ScoutId}
                   placeholder="1234567890"
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
-                      personal: {
-                        ...scoutData.personal,
-                        ScoutId: e.target.value,
-                      },
+                      ScoutId: e.target.value,
                     })
                   }
                 />
@@ -95,14 +93,11 @@ const NewScoutWizard = () => {
                 <input
                   type="date"
                   className="form-control"
-                  value={convertInputDate(scoutData.personal.birthday)}
+                  value={convertInputDate(scoutData.birthday)}
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
-                      personal: {
-                        ...scoutData.personal,
-                        birthday: new Date(e.target.value),
-                      },
+                      birthday: new Date(e.target.value),
                     })
                   }
                 />
@@ -112,14 +107,11 @@ const NewScoutWizard = () => {
                 <input
                   type="date"
                   className="form-control"
-                  value={convertInputDate(scoutData.personal.joinedDate)}
+                  value={convertInputDate(scoutData.joinedDate)}
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
-                      personal: {
-                        ...scoutData.personal,
-                        joinedDate: new Date(e.target.value),
-                      },
+                      joinedDate: new Date(e.target.value),
                     })
                   }
                 />
@@ -131,14 +123,11 @@ const NewScoutWizard = () => {
                 <InputGroup.Text>現在の所属隊</InputGroup.Text>
                 <select
                   className="form-select"
-                  value={scoutData.personal.currentUnit}
+                  value={scoutData.currentUnit}
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
-                      personal: {
-                        ...scoutData.personal,
-                        currentUnit: e.target.value as ScoutUnit,
-                      },
+                      currentUnit: e.target.value as ScoutUnit,
                     })
                   }
                 >
@@ -154,16 +143,13 @@ const NewScoutWizard = () => {
                 <InputGroup.Text>メモ</InputGroup.Text>
                 <textarea
                   className="form-control"
-                  value={scoutData.personal.memo}
+                  value={scoutData.memo}
                   style={{ resize: "none" }}
                   placeholder="スカウトに関するメモ"
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
-                      personal: {
-                        ...scoutData.personal,
-                        memo: e.target.value,
-                      },
+                      memo: e.target.value,
                     })
                   }
                 />
@@ -185,8 +171,8 @@ const NewScoutWizard = () => {
           </button>
         </div>
       </div>
-      <div className="row mt-3">
-        <div className="col-12 col-md-6">
+      <div className="row">
+        <div className="col-12 col-md-6 mt-3">
           <div className="card">
             <div className="card-body">
               <h4 className="card-title">ちかいについて</h4>
@@ -198,16 +184,13 @@ const NewScoutWizard = () => {
                 <input
                   type="date"
                   className="form-control"
-                  value={convertInputDate(scoutData.personal.declare.date)}
+                  value={convertInputDate(scoutData.declare.date)}
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
-                      personal: {
-                        ...scoutData.personal,
-                        declare: {
-                          ...scoutData.personal.declare,
-                          date: new Date(e.target.value),
-                        },
+                      declare: {
+                        ...scoutData.declare,
+                        date: new Date(e.target.value),
                       },
                     })
                   }
@@ -218,17 +201,14 @@ const NewScoutWizard = () => {
                 <input
                   type="text"
                   className="form-control"
-                  value={scoutData.personal.declare.place}
+                  value={scoutData.declare.place}
                   placeholder="キャンプ場名や市区町村"
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
-                      personal: {
-                        ...scoutData.personal,
-                        declare: {
-                          ...scoutData.personal.declare,
-                          place: e.target.value,
-                        },
+                      declare: {
+                        ...scoutData.declare,
+                        place: e.target.value,
                       },
                     })
                   }
@@ -237,7 +217,7 @@ const NewScoutWizard = () => {
             </div>
           </div>
         </div>
-        <div className="col-12 col-md-6">
+        <div className="col-12 col-md-6 mt-3">
           <div className="card">
             <div className="card-body">
               <h4 className="card-title">信仰について</h4>
@@ -245,24 +225,41 @@ const NewScoutWizard = () => {
                 信仰奨励章の日付と宗教章の日付を入力します。
               </p>
               <InputGroup className="mb-3">
-                <InputGroup.Text>信仰奨励章</InputGroup.Text>
+                <InputGroup.Text>
+                  <input
+                    type="checkbox"
+                    className="form-check-input me-1"
+                    name="faith"
+                    id="faith"
+                    value={scoutData.religion.faith.has ? "checked" : ""}
+                    onChange={(e) =>
+                      setScoutData({
+                        ...scoutData,
+                        religion: {
+                          ...scoutData.religion,
+                          faith: {
+                            ...scoutData.religion.faith,
+                            has: e.target.checked,
+                          },
+                        },
+                      })
+                    }
+                  />
+                  {scoutData.religion.faith.has ? "取得済" : "未取得"}
+                  ：信仰奨励章
+                </InputGroup.Text>
                 <input
                   type="date"
                   className="form-control"
-                  value={convertInputDate(
-                    scoutData.personal.religion.faith.date
-                  )}
+                  value={convertInputDate(scoutData.religion.faith.date)}
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
-                      personal: {
-                        ...scoutData.personal,
-                        religion: {
-                          ...scoutData.personal.religion,
-                          faith: {
-                            ...scoutData.personal.religion.faith,
-                            date: new Date(e.target.value),
-                          },
+                      religion: {
+                        ...scoutData.religion,
+                        faith: {
+                          ...scoutData.religion.faith,
+                          date: new Date(e.target.value),
                         },
                       },
                     })
@@ -270,20 +267,41 @@ const NewScoutWizard = () => {
                 />
               </InputGroup>
               <InputGroup className="mb-3">
-                <InputGroup.Text>宗教章</InputGroup.Text>
+                <InputGroup.Text>
+                  <input
+                    type="checkbox"
+                    className="form-check-input me-1"
+                    name="religion"
+                    id="religion"
+                    value={scoutData.religion.religion.has ? "checked" : ""}
+                    onChange={(e) =>
+                      setScoutData({
+                        ...scoutData,
+                        religion: {
+                          ...scoutData.religion,
+                          religion: {
+                            ...scoutData.religion.religion,
+                            has: e.target.checked,
+                          },
+                        },
+                      })
+                    }
+                  />
+                  {scoutData.religion.religion.has ? "取得済" : "未取得"}
+                  ：宗教章
+                </InputGroup.Text>
                 <input
-                  type="text"
+                  type="date"
                   className="form-control"
-                  value={scoutData.personal.declare.place}
-                  placeholder="キャンプ場名や市区町村"
+                  value={convertInputDate(scoutData.religion.faith.date)}
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
-                      personal: {
-                        ...scoutData.personal,
-                        declare: {
-                          ...scoutData.personal.declare,
-                          place: e.target.value,
+                      religion: {
+                        ...scoutData.religion,
+                        faith: {
+                          ...scoutData.religion.faith,
+                          date: new Date(e.target.value),
                         },
                       },
                     })
