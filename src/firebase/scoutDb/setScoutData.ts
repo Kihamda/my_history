@@ -23,7 +23,7 @@ type SetScoutDataResult =
  * @param scout 保存するスカウトデータ。
  * @returns 保存処理の結果。成功またはエラー情報を含むオブジェクトを返す。
  */
-const setScoutData = async (scout: Scout): Promise<SetScoutDataResult> => {
+const setScoutRecord = async (scout: Scout): Promise<SetScoutDataResult> => {
   try {
     await saveScoutToFirestore(scout);
     return { status: "success", data: scout };
@@ -50,4 +50,4 @@ const saveScoutToFirestore = async (scout: Scout): Promise<void> => {
   await setDoc(scoutRef, scoutRecord);
 };
 
-export default setScoutData;
+export default setScoutRecord;

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Scout,
   ScoutPersonalData,
   ScoutPersonalDataDefault,
 } from "@/types/scout/scout";
@@ -10,9 +11,12 @@ import {
 } from "@/types/scout/scoutUnit";
 import { InputGroup } from "react-bootstrap";
 import { useAuthContext } from "@/firebase/authContext";
+import setScoutRecord from "@/firebase/scoutDb/setScoutData";
 import { Navigate } from "react-router";
 import convertInputDate from "@/tools/convertInputDate";
 import guessDates from "./guessDates";
+import getRandomStr from "@/tools/getRandomStr";
+import { raiseError } from "@/errorHandler";
 
 const NewScoutWizard = () => {
   const user = useAuthContext();
@@ -33,6 +37,27 @@ const NewScoutWizard = () => {
         .personal
     );
     setEverGuessed(true);
+  };
+
+  const handleSave = async (personalData: ScoutPersonalData) => {
+    const newScoutData: Scout = {
+      id: getRandomStr(20),
+      personal: personalData,
+      unit: guessDates({
+        id: "",
+        personal: scoutData,
+        unit: ScoutUnitDataDefault,
+      }).unit,
+    };
+
+    const result = await setScoutRecord(newScoutData);
+    if (result.status === "success") {
+      // 保存成功時はスカウトの詳細ページにリダイレクト
+      return <Navigate to={`/scout/${result.data.id}`} replace />;
+    } else {
+      // エラー処理
+      raiseError("スカウトデータの保存に失敗しました。");
+    }
   };
 
   // 新規スカウト記録の作成ウィザードコンポーネント
@@ -252,6 +277,7 @@ const NewScoutWizard = () => {
                   type="date"
                   className="form-control"
                   value={convertInputDate(scoutData.religion.faith.date)}
+                  disabled={!scoutData.religion.faith.has}
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
@@ -294,6 +320,7 @@ const NewScoutWizard = () => {
                   type="date"
                   className="form-control"
                   value={convertInputDate(scoutData.religion.faith.date)}
+                  disabled={!scoutData.religion.religion.has}
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
@@ -309,6 +336,24 @@ const NewScoutWizard = () => {
                 />
               </InputGroup>
             </div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 card mb-3">
+        <div className="card-body">
+          <h4 className="card-title">終了</h4>
+          <p className="card-text">
+            ここまで入力した内容で新しいスカウト記録を作成します。スカウトの詳細ページに移動します。
+          </p>
+          <div className="d-flex justify-content-center">
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                handleSave(scoutData);
+              }}
+            >
+              完了して保存する
+            </button>
           </div>
         </div>
       </div>
