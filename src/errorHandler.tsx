@@ -27,17 +27,17 @@ export const raiseError = (devMessage: string, userMessage?: string) => {
  * アプリケーションのルートで子要素をラップして使用する。
  */
 export const ErrorProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string[]>([]);
 
   useEffect(() => {
     // raise-errorイベントをリッスンするハンドラ
     const handleError = (event: Event) => {
       if (event instanceof CustomEvent) {
         const message = event.detail;
-        setError(message);
+        setError((prev) => [...prev, message]);
         // 5秒後にアラートを消す
         setTimeout(() => {
-          setError(null);
+          setError((prev) => prev.filter((msg) => msg !== message));
         }, 5000);
       }
     };
@@ -54,30 +54,33 @@ export const ErrorProvider: FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <>
       {children}
-      {error && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "1rem",
-            right: "1rem",
-            zIndex: 9999,
-          }}
-        >
+      <div
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 9999,
+        }}
+      >
+        {error.map((message, index) => (
           <div
-            className="alert alert-danger alert-dismissible fade show m-0"
+            key={index} // 同じメッセージが複数回来た時のためにindexをキーにする
+            className="alert alert-danger alert-dismissible fade show m-0 mt-2"
             role="alert"
             style={{ minWidth: "250px" }}
           >
-            {error}
+            {message}
             <button
               type="button"
               className="btn-close"
-              onClick={() => setError(null)}
+              onClick={() =>
+                setError((prev) => prev.filter((_, i) => i !== index))
+              }
               aria-label="Close"
             ></button>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </>
   );
 };

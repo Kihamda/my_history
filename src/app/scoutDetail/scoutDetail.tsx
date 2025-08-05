@@ -48,7 +48,12 @@ const ScoutDetail = (): React.ReactElement => {
 
   if (isLoading) {
     // データがロード中の場合はローディング表示を返す
-    return <LoadingSplash message="スカウトの情報を読み込み中..." />;
+    return (
+      <LoadingSplash
+        message="スカウトの情報を読み込み中..."
+        fullScreen={false}
+      />
+    );
   }
 
   if (mode === "view") {
