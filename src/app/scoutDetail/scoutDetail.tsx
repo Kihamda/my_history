@@ -12,7 +12,7 @@ const ScoutDetail = (): React.ReactElement => {
 
   if (mode !== "view" && mode !== "edit") {
     // modeがviewかeditでない場合は、viewモードにリダイレクト
-    return <Navigate to={`/app/scouts/${id}/view`} />;
+    return <Navigate to={`/app/scouts/${id}/view`} replace />;
   }
 
   const [scoutData, setScoutData] = useState<Scout>(defaultScout);
@@ -26,6 +26,7 @@ const ScoutDetail = (): React.ReactElement => {
       <div>
         <h1>Edit Scout Detail</h1>
         <p>Editing scout with ID: {id}</p>
+        <p>{JSON.stringify(scoutData)}</p>
       </div>
     );
   } else {

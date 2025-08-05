@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 import SearchQuery from "@/types/search/searchQueryType";
 import SearchboxCard from "./parts/searchBoxCard";
 import queryParser from "./queryParser";
@@ -15,13 +15,18 @@ const Scouts: React.FC = () => {
   // グループIDを取得
   const groupId = useAuthContext()?.joinGroupId || "";
 
+  // ローカルストレージからスカウトデータと検索クエリを取得
+  const cache = getStorage();
+  console.log("Cache:", cache);
+
   // 検索クエリの初期化
-  let initialSearchQuery: SearchQuery = {
+  let initialSearchQuery: SearchQuery = cache.searchQuery || {
     scoutId: "",
     name: "",
     currentUnit: [],
   };
 
+  // 検索窓から来た人用
   if (searchBox) {
     const { scoutId, name, currentUnit } = queryParser(searchBox);
 
@@ -35,8 +40,7 @@ const Scouts: React.FC = () => {
   const [searchQuery, setSearchQuery] =
     useState<SearchQuery>(initialSearchQuery);
 
-  const [result, setResult] = useState<Scout[]>([]);
-  // const [result, setResult] = useState<Object[]>([]); // 仮の初期値として空のオブジェクトを設定
+  const [result, setResult] = useState<Scout[]>(cache.scouts || []); // 初期値としてローカルストレージから取得したスカウトデータを使用
 
   const [isPending, setIsPending] = useState<boolean>(false);
 
@@ -56,7 +60,6 @@ const Scouts: React.FC = () => {
       fetchData();
     }
   }, [searchQuery]);
-  // 検索結果の状態
 
   return (
     <div>
@@ -81,12 +84,42 @@ const Scouts: React.FC = () => {
         )}
         {result.map((item, index) => (
           <div className="col-12 col-md-6 col-lg-4 mt-3" key={index}>
-            <SearchResultCard result={item} />
+            <Link
+              to={`/app/scouts/${item.id}`}
+              className="text-decoration-none text-dark"
+              state={{ scout: item }}
+              onClick={() => setStorage(result, searchQuery)}
+            >
+              <SearchResultCard result={item} />
+            </Link>
           </div>
         ))}
       </div>
     </div>
   );
+};
+
+const setStorage = (scouts: Scout[], query: SearchQuery) => {
+  // スカウトデータをローカルストレージに保存する関数
+  localStorage.setItem("scouts", JSON.stringify(scouts));
+  localStorage.setItem("searchQuery", JSON.stringify(query));
+};
+
+const getStorage = (): {
+  scouts: Scout[] | null;
+  searchQuery: SearchQuery | null;
+} => {
+  // ローカルストレージからスカウトデータと検索クエリを取得する関数
+  const scouts: Scout[] = JSON.parse(localStorage.getItem("scouts") || "[]");
+  const searchQuery: SearchQuery = JSON.parse(
+    localStorage.getItem("searchQuery") || "{}"
+  );
+
+  const scoutsValid = scouts?.length > 0 ? scouts : null;
+  const searchQueryValid =
+    Object.keys(searchQuery).length > 0 ? searchQuery : null;
+
+  return { scouts: scoutsValid, searchQuery: searchQueryValid };
 };
 
 export default Scouts;
