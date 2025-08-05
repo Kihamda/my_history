@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
-import SearchQuery, {
-  SearchResultScoutData,
-} from "@/types/search/searchQueryType";
+import SearchQuery from "@/types/search/searchQueryType";
 import SearchboxCard from "./parts/searchBoxCard";
 import queryParser from "./queryParser";
 import searchScout from "@/firebase/scoutDb/searchScout";
 import { useAuthContext } from "@/firebase/authContext";
+import SearchResultCard from "./parts/result";
+import { Scout } from "@/types/scout/scout";
 
 const Scouts: React.FC = () => {
   // 遷移元からの検索名を取得
@@ -35,7 +35,7 @@ const Scouts: React.FC = () => {
   const [searchQuery, setSearchQuery] =
     useState<SearchQuery>(initialSearchQuery);
 
-  const [result, setResult] = useState<SearchResultScoutData[]>([]);
+  const [result, setResult] = useState<Scout[]>([]);
   // const [result, setResult] = useState<Object[]>([]); // 仮の初期値として空のオブジェクトを設定
 
   const [isPending, setIsPending] = useState<boolean>(false);
@@ -64,13 +64,25 @@ const Scouts: React.FC = () => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />
-      <div className="mt-2">
-        {isPending && <div>Loading...</div>}
+      <div className="mt-5 row">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-body">
+              <h3 className="card-title">検索結果</h3>
+              <p>各カードをクリックすると詳細が表示されます。</p>
+            </div>
+          </div>
+        </div>
+        {isPending && <div className="text-center mt-3">Loading...</div>}
         {!isPending && result.length === 0 && (
-          <div>該当するスカウトが見つかりませんでした。</div>
+          <div className="text-center mt-3">
+            該当するスカウトが見つかりませんでした。
+          </div>
         )}
         {result.map((item, index) => (
-          <div key={index + JSON.stringify(item)}>{JSON.stringify(item)}</div>
+          <div className="col-12 col-md-6 col-lg-4 mt-3" key={index}>
+            <SearchResultCard result={item} />
+          </div>
         ))}
       </div>
     </div>

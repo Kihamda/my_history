@@ -4,5 +4,5 @@ import { UnitExperience } from "@/types/scout/scoutUnit";
 export interface ScoutRecord {
   personal: ScoutPersonalData;
 
-  units: UnitExperience;
+  unit: UnitExperience;
 }

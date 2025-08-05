@@ -9,9 +9,8 @@ import {
   DocumentData,
 } from "firebase/firestore";
 import { ScoutRecord } from "../firebaseDataType/scouts/scoutRecord";
-
-import { SearchResultScoutData } from "@/types/search/searchQueryType";
 import { raiseError } from "@/errorHandler";
+import { Scout } from "@/types/scout/scout";
 
 /**
  * スカウトを検索する関数
@@ -21,7 +20,7 @@ import { raiseError } from "@/errorHandler";
 export const searchScout = async (
   searchQuery: SearchQuery,
   groupId: string
-): Promise<SearchResultScoutData[]> => {
+): Promise<Scout[]> => {
   const scoutsRef = collection(db, "scouts");
 
   // 検索条件を動的に構築
@@ -63,13 +62,13 @@ export const searchScout = async (
   try {
     const snapshot = await getDocs(q);
 
-    const scouts: SearchResultScoutData[] = [];
+    const scouts: Scout[] = [];
     snapshot.forEach((doc) => {
       const scoutData = doc.data() as ScoutRecord;
-
-      const scout: SearchResultScoutData = {
+      const scout: Scout = {
         id: doc.id,
         personal: scoutData.personal,
+        unit: scoutData.unit,
       };
 
       // 名前での部分一致フィルタリング（Firestoreの制限を補完）

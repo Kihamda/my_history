@@ -49,7 +49,7 @@ const getScoutData = async (scoutId: string): Promise<Scout | null> => {
     return {
       id: scoutDoc.id,
       personal: scoutData.personal,
-      unit: scoutData.units,
+      unit: scoutData.unit,
       authedUser: authedUsers,
       works: works,
     } as Scout;

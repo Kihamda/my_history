@@ -43,7 +43,7 @@ const saveScoutToFirestore = async (scout: Scout): Promise<void> => {
   // Scout本体の保存
   const scoutRecord: ScoutRecord = {
     personal: scout.personal,
-    units: scout.unit,
+    unit: scout.unit,
   };
 
   // Firestoreのドキュメントに保存

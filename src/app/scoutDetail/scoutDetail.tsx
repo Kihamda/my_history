@@ -1,32 +1,35 @@
-import { useLocation } from "react-router";
-import NewScoutWizard from "./new/newScoutWizard";
+import { Navigate, useLocation } from "react-router";
+import ScoutDetailViewer from "./view/viewer";
+import { Scout } from "@/types/scout/scout";
+import { useState } from "react";
 
-const ScoutDetail = () => {
-  // URLを取得→参照するスカウトの情報を決定。無かったら検索フォームへ
-  const id = useLocation().pathname.split("/")[3]; // /app/scouts/:id
-  const isEditMode = useLocation().pathname.split("/")[4] === "edit"; // /app/scouts/:id/edit
+const ScoutDetail = (): React.ReactElement => {
+  // URLを取得→参照するスカウトの情報を決定。
+  const id = useLocation().pathname.split("/")[3]; // /app/scouts/:id newになることはない。
+  const mode = useLocation().pathname.split("/")[4];
 
-  if (id == "new") {
-    // 新規作成モードの処理
-    return <NewScoutWizard />;
+  const defaultScout: Scout = useLocation().state?.scout || {};
+
+  if (mode !== "view" && mode !== "edit") {
+    // modeがviewかeditでない場合は、viewモードにリダイレクト
+    return <Navigate to={`/app/scouts/${id}/view`} />;
+  }
+
+  const [scoutData, setScoutData] = useState<Scout>(defaultScout);
+
+  if (mode === "view") {
+    // ビューモードの処理
+    return <ScoutDetailViewer />;
+  } else if (mode === "edit") {
+    // 編集モードの処理
+    return (
+      <div>
+        <h1>Edit Scout Detail</h1>
+        <p>Editing scout with ID: {id}</p>
+      </div>
+    );
   } else {
-    if (isEditMode) {
-      // 編集モードの処理
-      return (
-        <div>
-          <h1>Edit Scout Detail</h1>
-          <p>Editing scout with ID: {id}</p>
-        </div>
-      );
-    } else {
-      // 詳細表示モードの処理
-      return (
-        <div>
-          <h1>Scout Detail</h1>
-          <p>Viewing details for scout with ID: {id}</p>
-        </div>
-      );
-    }
+    return <Navigate to={`/app/scouts/${id}/view`} />;
   }
 };
 

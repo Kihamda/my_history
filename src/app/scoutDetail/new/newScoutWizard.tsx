@@ -53,7 +53,13 @@ const NewScoutWizard = () => {
     const result = await setScoutRecord(newScoutData);
     if (result.status === "success") {
       // 保存成功時はスカウトの詳細ページにリダイレクト
-      return <Navigate to={`/scout/${result.data.id}`} replace />;
+      return (
+        <Navigate
+          to={`/scout/${result.data.id}`}
+          replace
+          state={{ scout: newScoutData }}
+        />
+      );
     } else {
       // エラー処理
       raiseError("スカウトデータの保存に失敗しました。");
