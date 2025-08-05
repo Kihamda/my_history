@@ -14,7 +14,7 @@ const getScoutData = async (scoutId: string): Promise<Scout | null> => {
     const scoutDoc = await getDoc(scoutRef);
 
     if (!scoutDoc.exists) {
-      raiseError("Scout data not found");
+      raiseError("スカウトの情報が見つかりませんでした。");
       return null;
     }
 
