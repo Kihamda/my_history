@@ -1,4 +1,6 @@
+import Header from "./header";
 import { Scout } from "@/types/scout/scout";
+import Profile from "./profile";
 
 const ScoutDetailViewer = ({
   scoutData,
@@ -7,16 +9,11 @@ const ScoutDetailViewer = ({
 }): React.ReactElement => {
   return (
     <>
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">{scoutData.personal.name}</h5>
-          <p className="card-text">Scout ID: {scoutData.personal.ScoutId}</p>
-          <p className="card-text">
-            Current Unit: {scoutData.personal.currentUnit}
-          </p>
+      <Header scoutData={scoutData} />
+      <div className="row">
+        <div className="col-12 col-md-6 mt-3">
+          <Profile scoutData={scoutData} />
         </div>
-        <h1>Scout Detail Viewer</h1>
-        <p>Viewing scout details...</p>
       </div>
     </>
   );

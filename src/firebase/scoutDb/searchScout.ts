@@ -11,6 +11,7 @@ import {
 import { ScoutRecord } from "../firebaseDataType/scouts/scoutRecord";
 import { raiseError } from "@/errorHandler";
 import { Scout } from "@/types/scout/scout";
+import convertTimestampsDate from "../convertTimestampDate";
 
 /**
  * スカウトを検索する関数
@@ -64,7 +65,7 @@ export const searchScout = async (
 
     const scouts: Scout[] = [];
     snapshot.forEach((doc) => {
-      const scoutData = doc.data() as ScoutRecord;
+      const scoutData = convertTimestampsDate(doc.data()) as ScoutRecord;
       const scout: Scout = {
         id: doc.id,
         personal: scoutData.personal,

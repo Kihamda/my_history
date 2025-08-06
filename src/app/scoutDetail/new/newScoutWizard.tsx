@@ -13,7 +13,7 @@ import { InputGroup } from "react-bootstrap";
 import { useAuthContext } from "@/firebase/authContext";
 import setScoutRecord from "@/firebase/scoutDb/setScoutData";
 import { Navigate } from "react-router";
-import convertInputDate from "@/tools/convertInputDate";
+import convertInputDate from "@/tools/date/convertInputDate";
 import guessDates from "./guessDates";
 import getRandomStr from "@/tools/getRandomStr";
 import { raiseError } from "@/errorHandler";

@@ -61,6 +61,11 @@ const Scouts: React.FC = () => {
     }
   }, [searchQuery]);
 
+  useEffect(() => {
+    // 検索結果をローカルストレージに保存
+    setStorage(result, searchQuery);
+  }, [result]);
+
   return (
     <div>
       <SearchboxCard
