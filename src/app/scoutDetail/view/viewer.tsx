@@ -1,6 +1,7 @@
 import Header from "./header";
 import { Scout } from "@/types/scout/scout";
 import Profile from "./profile";
+import Units from "./units";
 
 const ScoutDetailViewer = ({
   scoutData,
@@ -10,11 +11,8 @@ const ScoutDetailViewer = ({
   return (
     <>
       <Header scoutData={scoutData} />
-      <div className="row">
-        <div className="col-12 col-md-6 mt-3">
-          <Profile scoutData={scoutData} />
-        </div>
-      </div>
+      <Profile scoutDataPersonal={scoutData.personal} />
+      <Units scoutDataUnit={scoutData.unit} />
     </>
   );
 };

@@ -1,5 +1,4 @@
 import { Scout } from "@/types/scout/scout";
-import { ScoutUnitNameMap } from "@/types/scout/scoutUnit";
 import { Link } from "react-router";
 
 const ScoutDetailHeader = ({
@@ -12,11 +11,9 @@ const ScoutDetailHeader = ({
       <div className="card-body row">
         <div className="col-12 col-md-9">
           <h3 className="card-title">{scoutData.personal.name}さんの情報</h3>
-          <p className="card-text">
-            {ScoutUnitNameMap[scoutData.personal.currentUnit]}所属
-          </p>
+          <p className="card-text">編集を開始するにはボタンを押します</p>
         </div>
-        <div className="col-12 col-md-3">
+        <div className="col-12 col-md-3 text-end">
           <Link to={`/app/scouts`} className="btn btn-outline-secondary me-2">
             検索結果に戻る
           </Link>

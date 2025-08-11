@@ -12,7 +12,7 @@ import {
 import { InputGroup } from "react-bootstrap";
 import { useAuthContext } from "@/firebase/authContext";
 import setScoutRecord from "@/firebase/scoutDb/setScoutData";
-import { Navigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import convertInputDate from "@/tools/date/convertInputDate";
 import guessDates from "./guessDates";
 import getRandomStr from "@/tools/getRandomStr";
@@ -20,6 +20,7 @@ import { raiseError } from "@/errorHandler";
 
 const NewScoutWizard = () => {
   const user = useAuthContext();
+  const nav = useNavigate();
 
   if (!user?.joinGroupId) {
     return <Navigate to="/login" replace />;
@@ -53,13 +54,10 @@ const NewScoutWizard = () => {
     const result = await setScoutRecord(newScoutData);
     if (result.status === "success") {
       // 保存成功時はスカウトの詳細ページにリダイレクト
-      return (
-        <Navigate
-          to={`/scout/${result.data.id}`}
-          replace
-          state={{ scout: newScoutData }}
-        />
-      );
+      nav(`/app/scout/${result.data.id}`, {
+        replace: true,
+        state: { scout: newScoutData },
+      });
     } else {
       // エラー処理
       raiseError("スカウトデータの保存に失敗しました。");

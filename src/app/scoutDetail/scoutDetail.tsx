@@ -14,17 +14,6 @@ const ScoutDetail = (): React.ReactElement => {
 
   const defaultScout: Scout = useLocation().state?.scout || {};
 
-  if (mode !== "view" && mode !== "edit") {
-    // modeがviewかeditでない場合は、viewモードにリダイレクト
-    return (
-      <Navigate
-        to={`/app/scouts/${id}/view`}
-        replace
-        state={{ scout: defaultScout || null }}
-      />
-    );
-  }
-
   const [scoutData, setScoutData] = useState<Scout>(defaultScout);
   const [isLoading, setIsLoading] = useState<boolean>(
     Object.keys(scoutData).length === 0
@@ -46,7 +35,18 @@ const ScoutDetail = (): React.ReactElement => {
     }
   }, [id]);
 
-  if (isLoading) {
+  if (mode !== "view" && mode !== "edit") {
+    // modeがviewかeditでない場合は、viewモードにリダイレクト
+    return (
+      <Navigate
+        to={`/app/scouts/${id}/view`}
+        replace
+        state={{ scout: defaultScout || null }}
+      />
+    );
+  }
+
+  if (isLoading || Object.keys(scoutData).length === 0) {
     // データがロード中の場合はローディング表示を返す
     return (
       <LoadingSplash

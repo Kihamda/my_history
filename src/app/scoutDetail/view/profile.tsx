@@ -1,19 +1,80 @@
 import ShowData from "@/style/showData";
 import convertInputDate from "@/tools/date/convertInputDate";
-import { Scout } from "@/types/scout/scout";
+import { ScoutPersonalData } from "@/types/scout/scout";
+import { ScoutUnitNameMap } from "@/types/scout/scoutUnit";
 
-const Profile = ({ scoutData }: { scoutData: Scout }): React.ReactElement => {
+const Profile = ({
+  scoutDataPersonal,
+}: {
+  scoutDataPersonal: ScoutPersonalData;
+}): React.ReactElement => {
   return (
-    <div className="card">
-      <div className="card-body">
-        <h3>基本情報</h3>
-        <ShowData label="名前" value={scoutData.personal.name} />
-        <ShowData label="登録番号" value={scoutData.personal.ScoutId} />
-        <ShowData
-          label="誕生日"
-          value={convertInputDate(scoutData.personal.birthday)}
-        />
-        {/* Profile content goes here */}
+    <div className="row">
+      <div className="col-12 col-md-6 mt-3">
+        <div className="card">
+          <div className="card-body">
+            <h3 className="mb-2">基本情報</h3>
+            <ShowData label="名前" value={scoutDataPersonal.name} />
+            <ShowData
+              label="所属"
+              value={ScoutUnitNameMap[scoutDataPersonal.currentUnit]}
+            />
+            <ShowData label="登録番号" value={scoutDataPersonal.ScoutId} />
+            <ShowData
+              label="誕生日"
+              value={`${convertInputDate(scoutDataPersonal.birthday)} (満${
+                new Date(
+                  new Date().getTime() -
+                    new Date(scoutDataPersonal.birthday).getTime()
+                ).getFullYear() - 1970
+              }歳)`}
+            />
+            <ShowData
+              label="入団日"
+              value={convertInputDate(scoutDataPersonal.joinedDate)}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="col-12 col-md-6 mt-3">
+        <div className="card">
+          <div className="card-body">
+            <h3 className="mb-2">ちかい</h3>
+            <ShowData
+              label="ちかいを立てた日"
+              value={convertInputDate(scoutDataPersonal.declare.date)}
+            />
+            <ShowData
+              label="ちかいを立てた場所"
+              value={scoutDataPersonal.declare.place}
+            />
+          </div>
+        </div>
+        <div className="card mt-3">
+          <div className="card-body">
+            <h3 className="mb-2">宗教章・信仰奨励章</h3>
+            <ShowData
+              label="信仰奨励章"
+              value={
+                scoutDataPersonal.religion.faith.has
+                  ? "取得済：" +
+                    convertInputDate(scoutDataPersonal.religion.faith.date)
+                  : "未取得"
+              }
+            />
+            <ShowData
+              label="宗教章"
+              value={
+                scoutDataPersonal.religion.religion.has
+                  ? "取得済(" +
+                    scoutDataPersonal.religion.religion.type +
+                    ")：" +
+                    convertInputDate(scoutDataPersonal.religion.religion.date)
+                  : "未取得"
+              }
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

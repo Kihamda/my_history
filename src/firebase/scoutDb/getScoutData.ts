@@ -8,6 +8,7 @@ import convertTimestampsDate from "../convertTimestampDate";
 
 // Firebaseからスカウトデータを取得する関数
 const getScoutData = async (scoutId: string): Promise<Scout | null> => {
+  console.log("getScoutData called with scoutId:", scoutId);
   try {
     const scoutRef = doc(db, "scouts", scoutId);
     const scoutDoc = await getDoc(scoutRef);

@@ -22,6 +22,8 @@ export const searchScout = async (
   searchQuery: SearchQuery,
   groupId: string
 ): Promise<Scout[]> => {
+  console.log("searchScout called with query:", searchQuery);
+
   const scoutsRef = collection(db, "scouts");
 
   // 検索条件を動的に構築

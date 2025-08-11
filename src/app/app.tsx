@@ -35,7 +35,7 @@ const App = () => {
   return (
     <>
       <Header name={userName} isLeader={isLeader} isAdmin={isAdmin} />
-      <div className="container" style={{ marginTop: "4.5rem" }}>
+      <div className="container mb-3" style={{ marginTop: "4.5rem" }}>
         <Suspense fallback={<LoadingSplash message="読み込み中" />}>
           <Routes>
             <Route path="/" element={<Navigate to="/app/home" />} />
