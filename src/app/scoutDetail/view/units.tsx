@@ -121,11 +121,6 @@ const Units = ({
           gradesNode={
             <>
               <ShowData
-                label="入団日時"
-                value={convertInputDate(scoutDataUnit.vs.joinedDate)}
-              />
-              <h4>進級章</h4>
-              <ShowData
                 label="ベンチャースカウト章修了"
                 value={
                   scoutDataUnit.vs.grade.venture.has
@@ -133,12 +128,19 @@ const Units = ({
                     : "未修了"
                 }
               />
-              <h4>進級章</h4>
               <ShowData
-                label="ベンチャースカウト章修了"
+                label="隼スカウト章修了"
                 value={
-                  scoutDataUnit.vs.grade.venture.has
-                    ? convertInputDate(scoutDataUnit.vs.grade.venture.date)
+                  scoutDataUnit.vs.grade.falcon.has
+                    ? convertInputDate(scoutDataUnit.vs.grade.falcon.date)
+                    : "未修了"
+                }
+              />
+              <ShowData
+                label="富士スカウト章修了"
+                value={
+                  scoutDataUnit.vs.grade.fuji.has
+                    ? convertInputDate(scoutDataUnit.vs.grade.fuji.date)
                     : "未修了"
                 }
               />
@@ -148,13 +150,11 @@ const Units = ({
         />
       )}
       {scoutDataUnit.rs.experienced && (
-        <div className="mt-3 col-12 col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <h3>ローバー隊</h3>
-            </div>
-          </div>
-        </div>
+        <UnitCard
+          title="ローバー隊"
+          joinedDate={convertInputDate(scoutDataUnit.rs.joinedDate)}
+          works={scoutDataUnit.rs.works}
+        />
       )}
     </div>
   );
@@ -163,40 +163,45 @@ const Units = ({
 const UnitCard: React.FC<{
   title: string;
   joinedDate: string;
-  gradesNode: React.ReactNode;
+  gradesNode?: React.ReactNode;
   works: Work[];
 }> = ({ title, joinedDate, gradesNode, works }) => {
   return (
     <div className="mt-3 col-12 col-md-6">
       <div className="card">
+        <div className="card-header">
+          <h5 className="mb-0">{title}</h5>
+        </div>
         <div className="card-body">
-          <h3 className="mb-2">{title}</h3>
           <div className="d-flex flex-column flex-md-row">
             <div className="flex-grow-1 mb-3">
               <h5>基本情報</h5>
               <ShowData label="入団日時" value={convertInputDate(joinedDate)} />
             </div>
-            <div className="flex-grow-1 mb-3">
-              <h5>進級章</h5>
-              {gradesNode}
+            {gradesNode && (
+              <div className="flex-grow-1 mb-3">
+                <h5>進級章</h5>
+                {gradesNode}
+              </div>
+            )}
+          </div>
+          {works.length > 0 && (
+            <div>
+              <h5>スカウト役務 </h5>
+              {works.map((work, index) => (
+                <ShowData
+                  key={index}
+                  label={work.type}
+                  value={
+                    convertInputDate(work.begin) +
+                    " ~ " +
+                    convertInputDate(work.end)
+                  }
+                  memo={work.memo}
+                />
+              ))}
             </div>
-          </div>
-          <div>
-            <h5>スカウト役務 </h5>
-            {works.map((work, index) => (
-              <ShowData
-                key={index}
-                label={work.type}
-                value={
-                  convertInputDate(work.begin) +
-                  " ~ " +
-                  convertInputDate(work.end)
-                }
-                memo={work.memo}
-              />
-            ))}
-            {works.length === 0 && <p className="text-secondary">なし</p>}
-          </div>
+          )}
         </div>
       </div>
     </div>

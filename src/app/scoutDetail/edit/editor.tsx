@@ -6,7 +6,7 @@ const ScoutDetailEditor = ({
   setScoutData,
 }: {
   scoutData: Scout;
-  setScoutData: React.Dispatch<React.SetStateAction<Scout>>;
+  setScoutData: React.Dispatch<React.SetStateAction<Scout | undefined>>;
 }): React.ReactElement => {
   // デフォルトの戻り値
   return (

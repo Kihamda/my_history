@@ -10,10 +10,12 @@ const Profile = ({
 }): React.ReactElement => {
   return (
     <div className="row">
-      <div className="col-12 col-md-6 mt-3">
-        <div className="card">
+      <div className="col-12 col-md-6">
+        <div className="card mt-3">
+          <div className="card-header">
+            <h5 className="mb-0">基本情報</h5>
+          </div>
           <div className="card-body">
-            <h3 className="mb-2">基本情報</h3>
             <ShowData label="名前" value={scoutDataPersonal.name} />
             <ShowData
               label="所属"
@@ -36,10 +38,12 @@ const Profile = ({
           </div>
         </div>
       </div>
-      <div className="col-12 col-md-6 mt-3">
-        <div className="card">
+      <div className="col-12 col-md-6">
+        <div className="card mt-3">
+          <div className="card-header">
+            <h5 className="mb-0">ちかい</h5>
+          </div>
           <div className="card-body">
-            <h3 className="mb-2">ちかい</h3>
             <ShowData
               label="ちかいを立てた日"
               value={convertInputDate(scoutDataPersonal.declare.date)}
@@ -51,8 +55,10 @@ const Profile = ({
           </div>
         </div>
         <div className="card mt-3">
+          <div className="card-header">
+            <h5 className="mb-0">信仰奨励章・技能章</h5>
+          </div>
           <div className="card-body">
-            <h3 className="mb-2">宗教章・信仰奨励章</h3>
             <ShowData
               label="信仰奨励章"
               value={

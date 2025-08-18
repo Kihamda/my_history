@@ -13,6 +13,7 @@ import {
   setSearchQueryCache,
 } from "@/tools/localCache/searchQueryCache";
 import { getScoutsCache, setScoutsCache } from "@/tools/localCache/scoutsCache";
+import FullWidthCardHeader from "@/style/fullWidthCardHeader";
 
 const Scouts: React.FC = () => {
   // 遷移元からの検索名を取得
@@ -76,32 +77,29 @@ const Scouts: React.FC = () => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />
-      <div className="mt-5 row">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-body">
-              <h3 className="card-title">検索結果</h3>
-              <p>各カードをクリックすると詳細が表示されます。</p>
+      <div className="mt-5">
+        <FullWidthCardHeader
+          title="検索結果"
+          memo="各カードをクリックすると詳細が表示されます。"
+        />
+        <div className="row">
+          {isPending && <div className="text-center mt-3">Loading...</div>}
+          {!isPending && result.length === 0 && (
+            <div className="text-center mt-3">
+              該当するスカウトが見つかりませんでした。
             </div>
-          </div>
+          )}
+          {result.map((item, index) => (
+            <div className="col-12 col-md-6 col-lg-4 mt-3" key={index}>
+              <Link
+                to={`/app/scouts/${item.id}`}
+                className="text-decoration-none text-dark"
+              >
+                <SearchResultCard result={item} />
+              </Link>
+            </div>
+          ))}
         </div>
-        {isPending && <div className="text-center mt-3">Loading...</div>}
-        {!isPending && result.length === 0 && (
-          <div className="text-center mt-3">
-            該当するスカウトが見つかりませんでした。
-          </div>
-        )}
-        {result.map((item, index) => (
-          <div className="col-12 col-md-6 col-lg-4 mt-3" key={index}>
-            <Link
-              to={`/app/scouts/${item.id}`}
-              className="text-decoration-none text-dark"
-              state={{ scout: item }}
-            >
-              <SearchResultCard result={item} />
-            </Link>
-          </div>
-        ))}
       </div>
     </div>
   );

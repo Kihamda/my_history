@@ -17,6 +17,7 @@ import convertInputDate from "@/tools/date/convertInputDate";
 import guessDates from "./guessDates";
 import getRandomStr from "@/tools/getRandomStr";
 import { raiseError } from "@/errorHandler";
+import FullWidthCardHeader from "@/style/fullWidthCardHeader";
 
 const NewScoutWizard = () => {
   const user = useAuthContext();
@@ -69,16 +70,10 @@ const NewScoutWizard = () => {
 
   return (
     <>
-      <div className="card">
-        <div className="card-body d-flex flex-wrap">
-          <div className="flex-grow-1">
-            <h3 className="card-title">新規スカウト記録の作成</h3>
-            <p className="card-text">
-              ここで新しいスカウトを作成できます。ここで設定した情報はあとから編集できます。
-            </p>
-          </div>
-        </div>
-      </div>
+      <FullWidthCardHeader
+        title="新規スカウト記録の作成"
+        memo="ここで新しいスカウトを作成できます。ここで設定した情報はあとから編集できます。"
+      />
       <div className="mt-3 card">
         <div className="card-body">
           <h4 className="card-title">スカウトの基本情報</h4>
