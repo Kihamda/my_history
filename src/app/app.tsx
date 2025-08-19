@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from "react-router";
 import Header from "./parts/header";
 
 import { lazy, Suspense } from "react";
-import LoadingSplash from "@/types/style/loadingSplash";
+import LoadingSplash from "@/style/loadingSplash";
 
 // 遅延読み込みするコンポーネント
 const LeaderHome = lazy(() => import("./home/leaderHome"));

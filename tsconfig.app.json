@@ -27,5 +27,5 @@
     "noUncheckedSideEffectImports": true,
     "types": ["vite/client", "@types/node"]
   },
-  "include": ["src", "staticBuilder"]
+  "include": ["src", "staticBuilder", "src/style"]
 }

@@ -1,16 +1,19 @@
 import { Scout } from "@/types/scout/scout";
 import Profile from "./profile";
 import Units from "./units";
-import FullWidthCardHeader from "@/types/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@/style/fullWidthCardHeader";
 import { Link } from "react-router";
-import Ginosho from "./ginosho";
+import GinoshoList from "./ginosho";
+import { Ginosho } from "@/types/scout/gionosho";
 
 const ScoutDetailViewer = ({
   scoutData,
   isEditable,
+  ginosho,
 }: {
   scoutData: Scout;
   isEditable: boolean;
+  ginosho: Ginosho[];
 }): React.ReactElement => {
   return (
     <>
@@ -40,7 +43,7 @@ const ScoutDetailViewer = ({
         <FullWidthCardHeader title="活動記録" />
         <div className="row mt-3">
           <div className="col-12 col-md-6">
-            <Ginosho />
+            <GinoshoList ginosho={ginosho} />
           </div>
           <div className="col-12 col-md-6"></div>
         </div>

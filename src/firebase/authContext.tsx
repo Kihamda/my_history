@@ -8,7 +8,7 @@ import {
 } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
-import LoadingSplash from "@/types/style/loadingSplash";
+import LoadingSplash from "@/style/loadingSplash";
 
 import User from "@/types/user/user"; // ユーザーデータの型をインポート
 import getUserData from "./userData/getUserData";

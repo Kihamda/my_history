@@ -9,7 +9,7 @@ import { ErrorProvider } from "./errorHandler";
  * 各コンポーネントはパフォーマンス向上のため遅延読み込みする
  */
 import { lazy, Suspense, useEffect } from "react";
-import LoadingSplash from "@/types/style/loadingSplash";
+import LoadingSplash from "@/style/loadingSplash";
 import { AuthProvider } from "@/firebase/authContext";
 
 const SysManager = lazy(() => import("@/sysManager/sysManager"));

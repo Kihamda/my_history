@@ -11,13 +11,13 @@ import {
 } from "@/types/scout/scoutUnit";
 import { InputGroup } from "react-bootstrap";
 import { useAuthContext } from "@/firebase/authContext";
-import setScoutRecord from "@/firebase/scoutDb/setScoutData";
+import { setScoutRecord } from "@/firebase/scoutDb/scout";
 import { Navigate, useNavigate } from "react-router";
 import convertInputDate from "@/tools/date/convertInputDate";
 import guessDates from "./guessDates";
 import getRandomStr from "@/tools/getRandomStr";
 import { raiseError } from "@/errorHandler";
-import FullWidthCardHeader from "@/types/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@/style/fullWidthCardHeader";
 
 const NewScoutWizard = () => {
   const user = useAuthContext();

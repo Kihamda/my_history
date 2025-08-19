@@ -7,6 +7,7 @@ import {
   query,
   Query,
   DocumentData,
+  limit,
 } from "firebase/firestore";
 import { FirestoreScout } from "../firebaseDataType/scouts/scout";
 import { raiseError } from "@/errorHandler";
@@ -52,8 +53,12 @@ export const searchScout = async (
   // クエリを構築
   // 自分のグループに所属している必要がある
   conditions.push(where("personal.belongs", "==", groupId));
+
+  // 爆死対策
+  conditions.push(limit(30));
+
   let q: Query<DocumentData>;
-  if (conditions.length > 1) {
+  if (conditions.length > 2) {
     // この1はグループIDの1
     q = query(scoutsRef, ...conditions);
   } else {

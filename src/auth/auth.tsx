@@ -2,8 +2,8 @@ import { Navigate, Route, Routes, useLocation } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 
-import BlurCard from "@/types/style/cardDesign";
-import FillBackgroundDesign from "@/types/style/fillBackgroundDesign";
+import BlurCard from "@/style/cardDesign";
+import FillBackgroundDesign from "@/style/fillBackgroundDesign";
 import { useAuthContext } from "@/firebase/authContext";
 
 import Register from "./Register/register";

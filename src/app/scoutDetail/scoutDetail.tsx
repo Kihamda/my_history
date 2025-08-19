@@ -3,7 +3,7 @@ import ScoutDetailViewer from "./view/viewer";
 import { Scout } from "@/types/scout/scout";
 import { useEffect, useState } from "react";
 import ScoutDetailEditor from "./edit/editor";
-import LoadingSplash from "@/types/style/loadingSplash";
+import LoadingSplash from "@/style/loadingSplash";
 import { getScoutData } from "@/firebase/scoutDb/scout";
 import { raiseError } from "@/errorHandler";
 import { useAuthContext } from "@/firebase/authContext";
@@ -12,6 +12,8 @@ import {
   getScoutsCache,
   setSpecificScoutCache,
 } from "@/tools/localCache/scoutsCache";
+import { getGinosho } from "@/firebase/scoutDb/ginosho";
+import { Ginosho } from "@/types/scout/gionosho";
 
 const ScoutDetail = (): React.ReactElement => {
   // URLを取得→参照するスカウトの情報を決定。
@@ -25,6 +27,7 @@ const ScoutDetail = (): React.ReactElement => {
   const [scoutData, setScoutData] = useState<Scout | undefined>(
     defaultScoutData
   );
+  const [ginosho, setGinosho] = useState<Ginosho[]>([]);
 
   const isEditable = useAuthContext()?.currentGroup?.isEditable || false;
 
@@ -41,6 +44,23 @@ const ScoutDetail = (): React.ReactElement => {
         }
       });
     }
+
+    // 無条件にGinoshoとEventsは取得しておく必要がある。
+    // 追伸:たぶんね
+    getGinosho(id).then((data) => {
+      if (!data) {
+        raiseError("技能章の情報が見つかりませんでした。");
+      } else {
+        setGinosho(data);
+      }
+    });
+    // getEvents(id).then((data) => {
+    //   if (!data) {
+    //     raiseError("イベントの情報が見つかりませんでした。");
+    //   } else {
+    //     setEvents(data);
+    //   }
+    // });
   }, [id]);
 
   // ページを離れるときにキャッシュを削除しておく
@@ -80,7 +100,13 @@ const ScoutDetail = (): React.ReactElement => {
 
   if (mode === "view") {
     // ビューモードの処理
-    return <ScoutDetailViewer isEditable={isEditable} scoutData={scoutData} />;
+    return (
+      <ScoutDetailViewer
+        isEditable={isEditable}
+        scoutData={scoutData}
+        ginosho={ginosho}
+      />
+    );
   } else if (mode === "edit") {
     // 編集モードの処理
     if (!isEditable) {

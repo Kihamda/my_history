@@ -13,7 +13,7 @@ import {
   setSearchQueryCache,
 } from "@/tools/localCache/searchQueryCache";
 import { getScoutsCache, setScoutsCache } from "@/tools/localCache/scoutsCache";
-import FullWidthCardHeader from "@/types/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@/style/fullWidthCardHeader";
 
 const Scouts: React.FC = () => {
   // 遷移元からの検索名を取得
