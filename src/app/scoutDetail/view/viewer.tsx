@@ -1,7 +1,7 @@
 import { Scout } from "@/types/scout/scout";
 import Profile from "./profile";
 import Units from "./units";
-import FullWidthCardHeader from "@/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@/types/style/fullWidthCardHeader";
 import { Link } from "react-router";
 import Ginosho from "./ginosho";
 

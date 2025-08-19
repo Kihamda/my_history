@@ -17,7 +17,7 @@ import convertInputDate from "@/tools/date/convertInputDate";
 import guessDates from "./guessDates";
 import getRandomStr from "@/tools/getRandomStr";
 import { raiseError } from "@/errorHandler";
-import FullWidthCardHeader from "@/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@/types/style/fullWidthCardHeader";
 
 const NewScoutWizard = () => {
   const user = useAuthContext();

@@ -5,13 +5,18 @@ const ShowData = ({
   label,
   value,
   memo,
+  bordered = false,
 }: {
   label: string;
   value?: string;
   memo?: string;
+  bordered?: boolean;
 }) => {
   return (
-    <div className="mb-3">
+    <div
+      className="pb-3"
+      style={bordered ? { borderBottom: "1px solid #dee2e6" } : {}}
+    >
       <p className="mb-1 text-secondary">{label}</p>
       {value && value.length > 0 && (
         <h4 className="mb-0" style={{ lineHeight: "1em" }}>

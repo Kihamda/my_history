@@ -3,13 +3,14 @@ import ScoutDetailViewer from "./view/viewer";
 import { Scout } from "@/types/scout/scout";
 import { useEffect, useState } from "react";
 import ScoutDetailEditor from "./edit/editor";
-import LoadingSplash from "@/style/loadingSplash";
+import LoadingSplash from "@/types/style/loadingSplash";
 import getScoutData from "@/firebase/scoutDb/getScoutData";
 import { raiseError } from "@/errorHandler";
 import { useAuthContext } from "@/firebase/authContext";
 import {
-  clearScoutsCache,
+  clearSpecificScoutCache,
   getScoutsCache,
+  setSpecificScoutCache,
 } from "@/tools/localCache/scoutsCache";
 
 const ScoutDetail = (): React.ReactElement => {
@@ -36,6 +37,7 @@ const ScoutDetail = (): React.ReactElement => {
           raiseError("スカウトの情報が見つかりませんでした。");
         } else {
           setScoutData(data);
+          setSpecificScoutCache(data);
         }
       });
     }
@@ -43,7 +45,7 @@ const ScoutDetail = (): React.ReactElement => {
 
   // ページを離れるときにキャッシュを削除しておく
   const handleBeforeUnload = () => {
-    clearScoutsCache(scoutData?.id);
+    clearSpecificScoutCache(scoutData?.id || "");
   };
 
   useEffect(() => {
@@ -54,6 +56,7 @@ const ScoutDetail = (): React.ReactElement => {
     };
   }, [handleBeforeUnload]);
 
+  // モードのチェック
   if (mode !== "view" && mode !== "edit") {
     // modeがviewかeditでない場合は、viewモードにリダイレクト
     return (
@@ -65,8 +68,8 @@ const ScoutDetail = (): React.ReactElement => {
     );
   }
 
+  // データがロード中の場合はローディング表示を返す
   if (!scoutData) {
-    // データがロード中の場合はローディング表示を返す
     return (
       <LoadingSplash
         message="スカウトの情報を読み込み中..."

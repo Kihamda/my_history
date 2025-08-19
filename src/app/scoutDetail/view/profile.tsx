@@ -1,4 +1,4 @@
-import ShowData from "@/style/showData";
+import ShowData from "@/types/style/showData";
 import convertInputDate from "@/tools/date/convertInputDate";
 import { ScoutPersonalData } from "@/types/scout/scout";
 import { ScoutUnitNameMap } from "@/types/scout/scoutUnit";

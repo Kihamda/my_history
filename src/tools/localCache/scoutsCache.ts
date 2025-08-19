@@ -5,6 +5,14 @@ export const setScoutsCache = (scouts: Scout[]) => {
   localStorage.setItem("scouts", JSON.stringify(scouts));
 };
 
+export const setSpecificScoutCache = (scout: Scout) => {
+  // 特定のスカウトデータをローカルストレージに保存する関数
+  const scouts = getScoutsCache() || [];
+  const updatedScouts = scouts.filter((s) => s.id !== scout.id);
+  updatedScouts.push(scout);
+  setScoutsCache(updatedScouts);
+};
+
 export const getScoutsCache = (): Scout[] | null => {
   // ローカルストレージからスカウトデータを取得する関数
   const scouts: Scout[] = JSON.parse(localStorage.getItem("scouts") || "[]");
@@ -12,16 +20,16 @@ export const getScoutsCache = (): Scout[] | null => {
   return scouts?.length > 0 ? scouts : null;
 };
 
-export const clearScoutsCache = (targetId?: string) => {
+export const clearScoutsCache = () => {
   // スカウトデータのキャッシュをクリアする関数
-  if (targetId) {
-    // 特定のスカウトIDのキャッシュを削除
-    const scouts = getScoutsCache();
-    if (scouts) {
-      const updatedScouts = scouts.filter((scout) => scout.id !== targetId);
-      setScoutsCache(updatedScouts);
-    }
-    return;
-  }
   localStorage.removeItem("scouts");
+};
+
+export const clearSpecificScoutCache = (targetId: string) => {
+  // 特定のスカウトIDのキャッシュをクリアする関数
+  const scouts = getScoutsCache();
+  if (scouts) {
+    const updatedScouts = scouts.filter((scout) => scout.id !== targetId);
+    setScoutsCache(updatedScouts);
+  }
 };
