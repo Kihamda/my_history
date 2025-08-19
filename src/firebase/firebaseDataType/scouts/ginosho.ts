@@ -1,4 +1,4 @@
-export interface Ginosho {
+export interface FirestoreGinosho {
   /** 技能章のID */
   id: string;
 

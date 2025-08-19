@@ -4,7 +4,7 @@ import { Scout } from "@/types/scout/scout";
 import { useEffect, useState } from "react";
 import ScoutDetailEditor from "./edit/editor";
 import LoadingSplash from "@/types/style/loadingSplash";
-import getScoutData from "@/firebase/scoutDb/getScoutData";
+import { getScoutData } from "@/firebase/scoutDb/scout";
 import { raiseError } from "@/errorHandler";
 import { useAuthContext } from "@/firebase/authContext";
 import {
