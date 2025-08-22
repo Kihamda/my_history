@@ -19,8 +19,7 @@ export const getGinosho = async (scoutId: string): Promise<Ginosho[]> => {
     const data = doc.data() as FirestoreGinosho;
     return {
       id: doc.id, // IDはドキュメントのIDを使用
-      unique: data.id, // 細目管理用
-      name: data.name,
+      unique: data.id, // 実質名前
       date: convertTimestampsDate(data.date),
       description: data.memo,
     };
@@ -40,7 +39,6 @@ export const setGinosho = async (
   const data: FirestoreGinosho = {
     id: ginosho.unique,
     date: ginosho.date,
-    name: ginosho.name,
     memo: ginosho.description,
   };
 
