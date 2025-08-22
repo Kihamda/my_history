@@ -1,0 +1,23 @@
+{
+    "id": "skill-warako",
+    "name": "わら工章",
+    "cert": "true",
+    "url": "https://www.scout.or.jp/member/skill-warako",
+    "detail": [
+        {
+            "id": "1",
+            "number": "1",
+            "description": "工作材料としてのわらの良否を見分ける要点を説明できること。"
+        },
+        {
+            "id": "2",
+            "number": "2",
+            "description": "手作業でわら縄をなえること。"
+        },
+        {
+            "id": "3",
+            "number": "3",
+            "description": "次のいずれか3種類について自作品を提示すること。\nア) むしろ\nイ) かます\nウ) 米俵\nエ) わら草履\nオ) わらじ\nカ) わら靴\nキ) みの\nク) しめ飾り"
+        }
+    ]
+}
