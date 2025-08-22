@@ -2,7 +2,7 @@ import { Scout } from "@/types/scout/scout";
 
 export const setScoutsCache = (scouts: Scout[]) => {
   // スカウトデータをローカルストレージに保存する関数
-  localStorage.setItem("scouts", JSON.stringify(scouts));
+  sessionStorage.setItem("scouts", JSON.stringify(scouts));
 };
 
 export const setSpecificScoutCache = (scout: Scout) => {
@@ -15,14 +15,14 @@ export const setSpecificScoutCache = (scout: Scout) => {
 
 export const getScoutsCache = (): Scout[] | null => {
   // ローカルストレージからスカウトデータを取得する関数
-  const scouts: Scout[] = JSON.parse(localStorage.getItem("scouts") || "[]");
+  const scouts: Scout[] = JSON.parse(sessionStorage.getItem("scouts") || "[]");
 
   return scouts?.length > 0 ? scouts : null;
 };
 
 export const clearScoutsCache = () => {
   // スカウトデータのキャッシュをクリアする関数
-  localStorage.removeItem("scouts");
+  sessionStorage.removeItem("scouts");
 };
 
 export const clearSpecificScoutCache = (targetId: string) => {
