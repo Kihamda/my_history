@@ -30,13 +30,21 @@ service cloud.firestore {
     }
     
     // ScoutIdで渡されたスカウトの所属団がわかる
+    // 基本的にはresource.data.personal.belongsで参照しよう。
     function getScoutIdGroup(scoutId){
     	return get(/databases/$(database)/documents/scouts/$(scoutId)).data.personal.belongs
     }
     
+    // 非効率になりがちなので非推奨
     function isTheScoutEditable(scoutId){
     	let scoutBelongs = getScoutIdGroup(scoutId);
       let userBelongsId = getGroupRole(scoutBelongs);
+      return userBelongsId == "admin" || userBelongsId == "edit"
+    }
+    
+    // こっち
+    function isEditor(groupId){
+    	let userBelongsId = getGroupRole(groupId);
       return userBelongsId == "admin" || userBelongsId == "edit"
     }
     
@@ -50,12 +58,13 @@ service cloud.firestore {
     // Scouts Collection
     // ========================================
     match /scouts/{scoutId}{
-    	allow read :if isAuthenticated() && 
-      	isGroupMember(getScoutIdGroup(scoutId));
+      // 読み取り権限（個別とクエリ両方）
+    	allow read :if isAuthenticated() &&
+      	isGroupMember(resource.data.personal.belongs);
         
-      allow update, delete:if isAuthenticated() && isTheScoutEditable(scoutId)
+      allow update, delete:if isAuthenticated() && isEditor(resource.data.personal.belongs)
       
-      allow create:if isAuthenticated() && isTheScoutEditable(request.resource.data.personal.belongs);
+      allow create:if isAuthenticated() && isEditor(request.resource.data.personal.belongs);
       
       match /{document=**} {
       	allow read :if isAuthenticated() && 

@@ -1,0 +1,18 @@
+{
+    "id": "skill-budo-bujyutsu",
+    "name": "武道・武術章",
+    "cert": "true",
+    "url": "https://www.scout.or.jp/member/skill-budo-bujyutsu",
+    "detail": [
+        {
+            "id": "1",
+            "number": "1",
+            "description": "武道・武術当該連盟初段以上もしくはそれに相当する試験に合格すること。"
+        },
+        {
+            "id": "2",
+            "number": "2",
+            "description": "武道・武術の精神をスカウト活動にいかすことについて説明できる。"
+        }
+    ]
+}

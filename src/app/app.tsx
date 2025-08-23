@@ -4,12 +4,13 @@ import Header from "./parts/header";
 
 import { lazy, Suspense } from "react";
 import LoadingSplash from "@/style/loadingSplash";
-import ScoutDetail from "./scoutDetail/scoutDetail";
 
 // 遅延読み込みするコンポーネント
 const LeaderHome = lazy(() => import("./home/leaderHome"));
 const VisitorHome = lazy(() => import("./home/visitorHome"));
 const Scouts = lazy(() => import("./scouts/scouts"));
+const ScoutDetail = lazy(() => import("./scoutDetail/scoutDetail"));
+const NewScoutWizard = lazy(() => import("./scoutDetail/new/newScoutWizard"));
 
 const App = () => {
   // ログアウト状態なのに/appにアクセスした人をログインページに送還する
@@ -34,7 +35,7 @@ const App = () => {
   return (
     <>
       <Header name={userName} isLeader={isLeader} isAdmin={isAdmin} />
-      <div className="container" style={{ marginTop: "4.5rem" }}>
+      <div className="container mb-3" style={{ marginTop: "4.5rem" }}>
         <Suspense fallback={<LoadingSplash message="読み込み中" />}>
           <Routes>
             <Route path="/" element={<Navigate to="/app/home" />} />
@@ -43,6 +44,7 @@ const App = () => {
               element={<>{isLeader ? <LeaderHome /> : <VisitorHome />}</>}
             />
             <Route path="/scouts" element={<Scouts />} />
+            <Route path="/scouts/new" element={<NewScoutWizard />} />
             <Route path="/scouts/*" element={<ScoutDetail />} />
             <Route path="/group" element={<>group</>} />
             <Route path="/setting" element={<>setting</>} />

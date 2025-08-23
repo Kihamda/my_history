@@ -1,5 +1,5 @@
 import { Scout } from "@/types/scout/scout";
-import getScoutData from "./getScoutData";
+import { getScoutData } from "./scout";
 import { getObjectDiff } from "@/tools/getObjectDiff";
 
 export type ConflictDetectionResult =

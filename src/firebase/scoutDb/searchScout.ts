@@ -7,11 +7,12 @@ import {
   query,
   Query,
   DocumentData,
+  limit,
 } from "firebase/firestore";
-import { ScoutRecord } from "../firebaseDataType/scouts/scoutRecord";
-
-import { SearchResultScoutData } from "@/types/search/searchQueryType";
+import { FirestoreScout } from "../firebaseDataType/scouts/scout";
 import { raiseError } from "@/errorHandler";
+import { Scout } from "@/types/scout/scout";
+import convertTimestampsDate from "../convertTimestampDate";
 
 /**
  * スカウトを検索する関数
@@ -21,7 +22,9 @@ import { raiseError } from "@/errorHandler";
 export const searchScout = async (
   searchQuery: SearchQuery,
   groupId: string
-): Promise<SearchResultScoutData[]> => {
+): Promise<Scout[]> => {
+  console.log("searchScout called with query:", searchQuery);
+
   const scoutsRef = collection(db, "scouts");
 
   // 検索条件を動的に構築
@@ -50,8 +53,12 @@ export const searchScout = async (
   // クエリを構築
   // 自分のグループに所属している必要がある
   conditions.push(where("personal.belongs", "==", groupId));
+
+  // 爆死対策
+  conditions.push(limit(30));
+
   let q: Query<DocumentData>;
-  if (conditions.length > 1) {
+  if (conditions.length > 2) {
     // この1はグループIDの1
     q = query(scoutsRef, ...conditions);
   } else {
@@ -63,13 +70,13 @@ export const searchScout = async (
   try {
     const snapshot = await getDocs(q);
 
-    const scouts: SearchResultScoutData[] = [];
+    const scouts: Scout[] = [];
     snapshot.forEach((doc) => {
-      const scoutData = doc.data() as ScoutRecord;
-
-      const scout: SearchResultScoutData = {
+      const scoutData = convertTimestampsDate(doc.data()) as FirestoreScout;
+      const scout: Scout = {
         id: doc.id,
         personal: scoutData.personal,
+        unit: scoutData.unit,
       };
 
       // 名前での部分一致フィルタリング（Firestoreの制限を補完）

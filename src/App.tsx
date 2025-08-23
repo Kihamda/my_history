@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router";
 
 import { ErrorProvider } from "./errorHandler";
+import { PopupProvider } from "./fullscreanPopup";
 
 /*
  * このアプリケーションのルートファイル
@@ -22,17 +23,19 @@ const AppPage = lazy(() => import("@/app/app"));
 function MainApp() {
   return (
     <ErrorProvider>
-      <Suspense fallback={<LoadingSplash />}>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Reload />} />
-            <Route path="*" element={<NotFound />} />
-            <Route path="/auth/*" element={<Auth />} />
-            <Route path="/app/*" element={<AppPage />} />
-            <Route path="/sysmanager/*" element={<SysManager />} />
-          </Routes>
-        </AuthProvider>
-      </Suspense>
+      <PopupProvider>
+        <Suspense fallback={<LoadingSplash />}>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Reload />} />
+              <Route path="*" element={<NotFound />} />
+              <Route path="/auth/*" element={<Auth />} />
+              <Route path="/app/*" element={<AppPage />} />
+              <Route path="/sysmanager/*" element={<SysManager />} />
+            </Routes>
+          </AuthProvider>
+        </Suspense>
+      </PopupProvider>
     </ErrorProvider>
   );
 }
