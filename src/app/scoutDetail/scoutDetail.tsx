@@ -33,24 +33,25 @@ const ScoutDetail = (): React.ReactElement => {
   const [events, setEvents] = useState<ScoutEvent[]>([]);
 
   const isEditable = useAuthContext()?.currentGroup?.isEditable || false;
-  // 無条件にGinoshoとEventsは取得しておく必要がある。
-  // 追伸:たぶんね
-  getGinosho(id).then((data) => {
-    if (!data) {
-      raiseError("技能章の情報が見つかりませんでした。");
-    } else {
-      setGinosho(data);
-    }
-  });
-  getEvents(id).then((data) => {
-    if (!data) {
-      raiseError("イベントの情報が見つかりませんでした。");
-    } else {
-      setEvents(data);
-    }
-  });
 
   useEffect(() => {
+    // 無条件にGinoshoとEventsは取得しておく必要がある。
+    // 追伸:たぶんね
+    getGinosho(id).then((data) => {
+      if (!data) {
+        raiseError("技能章の情報が見つかりませんでした。");
+      } else {
+        setGinosho(data);
+      }
+    });
+    getEvents(id).then((data) => {
+      if (!data) {
+        raiseError("イベントの情報が見つかりませんでした。");
+      } else {
+        setEvents(data);
+      }
+    });
+
     // scoutDataが空の場合はデータを取得する
     if (!scoutData) {
       // ここでFirebaseやAPIからスカウトデータを取得する処理を追加
