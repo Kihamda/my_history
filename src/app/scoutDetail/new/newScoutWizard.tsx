@@ -55,7 +55,7 @@ const NewScoutWizard = () => {
     const result = await setScoutRecord(newScoutData);
     if (result.status === "success") {
       // 保存成功時はスカウトの詳細ページにリダイレクト
-      nav(`/app/scout/${result.data.id}`, {
+      nav(`/app/scouts/${result.data.id}/view`, {
         replace: true,
         state: { scout: newScoutData },
       });

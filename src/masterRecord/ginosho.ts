@@ -1,4 +1,4 @@
-import { GinoshoMasterList } from "@/types/scout/gionosho";
+import { GinoshoMasterList } from "@/types/scout/ginosho";
 
 export const getGinoshoMasterList = async (): Promise<GinoshoMasterList[]> => {
   const response = await fetch(`/data/ginosho.json`);

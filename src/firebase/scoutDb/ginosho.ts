@@ -8,7 +8,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { FirestoreGinosho } from "../firebaseDataType/scouts/ginosho";
-import { Ginosho } from "@/types/scout/gionosho";
+import { Ginosho } from "@/types/scout/ginosho";
 import convertTimestampsDate from "../convertTimestampDate";
 
 export const getGinosho = async (scoutId: string): Promise<Ginosho[]> => {
@@ -21,7 +21,9 @@ export const getGinosho = async (scoutId: string): Promise<Ginosho[]> => {
       id: doc.id, // IDはドキュメントのIDを使用
       unique: data.id, // 実質名前
       date: convertTimestampsDate(data.date),
+      certName: data.certName, // 技能章の考査員名
       description: data.memo,
+      details: data.details,
     };
   });
   return ginoshoList;
@@ -39,7 +41,9 @@ export const setGinosho = async (
   const data: FirestoreGinosho = {
     id: ginosho.unique,
     date: ginosho.date,
+    certName: ginosho.certName,
     memo: ginosho.description,
+    details: ginosho.details,
   };
 
   await setDoc(ginoshoRef, data);

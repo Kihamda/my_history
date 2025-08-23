@@ -13,7 +13,9 @@ import {
   setSpecificScoutCache,
 } from "@/tools/localCache/scoutsCache";
 import { getGinosho } from "@/firebase/scoutDb/ginosho";
-import { Ginosho } from "@/types/scout/gionosho";
+import { Ginosho } from "@/types/scout/ginosho";
+import { getEvents } from "@/firebase/scoutDb/event";
+import { ScoutEvent } from "@/types/scout/event";
 
 const ScoutDetail = (): React.ReactElement => {
   // URLを取得→参照するスカウトの情報を決定。
@@ -28,8 +30,25 @@ const ScoutDetail = (): React.ReactElement => {
     defaultScoutData
   );
   const [ginosho, setGinosho] = useState<Ginosho[]>([]);
+  const [events, setEvents] = useState<ScoutEvent[]>([]);
 
   const isEditable = useAuthContext()?.currentGroup?.isEditable || false;
+  // 無条件にGinoshoとEventsは取得しておく必要がある。
+  // 追伸:たぶんね
+  getGinosho(id).then((data) => {
+    if (!data) {
+      raiseError("技能章の情報が見つかりませんでした。");
+    } else {
+      setGinosho(data);
+    }
+  });
+  getEvents(id).then((data) => {
+    if (!data) {
+      raiseError("イベントの情報が見つかりませんでした。");
+    } else {
+      setEvents(data);
+    }
+  });
 
   useEffect(() => {
     // scoutDataが空の場合はデータを取得する
@@ -44,23 +63,6 @@ const ScoutDetail = (): React.ReactElement => {
         }
       });
     }
-
-    // 無条件にGinoshoとEventsは取得しておく必要がある。
-    // 追伸:たぶんね
-    getGinosho(id).then((data) => {
-      if (!data) {
-        raiseError("技能章の情報が見つかりませんでした。");
-      } else {
-        setGinosho(data);
-      }
-    });
-    // getEvents(id).then((data) => {
-    //   if (!data) {
-    //     raiseError("イベントの情報が見つかりませんでした。");
-    //   } else {
-    //     setEvents(data);
-    //   }
-    // });
   }, [id]);
 
   // ページを離れるときにキャッシュを削除しておく
@@ -89,7 +91,7 @@ const ScoutDetail = (): React.ReactElement => {
   }
 
   // データがロード中の場合はローディング表示を返す
-  if (!scoutData) {
+  if (!(scoutData && ginosho && events)) {
     return (
       <LoadingSplash
         message="スカウトの情報を読み込み中..."
@@ -105,6 +107,7 @@ const ScoutDetail = (): React.ReactElement => {
         isEditable={isEditable}
         scoutData={scoutData}
         ginosho={ginosho}
+        events={events}
       />
     );
   } else if (mode === "edit") {

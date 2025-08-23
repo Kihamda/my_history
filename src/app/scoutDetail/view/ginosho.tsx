@@ -1,5 +1,5 @@
 import convertInputDate from "@/tools/date/convertInputDate";
-import { Ginosho, GinoshoMasterList } from "@/types/scout/gionosho";
+import { Ginosho, GinoshoMasterList } from "@/types/scout/ginosho";
 import ShowData from "@/style/showData";
 import { useEffect, useState } from "react";
 import LoadingSplash from "@/style/loadingSplash";

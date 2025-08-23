@@ -82,6 +82,18 @@ const Profile = ({
           </div>
         </div>
       </div>
+      {scoutDataPersonal.memo && (
+        <div className="col-12 mt-3">
+          <div className="card">
+            <div className="card-header">
+              <h5 className="mb-0">メモ</h5>
+            </div>
+            <div className="card-body" style={{ whiteSpace: "pre-line" }}>
+              {scoutDataPersonal.memo}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -4,16 +4,20 @@ import Units from "./units";
 import FullWidthCardHeader from "@/style/fullWidthCardHeader";
 import { Link } from "react-router";
 import GinoshoList from "./ginosho";
-import { Ginosho } from "@/types/scout/gionosho";
+import { Ginosho } from "@/types/scout/ginosho";
+import { ScoutEvent } from "@/types/scout/event";
+import Events from "./events";
 
 const ScoutDetailViewer = ({
   scoutData,
   isEditable,
   ginosho,
+  events,
 }: {
   scoutData: Scout;
   isEditable: boolean;
   ginosho: Ginosho[];
+  events: ScoutEvent[];
 }): React.ReactElement => {
   return (
     <>
@@ -42,10 +46,12 @@ const ScoutDetailViewer = ({
       <div className="mt-5">
         <FullWidthCardHeader title="活動記録" />
         <div className="row mt-3">
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-6 mb-3">
             <GinoshoList ginosho={ginosho} />
           </div>
-          <div className="col-12 col-md-6"></div>
+          <div className="col-12 col-md-6 mb-3">
+            <Events events={events} />
+          </div>
         </div>
       </div>
       <div className="mt-5">
