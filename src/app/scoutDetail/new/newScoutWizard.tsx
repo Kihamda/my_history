@@ -33,6 +33,10 @@ const NewScoutWizard = () => {
   });
 
   const [everGuessed, setEverGuessed] = useState(false);
+
+  const isDeclared =
+    scoutData.currentUnit != "bvs" && scoutData.currentUnit != "cs";
+
   const handleGuessDates = () => {
     setScoutData(
       guessDates({ id: "", personal: scoutData, unit: ScoutUnitDataDefault })
@@ -201,13 +205,16 @@ const NewScoutWizard = () => {
             <div className="card-body">
               <h4 className="card-title">ちかいについて</h4>
               <p className="card-text">
-                ちかいを立てた日付と場所を入力します。
+                {isDeclared
+                  ? "ちかいを立てた日付と場所を入力します。"
+                  : "ちかいを立てるのはボーイ隊以上です。"}
               </p>
               <InputGroup className="mb-3">
                 <InputGroup.Text>日付</InputGroup.Text>
                 <input
                   type="date"
                   className="form-control"
+                  disabled={!isDeclared}
                   value={convertInputDate(scoutData.declare.date)}
                   onChange={(e) =>
                     setScoutData({
@@ -227,6 +234,7 @@ const NewScoutWizard = () => {
                   className="form-control"
                   value={scoutData.declare.place}
                   placeholder="キャンプ場名や市区町村"
+                  disabled={!isDeclared}
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
@@ -246,7 +254,7 @@ const NewScoutWizard = () => {
             <div className="card-body">
               <h4 className="card-title">信仰について</h4>
               <p className="card-text">
-                信仰奨励章の日付と宗教章の日付を入力します。
+                信仰奨励章の取得状況と日付を入力します。
               </p>
               <InputGroup className="mb-3">
                 <InputGroup.Text>
@@ -270,7 +278,6 @@ const NewScoutWizard = () => {
                     }
                   />
                   {scoutData.religion.faith.has ? "取得済" : "未取得"}
-                  ：信仰奨励章
                 </InputGroup.Text>
                 <input
                   type="date"
@@ -291,7 +298,8 @@ const NewScoutWizard = () => {
                   }
                 />
               </InputGroup>
-              <InputGroup className="mb-3">
+              <p className="card-text">宗教章の取得状況と日付を入力します。</p>
+              <InputGroup className="mb-1">
                 <InputGroup.Text>
                   <input
                     type="checkbox"
@@ -313,21 +321,42 @@ const NewScoutWizard = () => {
                     }
                   />
                   {scoutData.religion.religion.has ? "取得済" : "未取得"}
-                  ：宗教章
                 </InputGroup.Text>
                 <input
                   type="date"
                   className="form-control"
-                  value={convertInputDate(scoutData.religion.faith.date)}
+                  value={convertInputDate(scoutData.religion.religion.date)}
                   disabled={!scoutData.religion.religion.has}
                   onChange={(e) =>
                     setScoutData({
                       ...scoutData,
                       religion: {
                         ...scoutData.religion,
-                        faith: {
-                          ...scoutData.religion.faith,
+                        religion: {
+                          ...scoutData.religion.religion,
                           date: new Date(e.target.value),
+                        },
+                      },
+                    })
+                  }
+                />
+              </InputGroup>
+              <InputGroup className="mb-3">
+                <InputGroup.Text>種類</InputGroup.Text>
+                <input
+                  className="form-control"
+                  type="text"
+                  value={scoutData.religion.religion.type}
+                  disabled={!scoutData.religion.religion.has}
+                  placeholder="キリスト教/仏教/..."
+                  onChange={(e) =>
+                    setScoutData({
+                      ...scoutData,
+                      religion: {
+                        ...scoutData.religion,
+                        religion: {
+                          ...scoutData.religion.religion,
+                          type: e.target.value,
                         },
                       },
                     })

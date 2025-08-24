@@ -44,19 +44,26 @@ const Profile = ({
             <h5 className="mb-0">ちかい</h5>
           </div>
           <div className="card-body">
-            <ShowData
-              label="ちかいを立てた日"
-              value={convertInputDate(scoutDataPersonal.declare.date)}
-            />
-            <ShowData
-              label="ちかいを立てた場所"
-              value={scoutDataPersonal.declare.place}
-            />
+            {scoutDataPersonal.currentUnit == "bvs" ||
+            scoutDataPersonal.currentUnit == "cs" ? (
+              <p>ちかいを立てるのはボーイ隊以上です。</p>
+            ) : (
+              <>
+                <ShowData
+                  label="ちかいを立てた日"
+                  value={convertInputDate(scoutDataPersonal.declare.date)}
+                />
+                <ShowData
+                  label="ちかいを立てた場所"
+                  value={scoutDataPersonal.declare.place}
+                />
+              </>
+            )}
           </div>
         </div>
         <div className="card mt-3">
           <div className="card-header">
-            <h5 className="mb-0">信仰奨励章・技能章</h5>
+            <h5 className="mb-0">信仰奨励章・宗教章</h5>
           </div>
           <div className="card-body">
             <ShowData
