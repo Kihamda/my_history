@@ -1,8 +1,8 @@
 import { Navigate, useLocation } from "react-router";
-import ScoutDetailViewer from "./view/viewer";
+import ScoutDetailViewer from "./viewer";
 import { Scout } from "@/types/scout/scout";
 import { useEffect, useState } from "react";
-import ScoutDetailEditor from "./edit/editor";
+import ScoutDetailEditor from "./editor";
 import LoadingSplash from "@/style/loadingSplash";
 import { getScoutData } from "@/firebase/scoutDb/scout";
 import { raiseError } from "@/errorHandler";
@@ -22,13 +22,10 @@ const ScoutDetail = (): React.ReactElement => {
   const id = useLocation().pathname.split("/")[3]; // /app/scouts/:id newになることはない。
   const mode = useLocation().pathname.split("/")[4];
 
-  const defaultScoutData: Scout | undefined = getScoutsCache()?.find(
-    (scout) => scout.id === id
-  );
+  const defaultScoutData: Scout =
+    getScoutsCache()?.find((scout) => scout.id === id) || ({} as Scout);
 
-  const [scoutData, setScoutData] = useState<Scout | undefined>(
-    defaultScoutData
-  );
+  const [scoutData, setScoutData] = useState<Scout>(defaultScoutData);
   const [ginosho, setGinosho] = useState<Ginosho[]>([]);
   const [events, setEvents] = useState<ScoutEvent[]>([]);
 
@@ -53,7 +50,7 @@ const ScoutDetail = (): React.ReactElement => {
     });
 
     // scoutDataが空の場合はデータを取得する
-    if (!scoutData) {
+    if (Object.keys(scoutData).length == 0) {
       // ここでFirebaseやAPIからスカウトデータを取得する処理を追加
       getScoutData(id).then((data) => {
         if (!data) {
@@ -82,17 +79,11 @@ const ScoutDetail = (): React.ReactElement => {
   // モードのチェック
   if (mode !== "view" && mode !== "edit") {
     // modeがviewかeditでない場合は、viewモードにリダイレクト
-    return (
-      <Navigate
-        to={`/app/scouts/${id}/view`}
-        replace
-        state={{ scout: scoutData || null }}
-      />
-    );
+    return <Navigate to={`/app/scouts/${id}/view`} replace />;
   }
 
   // データがロード中の場合はローディング表示を返す
-  if (!(scoutData && ginosho && events)) {
+  if (!(Object.keys(scoutData).length > 0 && ginosho && events)) {
     return (
       <LoadingSplash
         message="スカウトの情報を読み込み中..."

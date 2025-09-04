@@ -44,10 +44,7 @@ const Profile = ({
             <h5 className="mb-0">ちかい</h5>
           </div>
           <div className="card-body">
-            {scoutDataPersonal.currentUnit == "bvs" ||
-            scoutDataPersonal.currentUnit == "cs" ? (
-              <p>ちかいを立てるのはボーイ隊以上です。</p>
-            ) : (
+            {scoutDataPersonal.declare.isDone ? (
               <>
                 <ShowData
                   label="ちかいを立てた日"
@@ -58,6 +55,8 @@ const Profile = ({
                   value={scoutDataPersonal.declare.place}
                 />
               </>
+            ) : (
+              <p>ちかいをまだ立てていません。</p>
             )}
           </div>
         </div>

@@ -18,6 +18,26 @@ export const ScoutUnitNameMap: Record<ScoutUnit, string> = {
   ob: "既卒者",
 };
 
+/**
+export interface UnitExperience{
+  id:ScoutUnit,
+  // 経験年数
+  experienceYears: number,
+  // 取得したバッジ
+  grade: string[],
+
+  works: Work[]
+}
+
+export interface ScoutUnitGrade{
+  id: string,
+  // グレード名
+  has: boolean,
+  // 取得した日
+  date: Date
+}
+  */
+
 export interface UnitExperience {
   // ビーバースカウト
   bvs: {

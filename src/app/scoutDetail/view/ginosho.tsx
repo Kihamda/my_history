@@ -1,26 +1,16 @@
 import convertInputDate from "@/tools/date/convertInputDate";
-import { Ginosho, GinoshoMasterList } from "@/types/scout/ginosho";
+import { Ginosho } from "@/types/scout/ginosho";
 import ShowData from "@/style/showData";
-import { useEffect, useState } from "react";
-import LoadingSplash from "@/style/loadingSplash";
-import { getGinoshoMasterList } from "@/masterRecord/ginosho";
+import { usePopup } from "@/fullscreanPopup";
 
 const GinoshoList = ({
   ginosho,
 }: {
   ginosho: Ginosho[];
 }): React.ReactElement => {
-  const [ginoshoDb, setGinoshoDb] = useState<GinoshoMasterList[]>([]);
+  const popup = usePopup();
 
-  useEffect(() => {
-    getGinoshoMasterList().then((data) => {
-      setGinoshoDb(data);
-    });
-  }, []);
-
-  const certCount = ginosho.filter(
-    (doc) => ginoshoDb.find((item) => item.id === doc.unique)?.cert
-  ).length;
+  const certCount = ginosho.filter((item) => item.cert).length;
 
   return (
     <div className="card">
@@ -28,22 +18,17 @@ const GinoshoList = ({
         <h5 className="mb-0">技能章</h5>
       </div>
       <div className="card-body">
-        {ginoshoDb.length === 0 ? (
-          <LoadingSplash />
-        ) : ginosho && ginosho.length > 0 ? (
+        {ginosho && ginosho.length > 0 ? (
           ginosho.map((doc, index) => {
-            const data = ginoshoDb.filter((item) => item.id === doc.unique)[0];
             return (
               <ShowData
                 key={doc.id}
-                label={
-                  data?.name + (data?.cert ? " (考査員認定)" : " (隊長認定)")
-                }
+                label={doc.name + (doc.cert ? " (考査員認定)" : " (隊長認定)")}
                 value={convertInputDate(doc.date)}
                 memo={doc.description}
                 bordered={ginosho.length - index > 1 && true}
                 detailAction={() => {
-                  console.log("詳細表示機能は未実装です");
+                  popup.showPopup({ content: <DetailPopup data={doc} /> });
                 }}
               />
             );
@@ -60,3 +45,13 @@ const GinoshoList = ({
 };
 
 export default GinoshoList;
+
+const DetailPopup = ({ data }: { data: Ginosho }) => {
+  return (
+    <div>
+      <h5>{data.name}</h5>
+      <p>{data.cert ? "考査員認定" : "隊長認定"}</p>
+      <p>{data.description}</p>
+    </div>
+  );
+};

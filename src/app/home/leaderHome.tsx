@@ -9,7 +9,7 @@ const LeaderHome = () => {
   return (
     <div
       className="d-flex flex-column align-items-center justify-content-center"
-      style={{ height: "calc(100vh - 4.5rem)" }}
+      style={{ height: "calc(100dvh - 6rem)" }}
     >
       <div className="d-flex flex-column align-items-center justify-content-center w-100 flex-grow-1">
         <div className="row w-100 justify-content-center">

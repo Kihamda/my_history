@@ -73,7 +73,6 @@ const SearchboxCard = ({
             <InputGroup className="mb-2">
               <InputGroup.Text>名前</InputGroup.Text>
               <FormControl
-                type="text"
                 placeholder="松田 太郎"
                 value={searchQueryInput?.name}
                 onChange={(e) =>

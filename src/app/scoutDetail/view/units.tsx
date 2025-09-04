@@ -176,7 +176,7 @@ const UnitCard: React.FC<{
           <div className="d-flex flex-column flex-md-row">
             <div className="flex-grow-1 mb-3">
               <h5>基本情報</h5>
-              <ShowData label="入団日時" value={convertInputDate(joinedDate)} />
+              <ShowData label="入隊日時" value={convertInputDate(joinedDate)} />
             </div>
             {gradesNode && (
               <div className="flex-grow-1 mb-3">

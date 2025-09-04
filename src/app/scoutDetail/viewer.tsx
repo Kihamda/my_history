@@ -1,12 +1,12 @@
 import { Scout } from "@/types/scout/scout";
-import Profile from "./profile";
-import Units from "./units";
+import Profile from "./view/profile";
+import Units from "./view/units";
 import FullWidthCardHeader from "@/style/fullWidthCardHeader";
 import { Link } from "react-router";
-import GinoshoList from "./ginosho";
+import GinoshoList from "./view/ginosho";
 import { Ginosho } from "@/types/scout/ginosho";
 import { ScoutEvent } from "@/types/scout/event";
-import Events from "./events";
+import Events from "./view/events";
 
 const ScoutDetailViewer = ({
   scoutData,

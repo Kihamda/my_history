@@ -33,6 +33,8 @@ export interface ScoutPersonalData {
 
   /** スカウトのちかいについて */
   declare: {
+    isDone: boolean;
+
     /** ちかいをたてた場所 */
     place: string;
 
@@ -80,6 +82,7 @@ export const ScoutPersonalDataDefault: ScoutPersonalData = {
   name: "",
   joinedDate: new Date(),
   declare: {
+    isDone: false,
     place: "",
     date: new Date(),
   },
