@@ -5,7 +5,7 @@ export interface Scout {
 
   personal: ScoutPersonalData;
 
-  unit: UnitExperience;
+  unit: UnitExperience[];
 }
 
 export interface AuthedUser {

@@ -3,12 +3,21 @@ import { db } from "../firebase";
 import { raiseError } from "@/errorHandler";
 import { Scout } from "@/types/scout/scout";
 
-import { FirestoreScout } from "../firebaseDataType/scouts/scout";
+import {
+  FirestoreScout,
+  UnitExperience as UnitExperienceFirestore,
+} from "../firebaseDataType/scouts/scout";
 import convertTimestampsDate from "../convertTimestampDate";
+import {
+  ScoutUnitGrade,
+  ScoutUnitNameMap,
+  UnitExperience,
+} from "@/types/scout/scoutUnit";
+import { getGradeMasterList } from "@/types/master/grade";
+import { getOptedUnitDataDefault } from "@/types/scout/scoutUnit";
 
 // Firebaseからスカウトデータを取得する関数
 export const getScoutData = async (scoutId: string): Promise<Scout | null> => {
-  console.log("getScoutData called with scoutId:", scoutId);
   try {
     const scoutRef = doc(db, "scouts", scoutId);
     const scoutDoc = await getDoc(scoutRef);
@@ -19,10 +28,28 @@ export const getScoutData = async (scoutId: string): Promise<Scout | null> => {
     }
 
     const scoutData = convertTimestampsDate(scoutDoc.data()) as FirestoreScout;
+
+    const gradeMaster = await getGradeMasterList();
+    // unitの中身に名前を追加する
+    const newUnit: UnitExperience[] = scoutData.unit.map(
+      (unit): UnitExperience => ({
+        ...unit,
+        name: ScoutUnitNameMap[unit.id],
+        grade: unit.grade.map(
+          (g) =>
+            ({
+              ...g,
+              name:
+                gradeMaster.find((grade) => grade.id === g.id)?.name || g.id,
+            } as ScoutUnitGrade)
+        ),
+      })
+    );
+
     return {
       id: scoutDoc.id,
       personal: scoutData.personal,
-      unit: scoutData.unit,
+      unit: newUnit,
     };
   } catch (error) {
     raiseError("Error fetching scout data:");
@@ -50,11 +77,44 @@ export const setScoutRecord = async (
   try {
     const scoutRef = doc(db, "scouts", scout.id);
 
+    const unit: UnitExperienceFirestore[] = (
+      await getOptedUnitDataDefault()
+    ).map((u) => {
+      const tmp = scout.unit.find((item) => item.id === u.id);
+      if (tmp) {
+        return {
+          id: u.id,
+          joinedDate: tmp.joinedDate,
+          experienced: tmp.experienced,
+          works: tmp.works,
+          grade: u.grade.map((work) => {
+            const found = tmp.grade.find((w) => w.id === work.id);
+            if (!found) {
+              return {
+                id: work.id,
+                has: false,
+                date: work.date,
+              };
+            }
+            return {
+              id: found.id,
+              has: found.has,
+              date: found.date,
+            };
+          }),
+        };
+      } else {
+        return u; // デフォルトのデータを使用
+      }
+    });
     // Scout本体の保存
     const scoutRecord: FirestoreScout = {
       personal: scout.personal,
-      unit: scout.unit,
+      unit: unit,
     };
+
+    //tst
+    console.log("Scout Record:", scoutRecord);
 
     // Firestoreのドキュメントに保存
     await setDoc(scoutRef, scoutRecord);

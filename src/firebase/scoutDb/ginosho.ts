@@ -10,7 +10,7 @@ import { db } from "../firebase";
 import { FirestoreGinosho } from "../firebaseDataType/scouts/ginosho";
 import { Ginosho } from "@/types/scout/ginosho";
 import convertTimestampsDate from "../convertTimestampDate";
-import { getGinoshoMasterList } from "@/masterRecord/ginosho";
+import { getGinoshoMasterList } from "@/types/master/ginosho";
 
 export const getGinosho = async (scoutId: string): Promise<Ginosho[]> => {
   const snapshot = await getDocs(

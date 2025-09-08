@@ -43,7 +43,7 @@ const LeaderHome = () => {
           </div>
         </div>
       </div>
-      <div className="d-flex flex-column align-items-center mb-4 justify-self-bottom ">
+      <div className="d-flex flex-column align-items-center justify-self-bottom ">
         <button
           className="btn btn-outline-secondary"
           onClick={() => nav("/app/scouts/new")}

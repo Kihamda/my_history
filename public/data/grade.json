@@ -1,30 +1,62 @@
 [
     {
+        "id": "beaver",
+        "name": "ビーバー",
+        "unit": "bvs"
+    },
+    {
+        "id": "bigbeaver",
+        "name": "ビッグビーバー",
+        "unit": "bvs"
+    },
+    {
+        "id": "rabbit",
+        "name": "うさぎ",
+        "unit": "cs"
+    },
+    {
+        "id": "deer",
+        "name": "しか",
+        "unit": "cs"
+    },
+    {
+        "id": "bear",
+        "name": "くま",
+        "unit": "cs"
+    },
+    {
         "id": "beginner",
-        "name": "初級スカウト章"
+        "name": "初級スカウト章",
+        "unit": "bs"
     },
     {
         "id": "second",
-        "name": "二級スカウト章"
+        "name": "二級スカウト章",
+        "unit": "bs"
     },
     {
         "id": "first",
-        "name": "一級スカウト章"
+        "name": "一級スカウト章",
+        "unit": "bs"
     },
     {
         "id": "mum",
-        "name": "菊スカウト章"
+        "name": "菊スカウト章",
+        "unit": "bs"
     },
     {
         "id": "venture",
-        "name": "ベンチャースカウト章"
+        "name": "ベンチャースカウト章",
+        "unit": "vs"
     },
     {
         "id": "falcon",
-        "name": "隼スカウト章"
+        "name": "隼スカウト章",
+        "unit": "vs"
     },
     {
         "id": "fuji",
-        "name": "富士スカウト章"
+        "name": "富士スカウト章",
+        "unit": "vs"
     }
 ]

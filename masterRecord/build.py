@@ -13,7 +13,12 @@ def build():
     db = gradeLoad()
     gradesList = []
     for record in db:
-        detail = gradeDetailLoad(record["id"])
+        try:
+            detail = gradeDetailLoad(record["id"])
+        except Exception as e:
+            # print(f"Error loading grade detail for {record['id']}: {e}")
+            detail = []
+
         det = []
         for d in detail:
             det.append(
@@ -36,7 +41,9 @@ def build():
             ensure_ascii=False,
             indent=4,
         )
-        gradesList.append({"id": record["id"], "name": record["name"]})
+        gradesList.append(
+            {"id": record["id"], "name": record["name"], "unit": record["unit"]}
+        )
     json.dump(
         gradesList,
         open(path + "dist/grade.json", "w", encoding="utf-8"),

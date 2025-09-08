@@ -153,4 +153,4 @@ const FullscreenPopupCard = ({
   );
 };
 
-export default FullscreenPopupCard;
+export default PopupProvider;

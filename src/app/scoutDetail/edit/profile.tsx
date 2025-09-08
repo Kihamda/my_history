@@ -111,7 +111,7 @@ const Profile = ({
                 ちかいを立てた日付と場所を入力します。
               </p>
               <InputGroupUI
-                label={scoutData.declare.isDone ? "取得済" : "未取得"}
+                label={scoutData.declare.isDone ? "実施済" : "未実施"}
                 type="date"
                 value={convertInputDate(scoutData.declare.date)}
                 setValueFunc={(e) =>

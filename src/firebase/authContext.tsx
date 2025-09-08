@@ -55,3 +55,5 @@ export const useAuthContext = (): User | null => {
   const context = useContext(AuthContext);
   return context;
 };
+
+export default AuthProvider;

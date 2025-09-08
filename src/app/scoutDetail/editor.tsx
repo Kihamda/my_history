@@ -20,7 +20,7 @@ const ScoutDetailEditor = ({
     scoutData.personal
   );
 
-  const [scoutDataUnit, setScoutDataUnit] = useState<UnitExperience>(
+  const [scoutDataUnit, setScoutDataUnit] = useState<UnitExperience[]>(
     scoutData.unit
   );
 

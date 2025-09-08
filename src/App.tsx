@@ -1,7 +1,6 @@
 import { Route, Routes } from "react-router";
 
 import { ErrorProvider } from "./errorHandler";
-import { PopupProvider } from "./fullscreanPopup";
 
 /*
  * このアプリケーションのルートファイル
@@ -11,11 +10,12 @@ import { PopupProvider } from "./fullscreanPopup";
  */
 import { lazy, Suspense, useEffect } from "react";
 import LoadingSplash from "@/style/loadingSplash";
-import { AuthProvider } from "@/firebase/authContext";
 
 const SysManager = lazy(() => import("@/sysManager/sysManager"));
 const Auth = lazy(() => import("@/auth/auth"));
 const AppPage = lazy(() => import("@/app/app"));
+const AuthProvider = lazy(() => import("@/firebase/authContext"));
+const PopupProvider = lazy(() => import("@/fullscreanPopup"));
 
 // ここで/〇〇/の変更が生じるときはfirebase.jsonのrewritesも変更すること
 
@@ -23,8 +23,8 @@ const AppPage = lazy(() => import("@/app/app"));
 function MainApp() {
   return (
     <ErrorProvider>
-      <PopupProvider>
-        <Suspense fallback={<LoadingSplash />}>
+      <Suspense fallback={<LoadingSplash />}>
+        <PopupProvider>
           <AuthProvider>
             <Routes>
               <Route path="/" element={<Reload />} />
@@ -34,8 +34,8 @@ function MainApp() {
               <Route path="/sysmanager/*" element={<SysManager />} />
             </Routes>
           </AuthProvider>
-        </Suspense>
-      </PopupProvider>
+        </PopupProvider>
+      </Suspense>
     </ErrorProvider>
   );
 }

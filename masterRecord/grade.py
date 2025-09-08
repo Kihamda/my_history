@@ -23,7 +23,8 @@ def load():
                 {
                     "id": parts[0],
                     "name": parts[1],
-                    "detailIndex": parts[2].split("/"),
+                    "unit": parts[2],
+                    "detailIndex": parts[3].split("/"),
                 }
             )
     return db
