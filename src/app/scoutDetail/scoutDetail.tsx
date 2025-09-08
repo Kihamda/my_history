@@ -1,17 +1,12 @@
 import { Navigate, useLocation } from "react-router";
-import ScoutDetailViewer from "./view/viewer";
+import ScoutDetailViewer from "./viewer";
 import { Scout } from "@/types/scout/scout";
 import { useEffect, useState } from "react";
-import ScoutDetailEditor from "./edit/editor";
+import ScoutDetailEditor from "./editor";
 import LoadingSplash from "@/style/loadingSplash";
 import { getScoutData } from "@/firebase/scoutDb/scout";
 import { raiseError } from "@/errorHandler";
 import { useAuthContext } from "@/firebase/authContext";
-import {
-  clearSpecificScoutCache,
-  getScoutsCache,
-  setSpecificScoutCache,
-} from "@/tools/localCache/scoutsCache";
 import { getGinosho } from "@/firebase/scoutDb/ginosho";
 import { Ginosho } from "@/types/scout/ginosho";
 import { getEvents } from "@/firebase/scoutDb/event";
@@ -22,13 +17,7 @@ const ScoutDetail = (): React.ReactElement => {
   const id = useLocation().pathname.split("/")[3]; // /app/scouts/:id newになることはない。
   const mode = useLocation().pathname.split("/")[4];
 
-  const defaultScoutData: Scout | undefined = getScoutsCache()?.find(
-    (scout) => scout.id === id
-  );
-
-  const [scoutData, setScoutData] = useState<Scout | undefined>(
-    defaultScoutData
-  );
+  const [scoutData, setScoutData] = useState<Scout>(null as unknown as Scout);
   const [ginosho, setGinosho] = useState<Ginosho[]>([]);
   const [events, setEvents] = useState<ScoutEvent[]>([]);
 
@@ -51,44 +40,19 @@ const ScoutDetail = (): React.ReactElement => {
         setEvents(data);
       }
     });
-
-    // scoutDataが空の場合はデータを取得する
-    if (!scoutData) {
-      // ここでFirebaseやAPIからスカウトデータを取得する処理を追加
-      getScoutData(id).then((data) => {
-        if (!data) {
-          raiseError("スカウトの情報が見つかりませんでした。");
-        } else {
-          setScoutData(data);
-          setSpecificScoutCache(data);
-        }
-      });
-    }
+    getScoutData(id).then((data) => {
+      if (!data) {
+        raiseError("スカウトの情報が見つかりませんでした。");
+      } else {
+        setScoutData(data);
+      }
+    });
   }, [id]);
-
-  // ページを離れるときにキャッシュを削除しておく
-  const handleBeforeUnload = () => {
-    clearSpecificScoutCache(scoutData?.id || "");
-  };
-
-  useEffect(() => {
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [handleBeforeUnload]);
 
   // モードのチェック
   if (mode !== "view" && mode !== "edit") {
     // modeがviewかeditでない場合は、viewモードにリダイレクト
-    return (
-      <Navigate
-        to={`/app/scouts/${id}/view`}
-        replace
-        state={{ scout: scoutData || null }}
-      />
-    );
+    return <Navigate to={`/app/scouts/${id}/view`} replace />;
   }
 
   // データがロード中の場合はローディング表示を返す

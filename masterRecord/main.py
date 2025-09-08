@@ -1,7 +1,7 @@
 import gino, grade, build
 
 while True:
-    mode = input("Enter mode (1: 技能章, 2: 進級章, 3: 終了): ")
+    mode = input("Enter mode (1: 技能章, 2: 進級章, 3: ビルド, 4: 終了): ")
     if mode == "1":
         gino.gino()
     elif mode == "2":

@@ -1,5 +1,5 @@
 import { ScoutUnit, ScoutUnitList } from "@/types/scout/scoutUnit";
-import SearchQuery from "@/types/search/searchQueryType";
+import { SearchQuery } from "@/types/search/searchQueryType";
 
 const queryParser = (searchName: string): SearchQuery => {
   // 送られてきた文字列が何かを判定する［名前・登録番号・所属隊］

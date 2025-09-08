@@ -10,7 +10,7 @@ const LeaderHome = lazy(() => import("./home/leaderHome"));
 const VisitorHome = lazy(() => import("./home/visitorHome"));
 const Scouts = lazy(() => import("./scouts/scouts"));
 const ScoutDetail = lazy(() => import("./scoutDetail/scoutDetail"));
-const NewScoutWizard = lazy(() => import("./scoutDetail/new/newScoutWizard"));
+const NewScoutWizard = lazy(() => import("./scoutDetail/newScoutWizard"));
 
 const App = () => {
   // ログアウト状態なのに/appにアクセスした人をログインページに送還する
