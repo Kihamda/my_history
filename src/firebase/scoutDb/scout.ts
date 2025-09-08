@@ -114,7 +114,6 @@ export const setScoutRecord = async (
     };
 
     //tst
-    console.log("Scout Record:", scoutRecord);
 
     // Firestoreのドキュメントに保存
     await setDoc(scoutRef, scoutRecord);

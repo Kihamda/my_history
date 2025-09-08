@@ -65,7 +65,7 @@ export const getOptedUnitDataDefault = async (
     name: ScoutUnitNameMap[unit],
     grade: master
       .map((grade, index) => {
-        if (grade.unit == unit) {
+        if (grade.unit === unit) {
           return {
             id: grade.id,
             name: grade.name,

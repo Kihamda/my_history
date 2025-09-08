@@ -14,7 +14,7 @@ export const getGradeMasterList = async (): Promise<GradeMaster[]> => {
   // キャッシュがなければ取得
   const response = await fetch(`/data/grade.json`);
   if (!response.ok) {
-    throw new Error("Failed to fetch ginosho");
+    throw new Error("Failed to fetch grade");
   }
   const data = await response.json();
 
