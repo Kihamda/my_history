@@ -1,11 +1,11 @@
-import { Scout } from "@/types/scout/scout";
+import { SearchResult } from "@/types/search/searchQueryType";
 
-export const setScoutsCache = (scouts: Scout[]) => {
+export const setScoutsCache = (scouts: SearchResult[]) => {
   // スカウトデータをローカルストレージに保存する関数
   sessionStorage.setItem("scouts", JSON.stringify(scouts));
 };
 
-export const setSpecificScoutCache = (scout: Scout) => {
+export const setSpecificScoutCache = (scout: SearchResult) => {
   // 特定のスカウトデータをローカルストレージに保存する関数
   const scouts = getScoutsCache() || [];
   const updatedScouts = scouts.filter((s) => s.id !== scout.id);
@@ -13,9 +13,11 @@ export const setSpecificScoutCache = (scout: Scout) => {
   setScoutsCache(updatedScouts);
 };
 
-export const getScoutsCache = (): Scout[] | null => {
+export const getScoutsCache = (): SearchResult[] | null => {
   // ローカルストレージからスカウトデータを取得する関数
-  const scouts: Scout[] = JSON.parse(sessionStorage.getItem("scouts") || "[]");
+  const scouts: SearchResult[] = JSON.parse(
+    sessionStorage.getItem("scouts") || "[]"
+  );
 
   return scouts?.length > 0 ? scouts : null;
 };

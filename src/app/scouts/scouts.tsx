@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
-import SearchQuery from "@/types/search/searchQueryType";
+import { SearchQuery, SearchResult } from "@/types/search/searchQueryType";
 import SearchboxCard from "./parts/searchBoxCard";
 import queryParser from "./queryParser";
 import searchScout from "@/firebase/scoutDb/searchScout";
 import { useAuthContext } from "@/firebase/authContext";
 import SearchResultCard from "./parts/result";
-import { Scout } from "@/types/scout/scout";
 import getObjectDiff from "@/tools/getObjectDiff";
 import {
   getSearchQueryCache,
@@ -43,7 +42,7 @@ const Scouts: React.FC = () => {
   const [searchQuery, setSearchQuery] =
     useState<SearchQuery>(initialSearchQuery);
 
-  const [result, setResult] = useState<Scout[]>(getScoutsCache() || []); // 初期値としてローカルストレージから取得したスカウトデータを使用
+  const [result, setResult] = useState<SearchResult[]>(getScoutsCache() || []); // 初期値としてローカルストレージから取得したスカウトデータを使用
 
   const [isPending, setIsPending] = useState<boolean>(false);
 

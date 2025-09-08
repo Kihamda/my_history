@@ -1,4 +1,4 @@
-import SearchQuery from "@/types/search/searchQueryType";
+import { SearchQuery, SearchResult } from "@/types/search/searchQueryType";
 import { db } from "../firebase";
 import {
   collection,
@@ -11,7 +11,6 @@ import {
 } from "firebase/firestore";
 import { FirestoreScout } from "../firebaseDataType/scouts/scout";
 import { raiseError } from "@/errorHandler";
-import { Scout } from "@/types/scout/scout";
 import convertTimestampsDate from "../convertTimestampDate";
 
 /**
@@ -22,7 +21,7 @@ import convertTimestampsDate from "../convertTimestampDate";
 export const searchScout = async (
   searchQuery: SearchQuery,
   groupId: string
-): Promise<Scout[]> => {
+): Promise<SearchResult[]> => {
   console.log("searchScout called with query:", searchQuery);
 
   const scoutsRef = collection(db, "scouts");
@@ -70,22 +69,20 @@ export const searchScout = async (
   try {
     const snapshot = await getDocs(q);
 
-    const scouts: Scout[] = [];
+    const scouts: SearchResult[] = [];
     snapshot.forEach((doc) => {
       const scoutData = convertTimestampsDate(doc.data()) as FirestoreScout;
-      const scout: Scout = {
+      const scout: SearchResult = {
         id: doc.id,
-        personal: scoutData.personal,
-        unit: scoutData.unit,
+        name: scoutData.personal.name,
+        scoutId: scoutData.personal.ScoutId,
+        currentUnit: scoutData.personal.currentUnit,
+        experiencedUnits: scoutData.unit.map((u) => u.id),
       };
 
       // 名前での部分一致フィルタリング（Firestoreの制限を補完）
       if (searchQuery.name && searchQuery.name.trim() !== "") {
-        if (
-          scout.personal.name
-            .toLowerCase()
-            .includes(searchQuery.name.toLowerCase())
-        ) {
+        if (scout.name.toLowerCase().includes(searchQuery.name.toLowerCase())) {
           scouts.push(scout);
         }
       } else {

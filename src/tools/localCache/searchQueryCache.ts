@@ -1,4 +1,4 @@
-import SearchQuery from "@/types/search/searchQueryType";
+import { SearchQuery } from "@/types/search/searchQueryType";
 
 export const setSearchQueryCache = (query: SearchQuery) => {
   // 検索クエリをローカルストレージに保存する関数

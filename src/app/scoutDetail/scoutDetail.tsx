@@ -7,11 +7,6 @@ import LoadingSplash from "@/style/loadingSplash";
 import { getScoutData } from "@/firebase/scoutDb/scout";
 import { raiseError } from "@/errorHandler";
 import { useAuthContext } from "@/firebase/authContext";
-import {
-  clearSpecificScoutCache,
-  getScoutsCache,
-  setSpecificScoutCache,
-} from "@/tools/localCache/scoutsCache";
 import { getGinosho } from "@/firebase/scoutDb/ginosho";
 import { Ginosho } from "@/types/scout/ginosho";
 import { getEvents } from "@/firebase/scoutDb/event";
@@ -22,10 +17,7 @@ const ScoutDetail = (): React.ReactElement => {
   const id = useLocation().pathname.split("/")[3]; // /app/scouts/:id newになることはない。
   const mode = useLocation().pathname.split("/")[4];
 
-  const defaultScoutData: Scout =
-    getScoutsCache()?.find((scout) => scout.id === id) || ({} as Scout);
-
-  const [scoutData, setScoutData] = useState<Scout>(defaultScoutData);
+  const [scoutData, setScoutData] = useState<Scout>(null as unknown as Scout);
   const [ginosho, setGinosho] = useState<Ginosho[]>([]);
   const [events, setEvents] = useState<ScoutEvent[]>([]);
 
@@ -48,33 +40,14 @@ const ScoutDetail = (): React.ReactElement => {
         setEvents(data);
       }
     });
-
-    // scoutDataが空の場合はデータを取得する
-    if (Object.keys(scoutData).length == 0) {
-      // ここでFirebaseやAPIからスカウトデータを取得する処理を追加
-      getScoutData(id).then((data) => {
-        if (!data) {
-          raiseError("スカウトの情報が見つかりませんでした。");
-        } else {
-          setScoutData(data);
-          setSpecificScoutCache(data);
-        }
-      });
-    }
+    getScoutData(id).then((data) => {
+      if (!data) {
+        raiseError("スカウトの情報が見つかりませんでした。");
+      } else {
+        setScoutData(data);
+      }
+    });
   }, [id]);
-
-  // ページを離れるときにキャッシュを削除しておく
-  const handleBeforeUnload = () => {
-    clearSpecificScoutCache(scoutData?.id || "");
-  };
-
-  useEffect(() => {
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [handleBeforeUnload]);
 
   // モードのチェック
   if (mode !== "view" && mode !== "edit") {
@@ -83,7 +56,7 @@ const ScoutDetail = (): React.ReactElement => {
   }
 
   // データがロード中の場合はローディング表示を返す
-  if (!(Object.keys(scoutData).length > 0 && ginosho && events)) {
+  if (!(scoutData && ginosho && events)) {
     return (
       <LoadingSplash
         message="スカウトの情報を読み込み中..."
