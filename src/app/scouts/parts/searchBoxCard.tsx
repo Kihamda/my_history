@@ -6,10 +6,10 @@ import { Card, FormControl, InputGroup } from "react-bootstrap";
 
 const SearchboxCard = ({
   searchQuery,
-  setSearchQuery,
+  SearchFunc,
 }: {
   searchQuery: SearchQuery;
-  setSearchQuery: React.Dispatch<React.SetStateAction<SearchQuery>>;
+  SearchFunc: (query: SearchQuery) => void;
 }) => {
   const [searchQueryInput, setSearchQueryInput] =
     useState<SearchQuery>(searchQuery);
@@ -17,7 +17,7 @@ const SearchboxCard = ({
   // 検索ボックスのコンポーネント
   // 検索クエリを更新するための関数を定義
   const handleSearch = (query: SearchQuery) => {
-    setSearchQuery(query);
+    SearchFunc(query);
     // searchQueryが変わるとscouts.tsxのuseEffectが発火する
   };
 

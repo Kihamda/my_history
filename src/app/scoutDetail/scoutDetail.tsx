@@ -67,14 +67,7 @@ const ScoutDetail = (): React.ReactElement => {
 
   if (mode === "view") {
     // ビューモードの処理
-    return (
-      <ScoutDetailViewer
-        isEditable={isEditable}
-        scoutData={scoutData}
-        ginosho={ginosho}
-        events={events}
-      />
-    );
+    return <ScoutDetailViewer isEditable={isEditable} scoutData={scoutData} />;
   } else if (mode === "edit") {
     // 編集モードの処理
     if (!isEditable) {

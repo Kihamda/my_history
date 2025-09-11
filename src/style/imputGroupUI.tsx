@@ -22,7 +22,10 @@ const InputGroupUI = ({
   return (
     <div className="mb-3">
       <InputGroup className="mb-3">
-        <InputGroup.Text>
+        <InputGroup.Text
+          onClick={() => setChkboxFunc && setChkboxFunc(!chkbox)}
+          style={{ cursor: chkbox !== undefined ? "pointer" : "default" }}
+        >
           {chkbox !== undefined && (
             <input
               type="checkbox"
