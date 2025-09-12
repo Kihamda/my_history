@@ -7,39 +7,16 @@ import LoadingSplash from "@/style/loadingSplash";
 import { getScoutData } from "@/firebase/scoutDb/scout";
 import { raiseError } from "@/errorHandler";
 import { useAuthContext } from "@/firebase/authContext";
-import { getGinosho } from "@/firebase/scoutDb/ginosho";
-import { Ginosho } from "@/types/scout/ginosho";
-import { getEvents } from "@/firebase/scoutDb/event";
-import { ScoutEvent } from "@/types/scout/event";
-
 const ScoutDetail = (): React.ReactElement => {
   // URLを取得→参照するスカウトの情報を決定。
   const id = useLocation().pathname.split("/")[3]; // /app/scouts/:id newになることはない。
   const mode = useLocation().pathname.split("/")[4];
 
   const [scoutData, setScoutData] = useState<Scout>(null as unknown as Scout);
-  const [ginosho, setGinosho] = useState<Ginosho[]>([]);
-  const [events, setEvents] = useState<ScoutEvent[]>([]);
 
   const isEditable = useAuthContext()?.currentGroup?.isEditable || false;
 
   useEffect(() => {
-    // 無条件にGinoshoとEventsは取得しておく必要がある。
-    // 追伸:たぶんね
-    getGinosho(id).then((data) => {
-      if (!data) {
-        raiseError("技能章の情報が見つかりませんでした。");
-      } else {
-        setGinosho(data);
-      }
-    });
-    getEvents(id).then((data) => {
-      if (!data) {
-        raiseError("イベントの情報が見つかりませんでした。");
-      } else {
-        setEvents(data);
-      }
-    });
     getScoutData(id).then((data) => {
       if (!data) {
         raiseError("スカウトの情報が見つかりませんでした。");
@@ -56,7 +33,7 @@ const ScoutDetail = (): React.ReactElement => {
   }
 
   // データがロード中の場合はローディング表示を返す
-  if (!(scoutData && ginosho && events)) {
+  if (!scoutData) {
     return (
       <LoadingSplash
         message="スカウトの情報を読み込み中..."

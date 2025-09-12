@@ -10,6 +10,12 @@ export interface GinoshoDetailMaster extends GinoshoMaster {
 }
 
 export const getGinoshoMasterList = async (): Promise<GinoshoMaster[]> => {
+  // キャッシュを確認
+  const localCache = sessionStorage.getItem("ginoshoMasterCache");
+  if (localCache) {
+    return JSON.parse(localCache);
+  }
+
   const response = await fetch(`/data/ginosho.json`);
   if (!response.ok) {
     throw new Error("Failed to fetch ginosho");
@@ -24,16 +30,28 @@ export const getGinoshoMasterList = async (): Promise<GinoshoMaster[]> => {
     return item as GinoshoMaster;
   });
 
+  // キャッシュに保存
+  sessionStorage.setItem("ginoshoMasterCache", JSON.stringify(data));
+
   return data;
 };
 
 export const getGinoshoDetail = async (
   id: string
 ): Promise<GinoshoDetailMaster | null> => {
+  // キャッシュを確認
+  const localCache = sessionStorage.getItem(`ginoshoDetailCache_${id}`);
+  if (localCache) {
+    return JSON.parse(localCache);
+  }
+
   const response = await fetch(`/data/ginosho/${id}.json`);
   if (!response.ok) {
     throw new Error("Failed to fetch ginosho detail");
   }
   const data = await response.json();
+
+  // キャッシュに保存
+  sessionStorage.setItem(`ginoshoDetailCache_${id}`, JSON.stringify(data));
   return data as GinoshoDetailMaster;
 };
