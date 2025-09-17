@@ -25,7 +25,6 @@ const GinoshoList = ({
                 key={doc.id}
                 label={doc.name + (doc.cert ? " (考査員認定)" : " (隊長認定)")}
                 value={convertInputDate(doc.date)}
-                memo={doc.description}
                 bordered={ginosho.length - index > 1 && true}
                 detailAction={() => {
                   popup.showPopup({ content: <DetailPopup data={doc} /> });

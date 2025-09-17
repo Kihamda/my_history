@@ -9,6 +9,8 @@ const InputGroupUI = ({
   type = "text",
   setValueFunc,
   valueDisabled,
+  className,
+  explain,
 }: {
   label: string;
   value: string;
@@ -18,10 +20,12 @@ const InputGroupUI = ({
   chkbox?: boolean;
   setChkboxFunc?: (checked: boolean) => void;
   placeholder?: string;
+  className?: string;
+  explain?: string;
 }): React.ReactElement => {
   return (
-    <div className="mb-3">
-      <InputGroup className="mb-3">
+    <div className={`mb-3 ${className}`}>
+      <InputGroup>
         <InputGroup.Text
           onClick={() => setChkboxFunc && setChkboxFunc(!chkbox)}
           style={{ cursor: chkbox !== undefined ? "pointer" : "default" }}
@@ -51,6 +55,11 @@ const InputGroupUI = ({
           onChange={(e) => setValueFunc(e.target.value)}
         />
       </InputGroup>
+      {explain && (
+        <p className="text-secondary m-0" style={{ fontSize: "0.7rem" }}>
+          {explain}
+        </p>
+      )}
     </div>
   );
 };

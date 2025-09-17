@@ -15,7 +15,7 @@ def help():
 
 def load():
     db = []
-    with open(path + "/data/grade.csv", "r", encoding="utf-8") as file:
+    with open(path + "data/grade.csv", "r", encoding="utf-8") as file:
         data = [s.rstrip() for s in file.readlines()]
         for line in data:
             parts = line.split(",")
@@ -32,7 +32,7 @@ def load():
 
 def load_detail(id):
     db = []
-    with open(path + f"/data/gradeDetail/{id}.csv", "r", encoding="utf-8") as file:
+    with open(path + f"data/gradeDetail/{id}.csv", "r", encoding="utf-8") as file:
         data = [s.rstrip() for s in file.readlines()]
         for line in data:
             parts = line.split(",")

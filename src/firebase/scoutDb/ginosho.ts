@@ -27,7 +27,7 @@ export const getGinosho = async (scoutId: string): Promise<Ginosho[]> => {
       date: convertTimestampsDate(data.date),
       certName: data.certName, // 技能章の考査員名
       cert: master.find((item) => item.id === data.id)?.cert || false, // 考査員認定か
-      description: data.memo,
+      has: data.has, // 取得済みかどうか
       details: data.details,
       name: master.find((item) => item.id === data.id)?.name || "",
     };
@@ -48,7 +48,7 @@ export const setGinosho = async (
     id: ginosho.unique,
     date: ginosho.date,
     certName: ginosho.certName,
-    memo: ginosho.description,
+    has: ginosho.has,
     details: ginosho.details,
   };
 

@@ -6,7 +6,7 @@ export interface GinoshoMaster {
 }
 
 export interface GinoshoDetailMaster extends GinoshoMaster {
-  details: Array<{ id: number; number: number; name: string }>; // 細目のマスターデータ
+  details: Array<{ id: number; number: string; description: string }>; // 細目のマスターデータ
 }
 
 export const getGinoshoMasterList = async (): Promise<GinoshoMaster[]> => {

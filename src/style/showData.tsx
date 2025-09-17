@@ -7,12 +7,14 @@ const ShowData = ({
   memo,
   bordered = false,
   detailAction,
+  detailButtonContent = "詳細",
 }: {
   label: string;
   value?: string;
   memo?: string;
   bordered?: boolean;
   detailAction?: Function;
+  detailButtonContent?: string;
 }) => {
   return (
     <div
@@ -38,11 +40,13 @@ const ShowData = ({
           </>
         )}
       </div>
-      <div className="flex-grow-0 d-flex align-items-center">
+      <div className="flex-grow-0 d-flex align-items-end">
         {detailAction && (
-          <button className="btn btn-link p-0" onClick={() => detailAction()}>
-            <FontAwesomeIcon icon={faCaretRight} className="me-2" />
-            詳細
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => detailAction()}
+          >
+            {detailButtonContent}
           </button>
         )}
       </div>

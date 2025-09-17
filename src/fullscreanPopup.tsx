@@ -1,3 +1,5 @@
+import { faClose } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface PopupData {
@@ -107,46 +109,31 @@ const FullscreenPopupCard = ({
     position: "relative",
   };
 
-  const closeButtonStyle: React.CSSProperties = {
-    position: "absolute",
-    top: "10px",
-    right: "15px",
-    background: "rgba(255, 255, 255, 0.2)",
-    border: "none",
-    borderRadius: "50%",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    cursor: "pointer",
-    color: "white",
-    fontSize: "18px",
-    fontWeight: "bold",
-    transition: "background-color 0.2s ease",
-  };
-
   return (
     <div style={overlayStyle} onClick={handleBackdropClick}>
-      <div style={cardStyle} className="card">
-        <div className="card-body">
-          {showCloseButton && onClose && (
-            <button
-              style={closeButtonStyle}
-              onClick={onClose}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(255, 255, 255, 0.3)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(255, 255, 255, 0.2)";
-              }}
-            >
-              ×
-            </button>
-          )}
-          {children}
+      <div className="row justify-content-center w-100">
+        <div className="col-12 col-md-8 col-lg-6 col-xxl-4">
+          <div style={cardStyle} className="card">
+            {showCloseButton && onClose && (
+              <div className="card-header text-end">
+                <button
+                  className="btn btn-light"
+                  onClick={onClose}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      "rgba(255, 255, 255, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      "rgba(255, 255, 255, 0.2)";
+                  }}
+                >
+                  <FontAwesomeIcon icon={faClose} />
+                </button>
+              </div>
+            )}
+            <div className="card-body">{children}</div>
+          </div>
         </div>
       </div>
     </div>
