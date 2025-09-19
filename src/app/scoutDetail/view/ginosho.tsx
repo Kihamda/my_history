@@ -1,7 +1,7 @@
 import convertInputDate from "@/tools/date/convertInputDate";
 import { Ginosho } from "@/types/scout/ginosho";
 import ShowData from "@/style/showData";
-import { usePopup } from "@/fullscreanPopup";
+import { usePopup } from "@/style/fullscreanPopup";
 
 const GinoshoList = ({
   ginosho,
@@ -33,7 +33,19 @@ const GinoshoList = ({
                 }
                 bordered={ginosho.length - index > 1 && true}
                 detailAction={() => {
-                  popup.showPopup({ content: <DetailPopup data={doc} /> });
+                  popup.showPopup({
+                    content: <DetailPopup data={doc} />,
+                    title: "技能章詳細",
+                    footer: (
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        日本連盟のページへ
+                      </a>
+                    ),
+                  });
                 }}
               />
             );
@@ -54,88 +66,32 @@ export default GinoshoList;
 const DetailPopup = ({ data }: { data: Ginosho }): React.ReactElement => {
   return (
     <>
-      <div
-        style={{ borderBottom: "1px solid #000000ff" }}
-        className="d-flex mb-3"
-      >
-        <h4 className="flex-grow-1 mt-auto">{data.name}</h4>
-      </div>
+      <h4 className="pb-1" style={{ borderBottom: "1px solid #000000ff" }}>
+        {data.name}
+      </h4>
       <div key={data.id}>
-        <InputGroup>
-          <InputGroup.Text>技能章名</InputGroup.Text>
-          <select
-            className="form-select"
-            value={dataTmp.unique}
-            onChange={async (e) => {
-              const selectedMaster = await getGinoshoDetail(e.target.value);
-              setDataTmp({
-                ...dataTmp,
-                unique: selectedMaster?.id || "",
-                name: selectedMaster?.name || "",
-                cert: selectedMaster?.cert || false,
-                details:
-                  selectedMaster?.details.map((detail) => ({
-                    id: detail.id,
-                    has: false,
-                    date: new Date(),
-                  })) || [],
-              });
-              setDetailList(selectedMaster ? selectedMaster.details : []);
-            }}
-          >
-            <option value="">選択してください</option>
-            {masterData?.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name + (item.cert ? " (考査員認定)" : " (隊長認定)")}
-              </option>
-            ))}
-          </select>
-        </InputGroup>
-        <InputGroupUI
-          label={dataTmp.cert ? "考査員名" : "隊長名"}
-          className="mt-2"
-          value={dataTmp.certName}
-          setValueFunc={(v) => {
-            setDataTmp({ ...dataTmp, certName: v });
-          }}
+        <ShowData
+          label="取得日時"
+          value={data.has ? convertInputDate(data.date) : "未取得"}
         />
-        <InputGroupUI
-          label={dataTmp.has ? "取得済" : "未取得"}
-          type="date"
-          className="mt-2"
-          chkbox={dataTmp.has}
-          setChkboxFunc={(checked) => {
-            setDataTmp({ ...dataTmp, has: checked });
-          }}
-          value={convertInputDate(dataTmp.date)}
-          setValueFunc={(v) => {
-            setDataTmp({ ...dataTmp, date: new Date(v) });
-          }}
+        <ShowData
+          label="認定区分"
+          value={data.cert ? "考査員認定" : "隊長認定"}
         />
-        <h4 style={{ borderBottom: "1px solid #000000ff" }}>細目</h4>
-        {DetailList.length > 0 ? (
-          DetailList.map((detail, index) => (
-            <InputGroupUI
-              key={index}
-              type="date"
+        <ShowData label={data.cert ? "考査員" : "隊長"} value={data.certName} />
+        <h4
+          style={{ borderBottom: "1px solid #000000ff" }}
+          className="mt-3 pb-1"
+        >
+          細目
+        </h4>
+        {data.details && data.details.length > 0 ? (
+          data.details.map((detail) => (
+            <ShowData
+              key={detail.sort}
               label={`細目 ${detail.number}`}
-              value={convertInputDate(dataTmp.details[index].date)}
-              setValueFunc={(v) => {
-                const newDetails = [...dataTmp.details];
-                newDetails[index] = { ...newDetails[index], date: new Date(v) };
-                setDataTmp({ ...dataTmp, details: newDetails });
-              }}
-              explain={detail.description}
-              chkbox={dataTmp.details[index].has}
-              setChkboxFunc={(checked) => {
-                const newDetails = [...dataTmp.details];
-                newDetails[index] = {
-                  ...newDetails[index],
-                  has: checked,
-                  date: checked ? new Date() : newDetails[index].date,
-                };
-                setDataTmp({ ...dataTmp, details: newDetails });
-              }}
+              value={detail.has ? convertInputDate(detail.date) : `未取得`}
+              memo={detail.description}
             />
           ))
         ) : (

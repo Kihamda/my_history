@@ -17,6 +17,9 @@ export interface Ginosho {
   // 考査員認定か
   cert: boolean;
 
+  // 日本連盟のURL
+  url: string;
+
   // 技能章の取得日
   date: Date;
 

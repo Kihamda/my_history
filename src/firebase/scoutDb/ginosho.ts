@@ -36,6 +36,7 @@ export const getGinosho = async (scoutId: string): Promise<Ginosho[]> => {
         certName: data.certName, // 技能章の考査員名
         cert: master?.cert || false, // 考査員認定か
         has: data.has, // 取得済みかどうか
+        url: master?.url || "", // 日本連盟のURL
         details: data.details.map((detail, index) => ({
           sort: index + 1,
           number:

@@ -1,5 +1,5 @@
 import { Ginosho } from "@/types/scout/ginosho";
-import { usePopup } from "@/fullscreanPopup";
+import { usePopup } from "@/style/fullscreanPopup";
 import { Button, InputGroup } from "react-bootstrap";
 import getRandomStr from "@/tools/getRandomStr";
 import {
@@ -22,21 +22,45 @@ const GinoshoList = ({
 }): React.ReactElement => {
   const popup = usePopup();
 
+  const showPopup = (data: Ginosho) => {
+    popup.showPopup({
+      content: (
+        <Suspense fallback={<LoadingSplash />}>
+          <DetailPopup
+            data={data}
+            setDataFunc={(newData) => {
+              const newList = [...ginosho];
+              const index = newList.findIndex((item) => item.id === newData.id);
+              if (index !== -1) {
+                newList[index] = newData;
+                setGinoshoFunc(newList);
+              } else {
+                // 新規追加
+                setGinoshoFunc([...newList, newData]);
+              }
+            }}
+          />
+        </Suspense>
+      ),
+    });
+  };
+
   const createNewRecord = () => {
     // 新規作成処理
-    setGinoshoFunc([
-      ...ginosho,
-      {
-        id: getRandomStr(20),
-        unique: "",
-        name: "",
-        date: new Date(),
-        cert: false,
-        certName: "",
-        has: false,
-        details: [],
-      },
-    ]);
+    const newData = {
+      id: getRandomStr(20),
+      unique: "",
+      name: "",
+      date: new Date(),
+      cert: false,
+      certName: "",
+      has: false,
+      url: "",
+      details: [],
+    };
+
+    // 追加したデータの編集画面を開く
+    showPopup(newData);
   };
 
   return (
@@ -64,22 +88,7 @@ const GinoshoList = ({
                 }
                 detailButtonContent="編集"
                 bordered={index < ginosho.length - 1}
-                detailAction={() =>
-                  popup.showPopup({
-                    content: (
-                      <Suspense fallback={<LoadingSplash />}>
-                        <DetailPopup
-                          data={doc}
-                          setDataFunc={(data) => {
-                            const newList = [...ginosho];
-                            newList[index] = data;
-                            setGinoshoFunc(newList);
-                          }}
-                        />
-                      </Suspense>
-                    ),
-                  })
-                }
+                detailAction={() => showPopup(doc)}
               />
             );
           })

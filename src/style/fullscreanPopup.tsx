@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface PopupData {
   content: ReactNode;
+  title?: ReactNode;
+  footer?: ReactNode;
   showCloseButton?: boolean;
   onClose?: () => void;
 }
@@ -65,6 +67,8 @@ export const PopupProvider: React.FC<PopupProviderProps> = ({ children }) => {
         <FullscreenPopupCard
           onClose={hidePopup}
           showCloseButton={popupState.data.showCloseButton}
+          title={popupState.data.title}
+          footer={popupState.data.footer}
         >
           {popupState.data.content}
         </FullscreenPopupCard>
@@ -76,10 +80,14 @@ export const PopupProvider: React.FC<PopupProviderProps> = ({ children }) => {
 const FullscreenPopupCard = ({
   children,
   onClose,
+  title,
+  footer,
   showCloseButton = true,
 }: {
   children: React.ReactNode;
   onClose?: () => void;
+  title?: React.ReactNode;
+  footer?: React.ReactNode;
   showCloseButton?: boolean;
 }): React.ReactElement => {
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -105,7 +113,6 @@ const FullscreenPopupCard = ({
   const cardStyle: React.CSSProperties = {
     maxWidth: "90vw",
     maxHeight: "90vh",
-    overflow: "auto",
     position: "relative",
   };
 
@@ -115,24 +122,32 @@ const FullscreenPopupCard = ({
         <div className="col-12 col-md-8 col-lg-6 col-xxl-4">
           <div style={cardStyle} className="card">
             {showCloseButton && onClose && (
-              <div className="card-header text-end">
-                <button
-                  className="btn btn-light"
-                  onClick={onClose}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      "rgba(255, 255, 255, 0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      "rgba(255, 255, 255, 0.2)";
-                  }}
-                >
-                  <FontAwesomeIcon icon={faClose} />
-                </button>
+              <div className="card-header d-flex">
+                <h5 className="flex-grow-1 d-flex align-items-center mb-0">
+                  {title}
+                </h5>
+                <div className="flex-grow-0">
+                  <button
+                    className="btn btn-light"
+                    onClick={onClose}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor =
+                        "rgba(255, 255, 255, 0.3)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor =
+                        "rgba(255, 255, 255, 0.2)";
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faClose} />
+                  </button>
+                </div>
               </div>
             )}
-            <div className="card-body">{children}</div>
+            <div className="card-body" style={{ overflow: "auto" }}>
+              {children}
+            </div>
+            {footer && <div className="card-footer">{footer}</div>}
           </div>
         </div>
       </div>
