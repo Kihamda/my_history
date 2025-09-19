@@ -25,9 +25,9 @@ export interface Ginosho {
 }
 
 export interface GinoshoDetail {
-  id: number;
-  description: string;
+  sort: number;
   number: string;
-  checked: boolean;
+  description: string;
+  has: boolean;
   date: Date;
 }

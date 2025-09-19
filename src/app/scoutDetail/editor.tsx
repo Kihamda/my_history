@@ -91,9 +91,9 @@ const ScoutDetailEditor = ({
         <div className="row mt-3">
           <div className="col-12 col-md-6 mb-3">
             <GinoshoList
-              ginosho={scoutData.ginosho}
+              ginosho={scoutDataGinosho}
               setGinoshoFunc={(data) => {
-                setScoutData((prev) => ({ ...prev, ginosho: data }));
+                setScoutDataGinosho(data);
               }}
             />
           </div>

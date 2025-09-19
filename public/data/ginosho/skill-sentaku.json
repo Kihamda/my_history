@@ -5,37 +5,37 @@
     "url": "https://www.scout.or.jp/member/skill-sentaku",
     "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "取り扱い絵表示を理解し説明できること。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "自分の下着類、靴下を洗濯し、ユニフォーム、ネッカチーフやハンカチ等にアイロン仕上げができること。"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "自宅の洗濯機の特徴を知り、使いこなせるか、実際に操作ができること。"
         },
         {
-            "id": "4",
+            "sort": 4,
             "number": "4",
             "description": "ドライクリーニングと水洗いの違いについて説明できること。"
         },
         {
-            "id": "5",
+            "sort": 5,
             "number": "5",
             "description": "酸素系漂白と塩素系漂白の違いと使用法を知ること。"
         },
         {
-            "id": "6",
+            "sort": 6,
             "number": "6",
             "description": "汚れの種類を3種以上あげ、それに適したクリーニング方法を説明できること。"
         },
         {
-            "id": "7",
+            "sort": 7,
             "number": "7",
             "description": "環境に適した野外での洗濯方法と使用石けん及び洗濯汚水の処理を考えること。"
         }

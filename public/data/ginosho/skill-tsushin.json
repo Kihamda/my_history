@@ -5,27 +5,27 @@
     "url": "https://www.scout.or.jp/member/skill-tsushin",
     "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "100m以上離れた2点で手旗の送受信ができる。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "号笛または旗を用いたモールス信号で10文字程度の文章の送受信ができる。"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "追跡記号を10種以上覚える。"
         },
         {
-            "id": "4",
+            "sort": 4,
             "number": "4",
             "description": "300m以上の距離に追跡記号を設置し班員を誘導する。"
         },
         {
-            "id": "5",
+            "sort": 5,
             "number": "5",
             "description": "救難信号の種類と使い方を説明する。"
         }

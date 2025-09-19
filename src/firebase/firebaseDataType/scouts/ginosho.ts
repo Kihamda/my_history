@@ -1,5 +1,3 @@
-import { GinoshoDetail } from "@/types/scout/ginosho";
-
 export interface FirestoreGinosho {
   /** 技能章のID */
   id: string;
@@ -14,5 +12,10 @@ export interface FirestoreGinosho {
   certName: string;
 
   // 細目
-  details: GinoshoDetail[];
+  details: GinoshoDetailFirestore[];
+}
+
+export interface GinoshoDetailFirestore {
+  has: boolean;
+  date: Date;
 }

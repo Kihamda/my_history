@@ -15,7 +15,7 @@ import {
 } from "@/types/scout/scoutUnit";
 import { getGradeMasterList } from "@/types/master/grade";
 import { getOptedUnitDataDefault } from "@/types/scout/scoutUnit";
-import { getGinosho } from "./ginosho";
+import { getGinosho, setGinosho } from "./ginosho";
 import { getEvents } from "./event";
 
 // Firebaseからスカウトデータを取得する関数
@@ -82,6 +82,8 @@ export const setScoutRecord = async (
       error: string;
     }
 > => {
+  // debug
+  console.log("Saving scout data:", scout);
   try {
     const scoutRef = doc(db, "scouts", scout.id);
 
@@ -121,10 +123,12 @@ export const setScoutRecord = async (
       unit: unit,
     };
 
-    //tst
-
     // Firestoreのドキュメントに保存
     await setDoc(scoutRef, scoutRecord);
+
+    // 成功した場合の処理
+    await setGinosho(scout.id, scout.ginosho);
+
     return { status: "success", data: scout };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

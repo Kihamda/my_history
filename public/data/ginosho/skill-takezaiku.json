@@ -5,17 +5,17 @@
     "url": "https://www.scout.or.jp/member/skill-takezaiku",
     "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "竹材の種類と特性、用途が説明できること。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "竹細工用の道具の種類とその使用法、手入れ法を知ること。"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "次の作品を作ること。\nア) かご、またはざる1種以上\nイ) 花筒、鳥かご、虫かご、すだれ1種以上\nウ) 竹の玩具2種以上\nエ) 竹で作った楽器2種以上"
         }

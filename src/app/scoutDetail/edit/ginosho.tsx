@@ -50,11 +50,17 @@ const GinoshoList = ({
             return (
               <ShowData
                 key={doc.id}
-                value={doc.has ? convertInputDate(doc.date) : "未取得"}
+                value={
+                  doc.has
+                    ? convertInputDate(doc.date)
+                    : `未取得(${doc.details.filter((d) => d.has).length}/${
+                        doc.details.length
+                      })`
+                }
                 label={
                   doc.name
                     ? doc.name + (doc.cert ? " (考査員認定)" : " (隊長認定)")
-                    : "未設定"
+                    : `未設定`
                 }
                 detailButtonContent="編集"
                 bordered={index < ginosho.length - 1}
@@ -107,8 +113,28 @@ const DetailPopup = ({
     });
   }, []);
 
+  const popup = usePopup();
+
   return (
     <>
+      <div
+        style={{ borderBottom: "1px solid #000000ff" }}
+        className="d-flex mb-3"
+      >
+        <h4 className="flex-grow-1 mt-auto">基本情報</h4>
+        <div className="flex-grow-0">
+          <Button
+            variant="primary"
+            className="m-1"
+            onClick={() => {
+              setDataFunc(dataTmp);
+              popup.hidePopup();
+            }}
+          >
+            保存
+          </Button>
+        </div>
+      </div>
       <div key={data.id}>
         <InputGroup>
           <InputGroup.Text>技能章名</InputGroup.Text>
@@ -124,11 +150,11 @@ const DetailPopup = ({
                 cert: selectedMaster?.cert || false,
                 details:
                   selectedMaster?.details.map((detail) => ({
-                    id: detail.id,
+                    sort: detail.sort,
+                    has: false,
+                    date: new Date(),
                     description: detail.description,
                     number: detail.number,
-                    checked: false,
-                    date: new Date(),
                   })) || [],
               });
             }}
@@ -163,24 +189,25 @@ const DetailPopup = ({
           }}
         />
         <h4 style={{ borderBottom: "1px solid #000000ff" }}>細目</h4>
-        {dataTmp.details && dataTmp.details.length > 0 ? (
+        {dataTmp.details.length > 0 ? (
           dataTmp.details.map((detail, index) => (
             <InputGroupUI
               key={index}
+              type="date"
               label={`細目 ${detail.number}`}
-              value={convertInputDate(detail.date)}
+              value={convertInputDate(dataTmp.details[index].date)}
               setValueFunc={(v) => {
                 const newDetails = [...dataTmp.details];
                 newDetails[index] = { ...newDetails[index], date: new Date(v) };
                 setDataTmp({ ...dataTmp, details: newDetails });
               }}
               explain={detail.description}
-              chkbox={detail.checked}
+              chkbox={dataTmp.details[index].has}
               setChkboxFunc={(checked) => {
                 const newDetails = [...dataTmp.details];
                 newDetails[index] = {
                   ...newDetails[index],
-                  checked: checked,
+                  has: checked,
                   date: checked ? new Date() : newDetails[index].date,
                 };
                 setDataTmp({ ...dataTmp, details: newDetails });

@@ -83,7 +83,7 @@ def load(id):
             parts = line.split(",")
             db.append(
                 {
-                    "id": parts[0],
+                    "sort": int(parts[0]),
                     "number": parts[1],
                     "description": parts[2].replace(
                         "[[enter]]",
@@ -100,7 +100,7 @@ def save(id, db):
     ) as file:
         for record in db:
             note = record["description"].replace("\n", "[[enter]]")
-            file.write(f"{record['id']},{record['number']},{note}\n")
+            file.write(f"{record['sort']},{record['number']},{note}\n")
 
 
 def parse_new_challenge_list(html: str) -> list[str]:
@@ -161,7 +161,7 @@ def detailLoadFromURL(id):
         data = requests.get(url)
         soup = parse_new_challenge_list(data.text)
         for i, t in enumerate(soup, 1):
-            db.append({"id": i, "number": i, "description": t})
+            db.append({"sort": i, "number": i, "description": t})
 
         save(id, db)
     else:
@@ -179,5 +179,5 @@ def list(id):
     else:
         for record in db:
             print(
-                f"ID: {record['id']}, 見かけの番号: {record['number']}, 説明: {record['description']}"
+                f"見かけの番号: {record['sort']}, 実際の番号: {record['number']}, 説明: {record['description']}"
             )

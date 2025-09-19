@@ -60,7 +60,11 @@ def build():
         det = []
         for d in detail:
             det.append(
-                {"id": d["id"], "number": d["number"], "description": d["description"]}
+                {
+                    "sort": d["sort"],
+                    "number": d["number"],
+                    "description": d["description"],
+                }
             )
         data = {
             "id": record["id"],
