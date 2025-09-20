@@ -2,6 +2,8 @@ import { NavLink } from "react-router";
 
 import { logout } from "@/firebase/userAuth/loginLogout";
 import { FC } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
 
 const Header: FC<{ name: string; isLeader: boolean; isAdmin: boolean }> = ({
   name,
@@ -90,20 +92,27 @@ const Header: FC<{ name: string; isLeader: boolean; isAdmin: boolean }> = ({
                 </a>
               </li>
             </ul>
-            <ul className="navbar-nav ms-auto d-none d-lg-flex">
-              <span className="d-grid align-content-center me-3">
-                {name + " さん"}
-              </span>
-              <li className="nav-item d-flex">
-                <button className="btn btn-primary" onClick={handleLogout}>
-                  ログアウト
-                </button>
-              </li>
+            <ul className="navbar-nav ms-auto d-none d-lg-flex dropdown">
+              <button
+                type="button"
+                className="btn btn-outline-secondary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <FontAwesomeIcon icon={faUser} /> {name + "さん"}
+              </button>
+              <ul className="dropdown-menu me-3">
+                <li>
+                  <a className="dropdown-item" onClick={handleLogout}>
+                    ログアウト
+                  </a>
+                </li>
+              </ul>
             </ul>
           </div>
           <div className="offcanvas-footer d-lg-none text-center">
             <div className="d-grid align-content-center justify-content-center mb-3">
-              <span>{name + " さん"}</span>
+              <span>{name + "さん"}</span>
               <button className="btn btn-primary" onClick={handleLogout}>
                 ログアウト
               </button>

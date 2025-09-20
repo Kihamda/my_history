@@ -142,6 +142,18 @@ const DetailPopup = ({
           >
             保存
           </Button>
+          <Button
+            variant="danger"
+            className="m-1"
+            onClick={() => {
+              if (confirm("この技能章の記録を削除します。よろしいですか？")) {
+                setDataFunc({ ...dataTmp, id: "" });
+                popup.hidePopup();
+              }
+            }}
+          >
+            削除
+          </Button>
         </div>
       </div>
       <div key={data.id}>

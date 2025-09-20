@@ -98,7 +98,10 @@ const ScoutDetailEditor = ({
             />
           </div>
           <div className="col-12 col-md-6 mb-3">
-            <Events events={scoutData.events} />
+            <Events
+              events={scoutDataEvents}
+              setEventFunc={(data) => setScoutDataEvents(data)}
+            />
           </div>
         </div>
       </div>
