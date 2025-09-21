@@ -15,7 +15,7 @@ const SysManager = lazy(() => import("@/sysManager/sysManager"));
 const Auth = lazy(() => import("@/auth/auth"));
 const AppPage = lazy(() => import("@/app/app"));
 const AuthProvider = lazy(() => import("@/firebase/authContext"));
-const PopupProvider = lazy(() => import("@/fullscreanPopup"));
+const PopupProvider = lazy(() => import("@/style/fullscreanPopup"));
 
 // ここで/〇〇/の変更が生じるときはfirebase.jsonのrewritesも変更すること
 

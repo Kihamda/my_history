@@ -2,6 +2,9 @@ export interface Ginosho {
   // 固有ID
   id: string;
 
+  // 取得済みかどうか
+  has: boolean;
+
   // 技能章のID
   unique: string;
 
@@ -14,17 +17,20 @@ export interface Ginosho {
   // 考査員認定か
   cert: boolean;
 
+  // 日本連盟のURL
+  url: string;
+
   // 技能章の取得日
   date: Date;
-
-  // メモ
-  description: string;
 
   // 細目
   details: GinoshoDetail[];
 }
 
 export interface GinoshoDetail {
-  id: string;
-  checked: boolean;
+  sort: number;
+  number: string;
+  description: string;
+  has: boolean;
+  date: Date;
 }

@@ -1,7 +1,7 @@
 import convertInputDate from "@/tools/date/convertInputDate";
 import { Ginosho } from "@/types/scout/ginosho";
 import ShowData from "@/style/showData";
-import { usePopup } from "@/fullscreanPopup";
+import { usePopup } from "@/style/fullscreanPopup";
 
 const GinoshoList = ({
   ginosho,
@@ -24,11 +24,28 @@ const GinoshoList = ({
               <ShowData
                 key={doc.id}
                 label={doc.name + (doc.cert ? " (考査員認定)" : " (隊長認定)")}
-                value={convertInputDate(doc.date)}
-                memo={doc.description}
+                value={
+                  doc.has
+                    ? convertInputDate(doc.date)
+                    : `未取得 (${doc.details.filter((d) => d.has).length}/${
+                        doc.details.length
+                      })`
+                }
                 bordered={ginosho.length - index > 1 && true}
                 detailAction={() => {
-                  popup.showPopup({ content: <DetailPopup data={doc} /> });
+                  popup.showPopup({
+                    content: <DetailPopup data={doc} />,
+                    title: "技能章詳細",
+                    footer: (
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        日本連盟のページへ
+                      </a>
+                    ),
+                  });
                 }}
               />
             );
@@ -46,12 +63,41 @@ const GinoshoList = ({
 
 export default GinoshoList;
 
-const DetailPopup = ({ data }: { data: Ginosho }) => {
+const DetailPopup = ({ data }: { data: Ginosho }): React.ReactElement => {
   return (
-    <div>
-      <h5>{data.name}</h5>
-      <p>{data.cert ? "考査員認定" : "隊長認定"}</p>
-      <p>{data.description}</p>
-    </div>
+    <>
+      <h4 className="pb-1" style={{ borderBottom: "1px solid #000000ff" }}>
+        {data.name}
+      </h4>
+      <div key={data.id}>
+        <ShowData
+          label="取得日時"
+          value={data.has ? convertInputDate(data.date) : "未取得"}
+        />
+        <ShowData
+          label="認定区分"
+          value={data.cert ? "考査員認定" : "隊長認定"}
+        />
+        <ShowData label={data.cert ? "考査員" : "隊長"} value={data.certName} />
+        <h4
+          style={{ borderBottom: "1px solid #000000ff" }}
+          className="mt-3 pb-1"
+        >
+          細目
+        </h4>
+        {data.details && data.details.length > 0 ? (
+          data.details.map((detail) => (
+            <ShowData
+              key={detail.sort}
+              label={`細目 ${detail.number}`}
+              value={detail.has ? convertInputDate(detail.date) : `未取得`}
+              memo={detail.description}
+            />
+          ))
+        ) : (
+          <p>細目はありません</p>
+        )}
+      </div>
+    </>
   );
 };

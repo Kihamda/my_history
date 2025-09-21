@@ -1,4 +1,6 @@
 import { ScoutUnit, UnitExperience } from "@/types/scout/scoutUnit";
+import { Ginosho } from "./ginosho";
+import { ScoutEvent } from "./event";
 
 export interface Scout {
   id: string; // スカウトのユニークID
@@ -6,6 +8,10 @@ export interface Scout {
   personal: ScoutPersonalData;
 
   unit: UnitExperience[];
+
+  ginosho: Ginosho[];
+
+  events: ScoutEvent[];
 }
 
 export interface AuthedUser {

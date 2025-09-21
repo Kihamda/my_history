@@ -33,6 +33,8 @@ const NewScoutWizard = () => {
       id: getRandomStr(20),
       personal: personalData,
       unit: unit,
+      ginosho: [],
+      events: [],
     };
 
     const result = await setScoutRecord(newScoutData);

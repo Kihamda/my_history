@@ -3,24 +3,24 @@
     "name": "スカウトソング章",
     "cert": "false",
     "url": "https://www.scout.or.jp/member/skill-scout-song",
-    "detail": [
+    "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "「君が代」と「連盟歌」を正しく歌える。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "スカウト歌集から10曲以上、スカウトソングを歌える。"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "セレモニーで連盟歌の指揮を正しく行う。"
         },
         {
-            "id": "4",
+            "sort": 4,
             "number": "4",
             "description": "5曲以上のスカウトソングを歌唱指導することができる。"
         }

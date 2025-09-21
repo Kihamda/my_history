@@ -7,6 +7,10 @@ import { Link, useNavigate } from "react-router";
 import { Button } from "react-bootstrap";
 import { useState } from "react";
 import { setScoutRecord } from "@/firebase/scoutDb/scout";
+import { Ginosho } from "@/types/scout/ginosho";
+import { ScoutEvent } from "@/types/scout/event";
+import GinoshoList from "./edit/ginosho";
+import Events from "./edit/events";
 
 const ScoutDetailEditor = ({
   scoutData,
@@ -24,6 +28,14 @@ const ScoutDetailEditor = ({
     scoutData.unit
   );
 
+  const [scoutDataGinosho, setScoutDataGinosho] = useState<Ginosho[]>(
+    scoutData.ginosho
+  );
+
+  const [scoutDataEvents, setScoutDataEvents] = useState<ScoutEvent[]>(
+    scoutData.events
+  );
+
   // 保存時遷移用
   const nav = useNavigate();
 
@@ -33,6 +45,8 @@ const ScoutDetailEditor = ({
       ...data,
       personal: scoutDataPersonal,
       unit: scoutDataUnit,
+      ginosho: scoutDataGinosho,
+      events: scoutDataEvents,
     };
 
     const result = await setScoutRecord(updatedData);
@@ -72,6 +86,25 @@ const ScoutDetailEditor = ({
         scoutData={scoutDataPersonal}
         setScoutData={setScoutDataPersonal}
       />
+      <div className="mt-5">
+        <FullWidthCardHeader title="活動記録" />
+        <div className="row mt-3">
+          <div className="col-12 col-md-6 mb-3">
+            <GinoshoList
+              ginosho={scoutDataGinosho}
+              setGinoshoFunc={(data) => {
+                setScoutDataGinosho(data);
+              }}
+            />
+          </div>
+          <div className="col-12 col-md-6 mb-3">
+            <Events
+              events={scoutDataEvents}
+              setEventFunc={(data) => setScoutDataEvents(data)}
+            />
+          </div>
+        </div>
+      </div>
       <div className="mt-5">
         <FullWidthCardHeader
           title="各隊での活動記録"

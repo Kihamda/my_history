@@ -15,8 +15,9 @@ def build():
     for record in db:
         try:
             detail = gradeDetailLoad(record["id"])
+            # print(detail)
         except Exception as e:
-            # print(f"Error loading grade detail for {record['id']}: {e}")
+            print(f"Error loading grade detail for {record['id']}: {e}")
             detail = []
 
         det = []
@@ -33,7 +34,7 @@ def build():
             "id": record["id"],
             "name": record["name"],
             "detailIndex": record["detailIndex"],
-            "detail": det,
+            "details": det,
         }
         json.dump(
             data,
@@ -59,14 +60,18 @@ def build():
         det = []
         for d in detail:
             det.append(
-                {"id": d["id"], "number": d["number"], "description": d["description"]}
+                {
+                    "sort": d["sort"],
+                    "number": d["number"],
+                    "description": d["description"],
+                }
             )
         data = {
             "id": record["id"],
             "name": record["name"],
             "cert": record["cert"],
             "url": record["url"],
-            "detail": det,
+            "details": det,
         }
         json.dump(
             data,

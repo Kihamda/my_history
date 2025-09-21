@@ -3,34 +3,34 @@
     "name": "観察章",
     "cert": "false",
     "url": "https://www.scout.or.jp/member/skill-kansatsu",
-    "detail": [
+    "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "食用植物、有害植物をそれぞれ2種以上見分ける。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "24個の小さなものを1分間観察し、そのうちの16個以上を記憶によって覚える。"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "ハイキングで観察物を3種以上の方法（写真、スケッチ、拓本、採取など）で記録する。"
         },
         {
-            "id": "4",
+            "sort": 4,
             "number": "4",
             "description": "樹木5種類以上をスケッチまたは写真で記録し、特徴を述べる。"
         },
         {
-            "id": "5",
+            "sort": 5,
             "number": "5",
             "description": "北極星の発見方法を知り、北極星を発見できる。また、5つの星座を発見できる。"
         },
         {
-            "id": "6",
+            "sort": 6,
             "number": "6",
             "description": "身近にいる動物（ほ乳類・鳥類・魚類など）について観察し、報告する。"
         }

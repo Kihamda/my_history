@@ -3,49 +3,49 @@
     "name": "森林愛護章",
     "cert": "true",
     "url": "https://www.scout.or.jp/member/skill-shinrin-aigo",
-    "detail": [
+    "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "潅木及び喬木それぞれの10種以上を識別し、その名称と特性を説明できること。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "用材となる植物10種以上を知り、それぞれの用途を述べること。"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "森林愛護のための立札などを作り、標語、ポスターを作って掲示すること。"
         },
         {
-            "id": "4",
+            "sort": 4,
             "number": "4",
             "description": "森林を害する害虫と害獣を知り、その防除法を知ること。"
         },
         {
-            "id": "5",
+            "sort": 5,
             "number": "5",
             "description": "樹木の種子3種以上を採集し、たねまきした経験があること、または実生の採集、移植の経験を有すること。"
         },
         {
-            "id": "6",
+            "sort": 6,
             "number": "6",
             "description": "植林の経験（新植、間伐、下刈り、手入れのすべて）を有すること。"
         },
         {
-            "id": "7",
+            "sort": 7,
             "number": "7",
             "description": "森林被害の統計を調べ、その原因について考察すること。"
         },
         {
-            "id": "8",
+            "sort": 8,
             "number": "8",
             "description": "森林火災の予防措置と消火法及び森林火災発見に際してとるべき措置を知ること。"
         },
         {
-            "id": "9",
+            "sort": 9,
             "number": "9",
             "description": "「自然保護憲章」の大要を知り、説明できること。"
         }

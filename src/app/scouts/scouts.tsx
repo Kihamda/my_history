@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "react-router";
 import { SearchQuery, SearchResult } from "@/types/search/searchQueryType";
 import SearchboxCard from "./parts/searchBoxCard";
@@ -46,36 +46,26 @@ const Scouts: React.FC = () => {
 
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setResult(await searchScout(searchQuery, groupId));
-      setIsPending(false);
-    };
-    if (
-      (searchQuery.scoutId ||
-        searchQuery.name ||
-        searchQuery.currentUnit.length > 0) &&
-      Object.keys(getObjectDiff(searchQuery, initialSearchQuery)).length > 0
-    ) {
-      // 検索クエリが設定されている場合のみ検索を実行
-      // SearchQueryが変更されたときに検索クエリを更新
-      setIsPending(true);
-      setSearchQueryCache(searchQuery);
-      fetchData();
+  const handleSearch = async (query: SearchQuery) => {
+    if (Object.keys(getObjectDiff(query, searchQuery)).length === 0) {
+      // 差分がない場合は何もしない
+      return;
     }
-  }, [searchQuery]);
+    setIsPending(true);
+    setSearchQuery(query);
+    setSearchQueryCache(searchQuery);
 
-  useEffect(() => {
-    // 検索結果をローカルストレージに保存
-    setScoutsCache(result);
-  }, [result]);
+    // 検索実行
+    const searchResult = await searchScout(query, groupId);
+
+    setResult(searchResult);
+    setScoutsCache(searchResult);
+    setIsPending(false);
+  };
 
   return (
     <div>
-      <SearchboxCard
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
+      <SearchboxCard searchQuery={searchQuery} SearchFunc={handleSearch} />
       <div className="mt-5">
         <FullWidthCardHeader
           title="検索結果"

@@ -3,34 +3,34 @@
     "name": "華道章",
     "cert": "true",
     "url": "https://www.scout.or.jp/member/skill-kado",
-    "detail": [
+    "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "活け花の起源と歴史、様式の変遷を簡単に説明すること。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "指定された花材について、次のことができること。\nア) 切り方\nイ) 水揚げ\nウ) 撓め\nエ) 留め"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "自分の流派の基本の花型を用いて3つ以上の作品を提出すること。"
         },
         {
-            "id": "4",
+            "sort": 4,
             "number": "4",
             "description": "四季の代表的な花材を各々3つ以上あげ、その特徴について述べること。"
         },
         {
-            "id": "5",
+            "sort": 5,
             "number": "5",
             "description": "活け花の展覧会（花展）等に行って、実際の作品を鑑賞すること。"
         },
         {
-            "id": "6",
+            "sort": 6,
             "number": "6",
             "description": "作品を2回以上、発表会等に出品した経験を有すること。"
         }

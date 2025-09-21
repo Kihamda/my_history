@@ -15,6 +15,8 @@ import {
 } from "@/types/scout/scoutUnit";
 import { getGradeMasterList } from "@/types/master/grade";
 import { getOptedUnitDataDefault } from "@/types/scout/scoutUnit";
+import { getGinosho, setGinosho } from "./ginosho";
+import { getEvents } from "./event";
 
 // Firebaseからスカウトデータを取得する関数
 export const getScoutData = async (scoutId: string): Promise<Scout | null> => {
@@ -29,8 +31,9 @@ export const getScoutData = async (scoutId: string): Promise<Scout | null> => {
 
     const scoutData = convertTimestampsDate(scoutDoc.data()) as FirestoreScout;
 
-    const gradeMaster = await getGradeMasterList();
     // unitの中身に名前を追加する
+    // unitにマスターデータ適用
+    const gradeMaster = await getGradeMasterList();
     const newUnit: UnitExperience[] = scoutData.unit.map(
       (unit): UnitExperience => ({
         ...unit,
@@ -46,10 +49,15 @@ export const getScoutData = async (scoutId: string): Promise<Scout | null> => {
       })
     );
 
+    const ginoshoData = await getGinosho(scoutId);
+    const eventsData = await getEvents(scoutId);
+
     return {
       id: scoutDoc.id,
       personal: scoutData.personal,
       unit: newUnit,
+      ginosho: ginoshoData,
+      events: eventsData,
     };
   } catch (error) {
     raiseError("Error fetching scout data:");
@@ -74,6 +82,8 @@ export const setScoutRecord = async (
       error: string;
     }
 > => {
+  // debug
+  console.log("Saving scout data:", scout);
   try {
     const scoutRef = doc(db, "scouts", scout.id);
 
@@ -113,10 +123,12 @@ export const setScoutRecord = async (
       unit: unit,
     };
 
-    //tst
-
     // Firestoreのドキュメントに保存
     await setDoc(scoutRef, scoutRecord);
+
+    // 成功した場合の処理
+    await setGinosho(scout.id, scout.ginosho);
+
     return { status: "success", data: scout };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

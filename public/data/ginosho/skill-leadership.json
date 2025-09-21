@@ -3,29 +3,29 @@
     "name": "リーダーシップ章",
     "cert": "false",
     "url": "https://www.scout.or.jp/member/skill-leadership",
-    "detail": [
+    "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "班長または次長（ベンチャースカウトの場合は議長またはチーフ）として、6か月以上、隊運営に携わる。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "班の係（ベンチャースカウトの場合は隊または活動グループ）において、それぞれの役割について説明できる。"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "他のスカウトの進級に向けて、スカウト技能を指導する。"
         },
         {
-            "id": "4",
+            "sort": 4,
             "number": "4",
             "description": "傾聴について知り、仲間の意見を理解する。"
         },
         {
-            "id": "5",
+            "sort": 5,
             "number": "5",
             "description": "コミュニケーションに関する書籍を読み、自分の意見を隊長と話し合う。"
         }

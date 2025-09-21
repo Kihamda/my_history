@@ -3,44 +3,44 @@
     "name": "計測章",
     "cert": "false",
     "url": "https://www.scout.or.jp/member/skill-keisoku",
-    "detail": [
+    "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "自分の身体や身近にあるものを用いて簡単な計測を行う。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "ロープに1m刻みの目盛りを施し、計測に使える。"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "100mの距離を誤差5％以内で歩測する。"
         },
         {
-            "id": "4",
+            "sort": 4,
             "number": "4",
             "description": "スカウトペースで2㎞を15分で移動する。"
         },
         {
-            "id": "5",
+            "sort": 5,
             "number": "5",
             "description": "はかりや計量器を使わずに、1合の米、1ℓの水を15％以内の誤差で測る。"
         },
         {
-            "id": "6",
+            "sort": 6,
             "number": "6",
             "description": "自作の簡易測量器具を使い、樹木などの高さを誤差10％以内で測る。"
         },
         {
-            "id": "7",
+            "sort": 7,
             "number": "7",
             "description": "簡易測量法を用い、到達できない2点間の距離（長さ、高さ）を誤差10％以内で測る。"
         },
         {
-            "id": "8",
+            "sort": 8,
             "number": "8",
             "description": "計測を取り入れた集会を計画、実施を行う。"
         }

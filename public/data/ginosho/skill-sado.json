@@ -3,29 +3,29 @@
     "name": "茶道章",
     "cert": "true",
     "url": "https://www.scout.or.jp/member/skill-sado",
-    "detail": [
+    "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "茶道の起源および歴史を簡単に説明すること。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "次の基本動作ができること。\nア) お辞儀\nイ) 襖の開閉\nウ) 立ち方、歩き方\nエ) 帛紗の扱い方\nオ) 茶器、茶杓のふき方\nカ) 茶筅通し\nキ) 茶碗のふき方\nク) 茶杓の扱い方"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "次の「客の作法」ができること。\nア) 席入りの仕方\nイ) 薄茶、菓子のいただき方\nウ) 道具の拝見の仕方"
         },
         {
-            "id": "4",
+            "sort": 4,
             "number": "4",
             "description": "薄茶の点前ができること。"
         },
         {
-            "id": "5",
+            "sort": 5,
             "number": "5",
             "description": "野点の設営方法を知ること。"
         }

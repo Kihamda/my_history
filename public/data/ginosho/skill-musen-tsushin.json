@@ -3,19 +3,19 @@
     "name": "無線通信章",
     "cert": "true",
     "url": "https://www.scout.or.jp/member/skill-musen-tsushin",
-    "detail": [
+    "details": [
         {
-            "id": "1",
+            "sort": 1,
             "number": "1",
             "description": "アマチュア無線技士の資格があること。"
         },
         {
-            "id": "2",
+            "sort": 2,
             "number": "2",
             "description": "和文通話表により、電文を送話できるとともに、欧文通話表を用いてアルファベットを言えること。"
         },
         {
-            "id": "3",
+            "sort": 3,
             "number": "3",
             "description": "国内10局以上の交信記録と交信証（QSL カード）5枚以上を提示すること。"
         }
