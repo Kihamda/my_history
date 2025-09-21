@@ -16,7 +16,7 @@ import {
 import { getGradeMasterList } from "@/types/master/grade";
 import { getOptedUnitDataDefault } from "@/types/scout/scoutUnit";
 import { getGinosho, setGinosho } from "./ginosho";
-import { getEvents } from "./event";
+import { getEvents, setEvents } from "./event";
 
 // Firebaseからスカウトデータを取得する関数
 export const getScoutData = async (scoutId: string): Promise<Scout | null> => {
@@ -82,8 +82,6 @@ export const setScoutRecord = async (
       error: string;
     }
 > => {
-  // debug
-  console.log("Saving scout data:", scout);
   try {
     const scoutRef = doc(db, "scouts", scout.id);
 
@@ -128,6 +126,7 @@ export const setScoutRecord = async (
 
     // 成功した場合の処理
     await setGinosho(scout.id, scout.ginosho);
+    await setEvents(scout.id, scout.events);
 
     return { status: "success", data: scout };
   } catch (error) {

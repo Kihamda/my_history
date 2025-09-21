@@ -1,3 +1,5 @@
+import { raiseError } from "@/errorHandler";
+
 export interface GinoshoMaster {
   id: string;
   name: string;
@@ -13,7 +15,11 @@ export const getGinoshoMasterList = async (): Promise<GinoshoMaster[]> => {
   // キャッシュを確認
   const localCache = sessionStorage.getItem("ginoshoMasterCache");
   if (localCache) {
-    return JSON.parse(localCache);
+    try {
+      return JSON.parse(localCache);
+    } catch (e) {
+      raiseError("Failed to parse ginosho master cache");
+    }
   }
 
   const response = await fetch(`/data/ginosho.json`);

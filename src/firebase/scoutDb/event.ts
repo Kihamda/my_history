@@ -5,11 +5,12 @@ import {
   getDocs,
   limit,
   query,
-  setDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { FirestoreScoutEvent } from "../firebaseDataType/scouts/event";
 import convertTimestampsDate from "../convertTimestampDate";
 import { db } from "../firebase";
+import getObjectDiff from "@/tools/getObjectDiff";
 
 export const getEvents = async (scoutId: string): Promise<ScoutEvent[]> => {
   const snapshot = await getDocs(
@@ -31,19 +32,30 @@ export const getEvents = async (scoutId: string): Promise<ScoutEvent[]> => {
 
 export const setEvents = async (
   scoutId: string,
-  event: ScoutEvent
+  events: ScoutEvent[]
 ): Promise<void> => {
   // Implementation for adding or updating an Event document
+  const prev = await getEvents(scoutId);
+  const newData = events.filter((event) => {
+    const found = prev.find((e) => e.id === event.id);
+    return !found || getObjectDiff(found, event).length > 0;
+  });
 
-  const eventRef = doc(db, "scouts", scoutId, "events", event.id);
+  const deletedData = prev.filter(
+    (event) => !events.find((e) => e.id === event.id)
+  );
 
-  const data: FirestoreScoutEvent = {
-    title: event.title,
-    start: event.start,
-    end: event.end,
-    description: event.description,
-    type: event.type,
-  };
+  const bat = writeBatch(db);
 
-  await setDoc(eventRef, data);
+  newData.forEach((event) => {
+    const eventRef = doc(db, "scouts", scoutId, "events", event.id);
+    bat.set(eventRef, event);
+  });
+
+  deletedData.forEach((event) => {
+    const eventRef = doc(db, "scouts", scoutId, "events", event.id);
+    bat.delete(eventRef);
+  });
+
+  await bat.commit();
 };
