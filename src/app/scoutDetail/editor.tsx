@@ -1,5 +1,5 @@
 import { Scout, ScoutPersonalData } from "@/types/scout/scout";
-import { UnitExperience } from "@/types/scout/scoutUnit";
+import { UnitExperience } from "@/types/scout/unit";
 import Profile from "./edit/profile";
 import Units from "./edit/units";
 import FullWidthCardHeader from "@/style/fullWidthCardHeader";

@@ -4,7 +4,7 @@ import {
   ScoutUnitList,
   ScoutUnitNameMap,
   UnitExperience,
-} from "@/types/scout/scoutUnit";
+} from "@/types/scout/unit";
 
 const Units = ({
   scoutDataUnit,

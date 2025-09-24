@@ -9,14 +9,12 @@ import {
 } from "../firebaseDataType/scouts/scout";
 import convertTimestampsDate from "../convertTimestampDate";
 import {
-  ScoutUnitGrade,
-  ScoutUnitNameMap,
-  UnitExperience,
-} from "@/types/scout/scoutUnit";
-import { getGradeMasterList } from "@/types/master/grade";
-import { getOptedUnitDataDefault } from "@/types/scout/scoutUnit";
+  getOptedUnitDataDefault,
+  Work as DomainWork,
+} from "@/types/scout/unit";
 import { getGinosho, setGinosho } from "./ginosho";
 import { getEvents, setEvents } from "./event";
+import { getUnitWithGradeWork } from "./unit";
 
 // Firebaseからスカウトデータを取得する関数
 export const getScoutData = async (scoutId: string): Promise<Scout | null> => {
@@ -33,21 +31,7 @@ export const getScoutData = async (scoutId: string): Promise<Scout | null> => {
 
     // unitの中身に名前を追加する
     // unitにマスターデータ適用
-    const gradeMaster = await getGradeMasterList();
-    const newUnit: UnitExperience[] = scoutData.unit.map(
-      (unit): UnitExperience => ({
-        ...unit,
-        name: ScoutUnitNameMap[unit.id],
-        grade: unit.grade.map(
-          (g) =>
-            ({
-              ...g,
-              name:
-                gradeMaster.find((grade) => grade.id === g.id)?.name || g.id,
-            } as ScoutUnitGrade)
-        ),
-      })
-    );
+    const unitData = await getUnitWithGradeWork(scoutId);
 
     const ginoshoData = await getGinosho(scoutId);
     const eventsData = await getEvents(scoutId);
@@ -55,7 +39,24 @@ export const getScoutData = async (scoutId: string): Promise<Scout | null> => {
     return {
       id: scoutDoc.id,
       personal: scoutData.personal,
-      unit: newUnit,
+      unit: scoutData.unit.map((unit) => {
+        const matched = unitData.find((u) => u.id === unit.id);
+        return {
+          id: unit.id,
+          name: matched?.name ?? "",
+          joinedDate: unit.joinedDate,
+          experienced: unit.experienced,
+          grade: matched?.grade ?? [],
+          works: (unit.works ?? []).map(
+            (w: any, idx: number): DomainWork => ({
+              id: w.id ?? `${unit.id}-${idx}`,
+              type: w.type,
+              begin: w.begin,
+              end: w.end,
+            })
+          ),
+        };
+      }),
       ginosho: ginoshoData,
       events: eventsData,
     };

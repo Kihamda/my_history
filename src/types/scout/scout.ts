@@ -1,4 +1,4 @@
-import { ScoutUnit, UnitExperience } from "@/types/scout/scoutUnit";
+import { ScoutUnit, UnitExperience } from "@/types/scout/unit";
 import { Ginosho } from "./ginosho";
 import { ScoutEvent } from "./event";
 

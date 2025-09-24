@@ -5,7 +5,7 @@ import {
   ScoutUnitNameMap,
   UnitExperience,
   Work,
-} from "@/types/scout/scoutUnit";
+} from "@/types/scout/unit";
 import { Button, InputGroup } from "react-bootstrap";
 
 const Units = ({

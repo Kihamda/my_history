@@ -1,7 +1,7 @@
 import InputGroupUI from "@/style/imputGroupUI";
 import convertInputDate from "@/tools/date/convertInputDate";
 import { ScoutPersonalData } from "@/types/scout/scout";
-import { ScoutUnit, ScoutUnitNameMap } from "@/types/scout/scoutUnit";
+import { ScoutUnit, ScoutUnitNameMap } from "@/types/scout/unit";
 import { InputGroup } from "react-bootstrap";
 
 const Profile = ({

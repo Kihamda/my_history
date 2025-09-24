@@ -1,8 +1,4 @@
-import {
-  ScoutUnit,
-  ScoutUnitList,
-  ScoutUnitNameMap,
-} from "@/types/scout/scoutUnit";
+import { ScoutUnit, ScoutUnitList, ScoutUnitNameMap } from "@/types/scout/unit";
 import { ToggleButton, ToggleButtonGroup } from "react-bootstrap";
 
 /**

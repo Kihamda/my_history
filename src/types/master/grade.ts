@@ -1,7 +1,9 @@
+import { ScoutUnit } from "../scout/unit";
+
 export interface GradeMaster {
   id: string;
   name: string;
-  unit: string;
+  unit: ScoutUnit;
 }
 
 export const getGradeMasterList = async (): Promise<GradeMaster[]> => {
@@ -35,10 +37,15 @@ export const getGradeName = (id: string, tryCount?: number): string => {
 };
 
 export interface GradeDetailMaster extends GradeMaster {
-  details: Array<{ id: number; number: number; name: string }>; // 細目のマスターデータ
+  details: Array<{
+    id: number;
+    number: string;
+    description: string;
+    cert: boolean;
+  }>; // 細目のマスターデータ
 }
 
-export const getGradeDetail = async (
+export const getGradeDetailMaster = async (
   id: string
 ): Promise<GradeDetailMaster | null> => {
   // キャッシュを確認
@@ -52,9 +59,9 @@ export const getGradeDetail = async (
   if (!response.ok) {
     throw new Error("Failed to fetch grade detail");
   }
-  const data = await response.json();
+  const data = (await response.json()) as GradeDetailMaster;
 
   // キャッシュに保存
   sessionStorage.setItem(`gradeDetailCache_${id}`, JSON.stringify(data));
-  return data as GradeDetailMaster;
+  return data;
 };

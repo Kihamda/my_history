@@ -1,5 +1,5 @@
 import { ScoutPersonalData } from "@/types/scout/scout";
-import { ScoutUnit } from "@/types/scout/scoutUnit";
+import { ScoutUnit } from "@/types/scout/unit";
 
 export interface FirestoreScout {
   personal: ScoutPersonalData;
@@ -27,7 +27,7 @@ export interface UnitExperience {
 }
 
 export interface ScoutUnitGrade {
-  id: string;
+  unique: string;
   // グレード名
   has: boolean;
   // 取得した日

@@ -10,7 +10,7 @@ import { db } from "../firebase";
 import { FirestoreGinosho } from "../firebaseDataType/scouts/ginosho";
 import { Ginosho } from "@/types/scout/ginosho";
 import { getGinoshoDetail } from "@/types/master/ginosho";
-import getObjectDiff from "@/tools/getObjectDiff";
+import { getArrayDiff } from "@/tools/getObjectDiff";
 import convertTimestampsDate from "../convertTimestampDate";
 import { raiseError } from "@/errorHandler";
 
@@ -60,14 +60,7 @@ export const setGinosho = async (
   // Implementation for adding or updating a Ginosho document
   const prev = await getGinosho(scoutId);
 
-  const newData = ginosho.filter((item) => {
-    const p = prev.find((p) => p.id === item.id);
-    return !p || getObjectDiff(item, p).length > 0;
-  });
-
-  const deletedData = prev.filter((item) => {
-    return !ginosho.find((p) => p.id === item.id);
-  });
+  const [newData, deletedData] = getArrayDiff(ginosho, prev);
 
   const bat = writeBatch(db);
   newData.forEach((g) => {

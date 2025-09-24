@@ -1,4 +1,4 @@
-import { ScoutUnit, ScoutUnitList } from "@/types/scout/scoutUnit";
+import { ScoutUnit, ScoutUnitList } from "@/types/scout/unit";
 import { SearchQuery } from "@/types/search/searchQueryType";
 
 const queryParser = (searchName: string): SearchQuery => {

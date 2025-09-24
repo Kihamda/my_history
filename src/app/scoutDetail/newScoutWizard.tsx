@@ -4,7 +4,7 @@ import {
   ScoutPersonalData,
   ScoutPersonalDataDefault,
 } from "@/types/scout/scout";
-import { getOptedUnitDataDefault } from "@/types/scout/scoutUnit";
+import { getOptedUnitDataDefault } from "@/types/scout/unit";
 import { useAuthContext } from "@/firebase/authContext";
 import { setScoutRecord } from "@/firebase/scoutDb/scout";
 import { Navigate, useNavigate } from "react-router";

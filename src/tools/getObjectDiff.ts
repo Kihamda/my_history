@@ -41,4 +41,15 @@ export const getObjectDiff = (
   return diff;
 };
 
+export const getArrayDiff = <T>(newData: T[], prevData: T[]): [T[], T[]] => {
+  const newItems = newData.filter(
+    (item, index) => !isEqual(item, prevData[index])
+  );
+
+  const deletedItems = prevData.filter(
+    (item) => !newData.some((newItem) => isEqual(newItem, item))
+  );
+  return [newItems, deletedItems];
+};
+
 export default getObjectDiff;

@@ -1,4 +1,5 @@
 import ShowData from "@/style/showData";
+import convertInputDate from "@/tools/date/convertInputDate";
 import {
   ScoutEvent,
   ScoutEventType,
@@ -66,7 +67,9 @@ const Events = ({ events }: { events: ScoutEvent[] }) => {
             <ShowData
               key={event.id}
               label={event.title}
-              value={`${event.start}～${event.end}`}
+              value={`${convertInputDate(event.start)}～${convertInputDate(
+                event.end
+              )}`}
             />
           ))
         ) : (
