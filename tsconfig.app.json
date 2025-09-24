@@ -2,6 +2,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@f/*": ["src/frontend/*"],
+      "@b/*": ["src/backend/*"],
       "@/*": ["src/*"]
     },
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
@@ -27,5 +29,5 @@
     "noUncheckedSideEffectImports": true,
     "types": ["vite/client", "@types/node"]
   },
-  "include": ["src", "staticBuilder", "src/style"]
+  "include": ["src", "staticBuilder", "src/frontend/style"]
 }

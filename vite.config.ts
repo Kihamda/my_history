@@ -7,6 +7,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": "/src",
+      "@f": "/src/frontend",
+      "@b": "/src/backend",
     },
   },
 
