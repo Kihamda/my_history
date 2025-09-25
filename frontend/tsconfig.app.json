@@ -10,7 +10,7 @@
 
     "paths": {
       "@/*": ["./src/*"],
-      "sv@/*": ["../backend/*"]
+      "b@/*": ["../backend/*"]
     },
 
     /* Bundler mode */
@@ -29,5 +29,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src", "../backend/src"] // バックエンドから型を提供してもらう
 }

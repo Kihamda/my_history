@@ -1,0 +1,38 @@
+環境：Cloudflare workers + Hono
+
+React + Viteの環境からhcでアクセスできる。
+Firebase Authentication と連携、認証ができリクエストの整合性が取れたら値を返却する
+ユーザー認証もここで済ます。クライアントがFirebase SDK使わなくて良いように
+
+#追記、日本語のコメントを追加、以下のような情報を保管できるように
+
+## 必須要件（Cloudflare Workers 側）
+- Firebase Identity Toolkit / Secure Token REST API を利用して、メール＋パスワード認証、リフレッシュ、IDトークン検証を完結させる。
+- 受け取った ID トークンを Cloudflare Worker 内で検証し、検証済みのユーザー情報を下流ハンドラへ渡すミドルウェアを実装する。
+- サービスアカウント経由で Firestore REST API にアクセスするためのトークン管理を実装し、Google OAuth のアクセストークン刷新も自動化する。
+- Firestore ドキュメント CRUD を行う共通ラッパー層（repository）を作成し、`groups` `scouts` `masters` などのドメインサービスから呼び出せるようにする。
+- `tmp` 配下のユーティリティ／型を見直し、バックエンド専用パッケージとして再構成（`convertTimestampDate` の ISO 文字列対応、Firestore ドキュメント型の刷新など）。
+- `/api/groups/current` `/api/scouts/:id` `/api/scouts/:id (PUT)` `/api/scouts/search` `/api/masters/*` といった REST エンドポイントを Hono で提供する。
+- `/api/users/login` `/api/users/refresh` を用意し、Firebase Identity Toolkit の結果を正規化して返却する。
+- `/api/users/me` (GET/PUT) でユーザー設定（通知設定・表示名・言語など）を取得／更新できるようにする。
+- Cloudflare KV 等を利用して技能章・進級マスターデータをキャッシュし、Worker 起動ごとの再取得を避ける。
+
+## ユーザー機能要件
+- ログイン後のユーザー設定（表示名、所属、通知設定、UI 言語など）を Worker 経由で取得／更新できるようにする。
+- 設定更新時は ID トークンの検証と Firestore ドキュメントの差分更新を行い、成功・失敗を統一したレスポンスで返却する。
+- クライアント側では設定反映後にキャッシュを更新し、再ログインなしで UI が変わるようなフローを設計する。
+
+## クライアント連携要件
+- React + Vite アプリでは `hc` クライアント (`src/client.ts`) を通じて Workers API を呼び出し、Firebase SDK を使用しない。
+- Bearer トークンを自前管理するためのログイン／更新フローと、ID トークンの自動リフレッシュ処理を実装する。
+- 管理画面向けの SysManager UI はフロントエンドに移管し、Workers 経由でのみデータ操作を行う。
+
+## 実装指針
+- `/src/api/auth/*` `/src/api/users/*` `/src/api/groups/*` `/src/api/scouts/*` `/src/api/masters/*` といったディレクトリ構成で責務ごとにファイルを分割する。
+- 各ディレクトリでは Hono のルーターを export し、`src/index.ts` ではルーター単位でマウントする。
+- 共有ロジック（Firebase REST ラッパー、バリデーション、エラーハンドリング）は `src/lib` や `src/services` に切り出して再利用性を高める。
+
+## セキュリティ・運用メモ
+- `tmp/firebase.ts` に含まれるブラウザ向け Firebase 初期化コードとハードコード済み API キーは廃止し、Secrets 管理に移行する。
+- Worker のログには個人情報を残さない。必要であれば Cloudflare Logs＋Redact 設定を適用する。
+- Firestore REST API 呼び出し時の失敗は統一したエラーオブジェクトで返却し、フロントエンドでのハンドリングを簡略化する。
