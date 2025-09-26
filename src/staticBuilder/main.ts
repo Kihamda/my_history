@@ -8,11 +8,11 @@ import templateBuilder from "./builder";
  * Markdownファイルを読み込み、HTMLに変換して保存する関数
  * @param markdownPath 変換するMarkdownファイルのパス
  */
-const __dirname = path.join(path.resolve(), "staticBuilder");
+export const __dirname = path.join(path.resolve());
 
 const getAllMarkdownFiles = (): string[] => {
   const markdownFiles: string[] = [];
-  const dirPath = path.join(__dirname, "help", "markdown");
+  const dirPath = path.join(__dirname, "../../", "helpPageContent");
 
   fs.readdirSync(dirPath).forEach((file) => {
     if (file.endsWith(".md")) {

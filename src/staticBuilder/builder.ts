@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
-
-const __dirname = path.join(path.resolve(), "staticBuilder");
+import { __dirname } from "main";
 
 const templateBuilder = (content: string, title: string): string => {
   const template = fs.readFileSync(

@@ -1,9 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LinkWithOffset from "./linkwithoffset";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons/faChevronDown";
-import BlurCard from "@/frontend/style/cardDesign";
+import BlurCard from "./cardDesign";
 import React from "react";
-import FillBackgroundDesign from "@/frontend/style/fillBackgroundDesign";
+import FillBackgroundDesign from "./fillBackgroundDesign";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons/faArrowRight";
 
 /**
