@@ -23,9 +23,3 @@ export interface CurrentGroupContext {
   isAdmin: boolean;
   isEditable: boolean;
 }
-
-export interface GroupSummary {
-  id: string;
-  name: string;
-  status: GroupStatus;
-}
