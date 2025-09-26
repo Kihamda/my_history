@@ -1,3 +1,4 @@
+// スカウト関連のドキュメントを Firestore から取得・保存するリポジトリ。
 import { FirestoreClient } from "../lib/firestore";
 import { encodeValue } from "../lib/firestore/converter";
 import type { AppBindings } from "../types/bindings";
@@ -12,8 +13,10 @@ import type {
 
 const SCOUTS_COLLECTION = "scouts";
 
-const buildClient = (env: AppBindings) => new FirestoreClient(env);
+const buildClient = (env: AppBindings, idToken: string) =>
+  new FirestoreClient(env, idToken);
 
+// Firestore から取得したユニット情報をドメインモデルに変換する。
 const mapUnit = (unit: any, index: number): UnitExperience => ({
   id: String(unit?.id ?? `unit-${index}`),
   name: unit?.name ?? "",
@@ -32,6 +35,7 @@ const mapUnit = (unit: any, index: number): UnitExperience => ({
     : [],
 });
 
+// 進級データを内部表現へマッピングする。
 const mapGrade = (grade: any): ScoutUnitGrade => ({
   id: String(grade?.id ?? grade?.unique ?? ""),
   unique: String(grade?.unique ?? grade?.id ?? ""),
@@ -49,6 +53,7 @@ const mapGrade = (grade: any): ScoutUnitGrade => ({
     : [],
 });
 
+// 技能章ドキュメントをアプリ用の構造へ変換する。
 const mapGinosho = (item: any): ScoutGinosho => ({
   id: String(item?.id ?? item?.unique ?? ""),
   unique: String(item?.unique ?? item?.id ?? ""),
@@ -69,6 +74,7 @@ const mapGinosho = (item: any): ScoutGinosho => ({
     : [],
 });
 
+// Firestore に保存する際の技能章ドキュメント構造を組み立てる。
 const serializeGinosho = (item: ScoutGinosho): Record<string, unknown> => ({
   id: item.unique,
   has: item.has,
@@ -84,6 +90,7 @@ const serializeGinosho = (item: ScoutGinosho): Record<string, unknown> => ({
   })),
 });
 
+// イベントドキュメントをアプリ側の構造へ変換する。
 const mapEvent = (event: any): ScoutEvent => ({
   id: String(event?.id ?? ""),
   title: String(event?.title ?? ""),
@@ -93,6 +100,7 @@ const mapEvent = (event: any): ScoutEvent => ({
   end: event?.end ?? null,
 });
 
+// Firestore に保存するイベントドキュメントのフォーマット。
 const serializeEvent = (event: ScoutEvent): Record<string, unknown> => ({
   title: event.title,
   description: event.description ?? null,
@@ -103,9 +111,11 @@ const serializeEvent = (event: ScoutEvent): Record<string, unknown> => ({
 
 export const getScoutRecord = async (
   env: AppBindings,
+  idToken: string,
   scoutId: string
 ): Promise<ScoutRecord | null> => {
-  const client = buildClient(env);
+  // スカウト本体とサブコレクションをまとめて読み込む。
+  const client = buildClient(env, idToken);
   const base = await client.getDocument<any>(`${SCOUTS_COLLECTION}/${scoutId}`);
 
   if (!base) {
@@ -133,9 +143,11 @@ export const getScoutRecord = async (
 
 export const updateScoutRecord = async (
   env: AppBindings,
+  idToken: string,
   record: ScoutRecord
 ): Promise<void> => {
-  const client = buildClient(env);
+  // 本体ドキュメントを更新したあと、技能章・イベントのサブコレクションを同期する。
+  const client = buildClient(env, idToken);
 
   const doc = {
     personal: record.personal,
@@ -168,6 +180,7 @@ const syncSubcollection = async <T extends { id: string }>(
   items: T[],
   serialize: (item: T) => Record<string, unknown>
 ): Promise<void> => {
+  // 既存ドキュメントとの差分を算出し、不要なデータは削除する。
   const existing = await client.listDocuments<any>(collectionPath, 300);
   const existingIds = new Set(existing.map((doc) => doc.id));
   const incomingIds = new Set(items.map((item) => item.id));
@@ -200,9 +213,11 @@ interface ScoutSearchFilters {
 
 export const searchScouts = async (
   env: AppBindings,
+  idToken: string,
   filters: ScoutSearchFilters
 ): Promise<ScoutSearchResult[]> => {
-  const client = buildClient(env);
+  // 所属団体で絞り込んだ上で、名前・スカウトIDなどの条件を StructuredQuery で組み立てる。
+  const client = buildClient(env, idToken);
   const whereFilters: any[] = [
     {
       fieldFilter: {

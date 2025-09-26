@@ -4,16 +4,6 @@ export interface FirebaseAuthBindings {
   FIREBASE_AUTH_EMULATOR_HOST?: string;
 }
 
-export interface ServiceAccountBindings {
-  GCP_CLIENT_EMAIL: string;
-  GCP_PRIVATE_KEY: string;
-  /**
-   * Optional override for OAuth token audience. Defaults to
-   * https://oauth2.googleapis.com/token
-   */
-  GCP_TOKEN_AUDIENCE?: string;
-}
-
 export interface MasterDataBindings {
   /**
    * Optional Cloudflare KV namespace used for caching master data such as
@@ -28,5 +18,7 @@ export interface MasterDataBindings {
 }
 
 export type AppBindings = FirebaseAuthBindings &
-  ServiceAccountBindings &
-  MasterDataBindings;
+  MasterDataBindings & {
+    PUBLIC_JWK_CACHE_KEY?: string;
+    PUBLIC_JWK_CACHE_KV?: KVNamespace;
+  };

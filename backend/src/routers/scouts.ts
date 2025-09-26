@@ -22,16 +22,13 @@ import type {
   UnitExperience,
 } from "../types/domain/scout";
 
-const scoutsRouter = new Hono<{
-  Bindings: AppBindings;
-  Variables: AppVariables;
-}>();
-
+// JSON パース時に型引数を適用するための共通コンテキスト型。
 type RouterContext = Context<{
   Bindings: AppBindings;
   Variables: AppVariables;
 }>;
 
+// 検索条件で利用するフィルター値の型定義。
 interface ScoutSearchRequest {
   name?: string;
   scoutId?: string;
@@ -39,9 +36,11 @@ interface ScoutSearchRequest {
   limit?: number;
 }
 
+// 期待しないペイロードを検出した場合の定形エラー生成ヘルパー。
 const invalidPayload = (field: string): FirebaseAuthError =>
   new FirebaseAuthError(`Invalid payload: ${field}`, 400, "INVALID_PAYLOAD");
 
+// 共通の JSON パース処理。失敗時はクライアントエラーを通知する。
 const parseJsonBody = async <T>(c: RouterContext): Promise<T> => {
   try {
     return (await c.req.json()) as T;
@@ -75,6 +74,7 @@ const toOptionalISODate = (value: unknown): string | undefined => {
   return undefined;
 };
 
+// 隊員が従事した作業情報を構造化する。
 const sanitizeScoutWork = (value: unknown, index: number): ScoutWork => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw invalidPayload(`unit.works[${index}]`);
@@ -92,6 +92,7 @@ const sanitizeGradeDetail = (
   value: unknown,
   index: number
 ): GradeDetailProgress => {
+  // 進級章の詳細項目を検証し、欠損時はデフォルト値を補う。
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw invalidPayload(`unit.grade.details[${index}]`);
   }
@@ -106,6 +107,7 @@ const sanitizeGradeDetail = (
 };
 
 const sanitizeUnitGrade = (value: unknown, index: number): ScoutUnitGrade => {
+  // 進級章の達成状況を正規化する。
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw invalidPayload(`unit.grade[${index}]`);
   }
@@ -130,6 +132,7 @@ const sanitizeUnitExperience = (
   value: unknown,
   index: number
 ): UnitExperience => {
+  // 所属隊の経験履歴を配列形式から内部表現へ整形する。
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw invalidPayload(`unit[${index}]`);
   }
@@ -154,6 +157,7 @@ const sanitizeGinoshoDetail = (
   value: unknown,
   index: number
 ): ScoutGinoshoDetail => {
+  // 技能章の細目を検証し、ソート順や日付を正規化する。
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw invalidPayload(`ginosho.details[${index}]`);
   }
@@ -171,6 +175,7 @@ const sanitizeGinoshoDetail = (
 };
 
 const sanitizeGinosho = (value: unknown, index: number): ScoutGinosho => {
+  // 技能章本体のメタ情報を安全に抽出する。
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw invalidPayload(`ginosho[${index}]`);
   }
@@ -195,6 +200,7 @@ const sanitizeGinosho = (value: unknown, index: number): ScoutGinosho => {
 };
 
 const sanitizeEvent = (value: unknown, index: number): ScoutEvent => {
+  // 活動イベントの入力を検証し、最低限の文字列を保証する。
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw invalidPayload(`events[${index}]`);
   }
@@ -213,6 +219,7 @@ const sanitizePersonal = (
   value: unknown,
   groupId: string
 ): ScoutPersonalData => {
+  // 個人情報の必須項目を確認し、所属団IDの整合性を付与する。
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw invalidPayload("personal");
   }
@@ -247,6 +254,7 @@ const sanitizeScoutUpdate = (
   scoutId: string,
   groupId: string
 ): ScoutRecord => {
+  // PUT された全体構造を走査し、サーバー側の整合性を担保する。
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     throw invalidPayload("body");
   }
@@ -282,8 +290,9 @@ const sanitizeScoutUpdate = (
 };
 
 const ensureUserContext = async (c: RouterContext) => {
+  // ユーザーの所属・権限を取得し、団情報が揃わなければエラーを返す。
   const auth = c.get("auth");
-  const settings = await getUserSettings(c.env, auth.user);
+  const settings = await getUserSettings(c.env, auth.token, auth.user);
 
   if (!settings.joinGroupId) {
     throw new FirebaseAuthError(
@@ -295,6 +304,7 @@ const ensureUserContext = async (c: RouterContext) => {
 
   const context = await getCurrentGroupContext(
     c.env,
+    auth.token,
     settings.joinGroupId,
     auth.user.email
   );
@@ -307,6 +317,7 @@ const ensureUserContext = async (c: RouterContext) => {
 };
 
 const parseSearchRequest = (payload: unknown): ScoutSearchRequest => {
+  // 検索 API の POST ボディから妥当なフィルターのみを抽出する。
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     throw invalidPayload("body");
   }
@@ -346,76 +357,86 @@ const parseSearchRequest = (payload: unknown): ScoutSearchRequest => {
   return filters;
 };
 
-scoutsRouter.use("*", requireAuth);
+// 隊員情報の検索・取得・更新をまとめたルーター。
+const scoutsRouter = new Hono<{
+  Bindings: AppBindings;
+  Variables: AppVariables;
+}>()
 
-scoutsRouter.get("/:scoutId", async (c) => {
-  const { context } = await ensureUserContext(c);
-  const scoutId = c.req.param("scoutId");
-  const record = await getScoutRecord(c.env, scoutId);
+  // すべてのリクエストに対して認証と所属チェックを要求する。
+  .use("*", requireAuth)
 
-  if (!record) {
-    return c.json(
-      {
-        error: "SCOUT_NOT_FOUND",
-      },
-      404
-    );
-  }
+  // 個別隊員を取得する。所属が異なる場合は権限エラー。
+  .get("/:scoutId", async (c) => {
+    const { auth, context } = await ensureUserContext(c);
+    const scoutId = c.req.param("scoutId");
+    const record = await getScoutRecord(c.env, auth.token, scoutId);
 
-  if (record.personal?.belongs && record.personal.belongs !== context.id) {
-    throw new FirebaseAuthError("SCOUT_FORBIDDEN", 403, "SCOUT_FORBIDDEN");
-  }
+    if (!record) {
+      return c.json(
+        {
+          error: "SCOUT_NOT_FOUND",
+        },
+        404
+      );
+    }
 
-  return c.json(record);
-});
+    if (record.personal?.belongs && record.personal.belongs !== context.id) {
+      throw new FirebaseAuthError("SCOUT_FORBIDDEN", 403, "SCOUT_FORBIDDEN");
+    }
 
-scoutsRouter.put("/:scoutId", async (c) => {
-  const { context } = await ensureUserContext(c);
+    return c.json(record);
+  })
 
-  if (!context.isEditable) {
-    throw new FirebaseAuthError(
-      "SCOUT_WRITE_FORBIDDEN",
-      403,
-      "SCOUT_WRITE_FORBIDDEN"
-    );
-  }
+  // 隊員情報を更新する。編集権限がない場合は 403 を返す。
+  .put("/:scoutId", async (c) => {
+    const { auth, context } = await ensureUserContext(c);
 
-  const scoutId = c.req.param("scoutId");
-  const body = await parseJsonBody<unknown>(c);
-  const record = sanitizeScoutUpdate(body, scoutId, context.id);
+    if (!context.isEditable) {
+      throw new FirebaseAuthError(
+        "SCOUT_WRITE_FORBIDDEN",
+        403,
+        "SCOUT_WRITE_FORBIDDEN"
+      );
+    }
 
-  await updateScoutRecord(c.env, record);
-  const updated = await getScoutRecord(c.env, scoutId);
+    const scoutId = c.req.param("scoutId");
+    const body = await parseJsonBody<unknown>(c);
+    const record = sanitizeScoutUpdate(body, scoutId, context.id);
 
-  return c.json(updated ?? record);
-});
+    await updateScoutRecord(c.env, auth.token, record);
+    const updated = await getScoutRecord(c.env, auth.token, scoutId);
 
-scoutsRouter.post("/search", async (c) => {
-  const { context } = await ensureUserContext(c);
+    return c.json(updated ?? record);
+  })
 
-  if (!context.isLeader) {
-    throw new FirebaseAuthError("SCOUT_SEARCH_FORBIDDEN", 403, "FORBIDDEN");
-  }
+  // 検索条件を基に隊員を検索する。リーダー以上のみ利用可能。
+  .post("/search", async (c) => {
+    const { auth, context } = await ensureUserContext(c);
 
-  const body = await parseJsonBody<unknown>(c);
-  const filters = parseSearchRequest(body);
+    if (!context.isLeader) {
+      throw new FirebaseAuthError("SCOUT_SEARCH_FORBIDDEN", 403, "FORBIDDEN");
+    }
 
-  const results = await searchScouts(c.env, {
-    groupId: context.id,
-    name: filters.name,
-    scoutId: filters.scoutId,
-    currentUnit: filters.currentUnit,
-    limit: filters.limit,
+    const body = await parseJsonBody<unknown>(c);
+    const filters = parseSearchRequest(body);
+
+    const results = await searchScouts(c.env, auth.token, {
+      groupId: context.id,
+      name: filters.name,
+      scoutId: filters.scoutId,
+      currentUnit: filters.currentUnit,
+      limit: filters.limit,
+    });
+
+    const normalized = filters.name?.toLowerCase();
+    const filtered = normalized
+      ? results.filter((item) => item.name?.toLowerCase().includes(normalized))
+      : results;
+
+    return c.json({
+      items: filtered,
+    });
   });
-
-  const normalized = filters.name?.toLowerCase();
-  const filtered = normalized
-    ? results.filter((item) => item.name?.toLowerCase().includes(normalized))
-    : results;
-
-  return c.json({
-    items: filtered,
-  });
-});
 
 export default scoutsRouter;

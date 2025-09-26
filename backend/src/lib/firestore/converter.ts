@@ -1,3 +1,4 @@
+// Firestore REST API の JSON 形式とアプリ内部の値を相互変換するユーティリティ。
 type FirestorePrimitive =
   | { nullValue: null }
   | { booleanValue: boolean }
@@ -14,9 +15,11 @@ export type FirestoreValue =
   | { mapValue: { fields: Record<string, FirestoreValue> } }
   | { arrayValue: { values: FirestoreValue[] } };
 
+// `Date` や配列を除く純粋なオブジェクトかどうかを判定する。
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   Object.prototype.toString.call(value) === "[object Object]";
 
+// JavaScript の値を Firestore REST API の `Value` 形式へ変換する。
 export const encodeValue = (value: unknown): FirestoreValue | undefined => {
   if (value === undefined) {
     return undefined;
@@ -68,6 +71,7 @@ export const encodeValue = (value: unknown): FirestoreValue | undefined => {
   throw new Error(`Unsupported Firestore value: ${JSON.stringify(value)}`);
 };
 
+// Firestore REST API の `Value` 形式を素の JavaScript 値に戻す。
 export const decodeValue = (value: FirestoreValue): unknown => {
   if ("nullValue" in value) {
     return null;
@@ -116,6 +120,7 @@ export const encodeDocument = (
 ): {
   fields: Record<string, FirestoreValue>;
 } => {
+  // Firestore へ送信する際は mapValue 配下にフィールドを詰める必要がある。
   const fields: Record<string, FirestoreValue> = {};
   for (const [key, value] of Object.entries(data)) {
     const encoded = encodeValue(value);
@@ -129,6 +134,7 @@ export const encodeDocument = (
 export const decodeDocument = (document: {
   fields?: Record<string, FirestoreValue>;
 }): Record<string, unknown> => {
+  // Firestore から返却されたドキュメントをアプリ内部の形に戻す。
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(document.fields ?? {})) {
     result[key] = decodeValue(value);

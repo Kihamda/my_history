@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
+// Firebase Authentication REST API をラップし、認証周りの処理を一箇所に集約する。
 import type { FirebaseAuthBindings } from "./types/bindings";
 
 export interface FirebaseAuthUser {
@@ -33,13 +33,7 @@ export interface RefreshResult {
   user: FirebaseAuthUser;
 }
 
-export interface VerifiedFirebaseToken {
-  token: string;
-  uid: string;
-  claims: JWTPayload;
-  user: FirebaseAuthUser;
-}
-
+// Firebase 認証周りで発生したエラーを HTTP ステータス付きで保持する。
 export class FirebaseAuthError extends Error {
   readonly status: number;
   readonly code?: string;
@@ -50,12 +44,6 @@ export class FirebaseAuthError extends Error {
     this.code = code;
   }
 }
-
-const FIREBASE_JWKS = createRemoteJWKSet(
-  new URL(
-    "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
-  )
-);
 
 interface FirebaseErrorPayload {
   error?: {
@@ -96,16 +84,19 @@ interface LookupResponse {
 
 type LookupUser = NonNullable<LookupResponse["users"]>[number];
 
+// Identity Toolkit のベースURL (エミュレータ対応) を求める。
 const identityToolkitOrigin = (env: FirebaseAuthBindings) =>
   env.FIREBASE_AUTH_EMULATOR_HOST
     ? `http://${env.FIREBASE_AUTH_EMULATOR_HOST}/identitytoolkit.googleapis.com/v1`
     : "https://identitytoolkit.googleapis.com/v1";
 
+// Secure Token Service のベースURL (エミュレータ対応) を求める。
 const secureTokenOrigin = (env: FirebaseAuthBindings) =>
   env.FIREBASE_AUTH_EMULATOR_HOST
     ? `http://${env.FIREBASE_AUTH_EMULATOR_HOST}/securetoken.googleapis.com/v1`
     : "https://securetoken.googleapis.com/v1";
 
+// 必須の環境変数が未設定の場合は 500 エラーを投げて早期に気付けるようにする。
 const ensureBinding = (value: string | undefined, name: string): string => {
   if (!value) {
     throw new FirebaseAuthError(
@@ -117,6 +108,7 @@ const ensureBinding = (value: string | undefined, name: string): string => {
   return value;
 };
 
+// Firebase から返るエラーレスポンスをアプリ内のエラー形式へ変換する。
 const toAuthError = (
   status: number,
   payload: FirebaseErrorPayload
@@ -126,6 +118,7 @@ const toAuthError = (
   return new FirebaseAuthError(message, normalizedStatus, message);
 };
 
+// Firebase エラーコードごとに適切な HTTP ステータスへマッピングする。
 const mapFirebaseErrorToStatus = (code: string, fallback: number): number => {
   switch (code) {
     case "INVALID_ID_TOKEN":
@@ -145,6 +138,7 @@ const mapFirebaseErrorToStatus = (code: string, fallback: number): number => {
   }
 };
 
+// Identity Toolkit REST API への POST リクエストを共通化する。
 const identityToolkitRequest = async <T>(
   env: FirebaseAuthBindings,
   path: string,
@@ -184,6 +178,7 @@ const identityToolkitRequest = async <T>(
   }
 };
 
+// Secure Token Service へのリクエストを共通化する。
 const secureTokenRequest = async <T>(
   env: FirebaseAuthBindings,
   path: string,
@@ -243,6 +238,7 @@ const normalizeUser = (raw?: LookupUser): FirebaseAuthUser => {
     }
   }
 
+  // Firebase のレスポンス形式をアプリ内部のユーザー型に正規化する。
   return {
     uid: raw.localId,
     email: raw.email,
@@ -263,10 +259,11 @@ const normalizeUser = (raw?: LookupUser): FirebaseAuthUser => {
   };
 };
 
-const lookupUserByIdToken = async (
+export const lookupUserByIdToken = async (
   env: FirebaseAuthBindings,
   idToken: string
 ): Promise<FirebaseAuthUser> => {
+  // `/accounts:lookup` は ID トークンを検証しつつユーザー情報を返す。
   const response = await identityToolkitRequest<LookupResponse>(
     env,
     "/accounts:lookup",
@@ -278,6 +275,7 @@ const lookupUserByIdToken = async (
   return normalizeUser(user);
 };
 
+// メールアドレスとパスワードを使ってログインし、トークンとユーザー情報を返す。
 export const signInWithPassword = async (
   env: FirebaseAuthBindings,
   email: string,
@@ -313,6 +311,7 @@ export const signInWithPassword = async (
   };
 };
 
+// リフレッシュトークンから新しい ID トークンを発行する。
 export const refreshIdToken = async (
   env: FirebaseAuthBindings,
   refreshToken: string
@@ -346,57 +345,7 @@ export const refreshIdToken = async (
   };
 };
 
-export const verifyIdToken = async (
-  env: FirebaseAuthBindings,
-  idToken: string
-): Promise<VerifiedFirebaseToken> => {
-  if (!idToken) {
-    throw new FirebaseAuthError("MISSING_ID_TOKEN", 401, "MISSING_ID_TOKEN");
-  }
-
-  const projectId = ensureBinding(
-    env.FIREBASE_PROJECT_ID,
-    "FIREBASE_PROJECT_ID"
-  );
-  let claims: JWTPayload | undefined;
-
-  if (!env.FIREBASE_AUTH_EMULATOR_HOST) {
-    try {
-      const { payload } = await jwtVerify(idToken, FIREBASE_JWKS, {
-        audience: projectId,
-        issuer: `https://securetoken.google.com/${projectId}`,
-      });
-      claims = payload;
-    } catch (error) {
-      throw new FirebaseAuthError("INVALID_ID_TOKEN", 401, "INVALID_ID_TOKEN");
-    }
-  }
-
-  const user = await lookupUserByIdToken(env, idToken);
-
-  if (!claims) {
-    claims = {
-      sub: user.uid,
-      user_id: user.uid,
-    };
-  }
-
-  if (claims.sub !== user.uid) {
-    throw new FirebaseAuthError(
-      "TOKEN_UID_MISMATCH",
-      401,
-      "TOKEN_UID_MISMATCH"
-    );
-  }
-
-  return {
-    token: idToken,
-    uid: user.uid,
-    claims,
-    user,
-  };
-};
-
+// 文字列で返る有効期限を number へ変換し、取り扱いやすくする。
 const normalizeTokenBundle = (
   idToken: string,
   refreshToken: string,

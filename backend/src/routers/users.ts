@@ -1,3 +1,4 @@
+// ログインユーザーのプロフィール／設定を返却・更新するルーター。
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { FirebaseAuthError } from "../firebase";
@@ -15,19 +16,16 @@ import type {
   UserSettingsResponse,
 } from "../types/domain/user";
 
-const usersRouter = new Hono<{
-  Bindings: AppBindings;
-  Variables: AppVariables;
-}>();
-
 type RouterContext = Context<{
   Bindings: AppBindings;
   Variables: AppVariables;
 }>;
 
+// 不正な入力を検知した際に一貫したメッセージで 400 を返す。
 const invalidPayload = (field: string): FirebaseAuthError =>
   new FirebaseAuthError(`Invalid payload: ${field}`, 400, "INVALID_PAYLOAD");
 
+// JSON パースをまとめて行い、失敗時は 400 エラーに変換する。
 const parseJsonBody = async <T>(c: RouterContext): Promise<T> => {
   try {
     return (await c.req.json()) as T;
@@ -37,6 +35,7 @@ const parseJsonBody = async <T>(c: RouterContext): Promise<T> => {
   }
 };
 
+// 真偽値でなければ 400 を返すユーティリティ。
 const sanitizeBoolean = (value: unknown, field: string): boolean => {
   if (typeof value !== "boolean") {
     throw invalidPayload(field);
@@ -54,6 +53,7 @@ const sanitizeOptionalBoolean = (
   return sanitizeBoolean(value, field);
 };
 
+// 通知設定オブジェクトを厳密に検証する。
 const sanitizeNotifications = (value: unknown): UserNotificationSettings => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw invalidPayload("preferences.notifications");
@@ -102,6 +102,7 @@ const sanitizeNotifications = (value: unknown): UserNotificationSettings => {
   return notifications;
 };
 
+// 言語・タイムゾーン・テーマなどの設定を検証し、許容されない値を排除する。
 const sanitizePreferences = (value: unknown): UserPreferences => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw invalidPayload("preferences");
@@ -155,6 +156,7 @@ const sanitizePreferences = (value: unknown): UserPreferences => {
   return preferences;
 };
 
+// `/me` 更新時の入力検証。部分更新なので存在するキーだけをチェックする。
 const sanitizeUserUpdate = (payload: unknown): Partial<UserDocument> => {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     throw invalidPayload("body");
@@ -224,16 +226,18 @@ const sanitizeUserUpdate = (payload: unknown): Partial<UserDocument> => {
   return update;
 };
 
+// レスポンス共通化のため、ユーザー本体・設定・所属情報をまとめて構築する。
 const buildUserProfilePayload = async (
   c: RouterContext,
   settingsOverride?: UserSettingsResponse
 ) => {
   const auth = c.get("auth");
   const settings =
-    settingsOverride ?? (await getUserSettings(c.env, auth.user));
+    settingsOverride ?? (await getUserSettings(c.env, auth.token, auth.user));
 
   const currentGroup = await getCurrentGroupContext(
     c.env,
+    auth.token,
     settings.joinGroupId,
     auth.user.email
   );
@@ -253,27 +257,39 @@ const buildUserProfilePayload = async (
   };
 };
 
-usersRouter.use("*", requireAuth);
+const usersRouter = new Hono<{
+  Bindings: AppBindings;
+  Variables: AppVariables;
+}>()
 
-usersRouter.get("/me", async (c) => {
-  const payload = await buildUserProfilePayload(c);
-  return c.json(payload);
-});
+  // すべてのエンドポイントで ID トークン検証を必須にする。
+  .use("*", requireAuth)
 
-usersRouter.put("/me", async (c) => {
-  const body = await parseJsonBody<unknown>(c);
-  const update = sanitizeUserUpdate(body);
+  // ユーザー情報と設定をまとめて返す。
+  .get("/me", async (c) => {
+    const payload = await buildUserProfilePayload(c);
+    return c.json(payload);
+  })
 
-  if (!Object.keys(update).length) {
-    throw new FirebaseAuthError("EMPTY_UPDATE", 400, "EMPTY_UPDATE");
-  }
+  // ユーザー設定を更新し、反映後の状態を返す。
+  .put("/me", async (c) => {
+    const body = await parseJsonBody<unknown>(c);
+    const update = sanitizeUserUpdate(body);
 
-  const auth = c.get("auth");
-  await updateUserSettings(c.env, auth.user.uid, update);
+    if (!Object.keys(update).length) {
+      throw new FirebaseAuthError("EMPTY_UPDATE", 400, "EMPTY_UPDATE");
+    }
 
-  const refreshedSettings = await getUserSettings(c.env, auth.user);
-  const payload = await buildUserProfilePayload(c, refreshedSettings);
-  return c.json(payload);
-});
+    const auth = c.get("auth");
+    await updateUserSettings(c.env, auth.user.uid, auth.token, update);
+
+    const refreshedSettings = await getUserSettings(
+      c.env,
+      auth.token,
+      auth.user
+    );
+    const payload = await buildUserProfilePayload(c, refreshedSettings);
+    return c.json(payload);
+  });
 
 export default usersRouter;

@@ -1,3 +1,4 @@
+// 認証系エンドポイント (ログイン・トークン更新・検証) をまとめたルーター。
 import { Hono } from "hono";
 import type { Context } from "hono";
 import {
@@ -7,11 +8,6 @@ import {
 } from "../firebase";
 import { requireAuth, type AppVariables } from "../middleware/auth";
 import type { AppBindings } from "../types/bindings";
-
-const authRouter = new Hono<{
-  Bindings: AppBindings;
-  Variables: AppVariables;
-}>();
 
 type RouterContext = Context<{
   Bindings: AppBindings;
@@ -27,6 +23,7 @@ interface RefreshRequestBody {
   refreshToken?: string;
 }
 
+// 共通の JSON パース処理。失敗時は 400 を返してクライアントのバグを示す。
 const parseJsonBody = async <T>(c: RouterContext): Promise<T> => {
   try {
     return (await c.req.json()) as T;
@@ -36,52 +33,61 @@ const parseJsonBody = async <T>(c: RouterContext): Promise<T> => {
   }
 };
 
-authRouter.post("/login", async (c) => {
-  const body = await parseJsonBody<LoginRequestBody>(c);
+// ルーター本体。
+const authRouter = new Hono<{
+  Bindings: AppBindings;
+  Variables: AppVariables;
+}>()
 
-  if (typeof body.email !== "string" || typeof body.password !== "string") {
-    throw new FirebaseAuthError(
-      "EMAIL_AND_PASSWORD_REQUIRED",
-      400,
-      "EMAIL_AND_PASSWORD_REQUIRED"
-    );
-  }
+  // メールアドレス＋パスワードでログインし、トークンとユーザー情報を返す。
+  .post("/login", async (c) => {
+    const body = await parseJsonBody<LoginRequestBody>(c);
 
-  const result = await signInWithPassword(c.env, body.email, body.password);
+    if (typeof body.email !== "string" || typeof body.password !== "string") {
+      throw new FirebaseAuthError(
+        "EMAIL_AND_PASSWORD_REQUIRED",
+        400,
+        "EMAIL_AND_PASSWORD_REQUIRED"
+      );
+    }
 
-  return c.json({
-    tokens: result.tokens,
-    user: result.user,
+    const result = await signInWithPassword(c.env, body.email, body.password);
+
+    return c.json({
+      tokens: result.tokens,
+      user: result.user,
+    });
+  })
+
+  // リフレッシュトークンを受け取り、新しい ID トークンを払い出す。
+  .post("/refresh", async (c) => {
+    const body = await parseJsonBody<RefreshRequestBody>(c);
+
+    if (typeof body.refreshToken !== "string") {
+      throw new FirebaseAuthError(
+        "MISSING_REFRESH_TOKEN",
+        400,
+        "MISSING_REFRESH_TOKEN"
+      );
+    }
+
+    const result = await refreshIdToken(c.env, body.refreshToken);
+
+    return c.json({
+      tokens: result.tokens,
+      user: result.user,
+    });
+  })
+
+  // Bearer トークンを検証し、検証済みクレームをそのまま返す。
+  .get("/me", requireAuth, (c) => {
+    const auth = c.get("auth");
+
+    return c.json({
+      token: auth.token,
+      claims: auth.claims,
+      user: auth.user,
+    });
   });
-});
-
-authRouter.post("/refresh", async (c) => {
-  const body = await parseJsonBody<RefreshRequestBody>(c);
-
-  if (typeof body.refreshToken !== "string") {
-    throw new FirebaseAuthError(
-      "MISSING_REFRESH_TOKEN",
-      400,
-      "MISSING_REFRESH_TOKEN"
-    );
-  }
-
-  const result = await refreshIdToken(c.env, body.refreshToken);
-
-  return c.json({
-    tokens: result.tokens,
-    user: result.user,
-  });
-});
-
-authRouter.get("/me", requireAuth, (c) => {
-  const auth = c.get("auth");
-
-  return c.json({
-    token: auth.token,
-    claims: auth.claims,
-    user: auth.user,
-  });
-});
 
 export default authRouter;

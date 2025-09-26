@@ -8,51 +8,56 @@ import {
   getGradeMasterList,
 } from "../repositories/mastersRepository";
 
+// 技能章・進級章などのマスターデータを返すためのルーター。
 const mastersRouter = new Hono<{
   Bindings: AppBindings;
   Variables: AppVariables;
-}>();
+}>()
 
-mastersRouter.get("/ginosho", async (c) => {
-  const list = await getGinoshoMasterList(c.env);
-  return c.json({ items: list });
-});
+  .get("/ginosho", async (c) => {
+    // 技能章の一覧を取得して配列形式で返す。
+    const list = await getGinoshoMasterList(c.env);
+    return c.json({ items: list });
+  })
 
-mastersRouter.get("/ginosho/:id", async (c) => {
-  const id = c.req.param("id");
-  const detail = await getGinoshoDetail(c.env, id);
+  .get("/ginosho/:id", async (c) => {
+    const id = c.req.param("id");
+    const detail = await getGinoshoDetail(c.env, id);
 
-  if (!detail) {
-    return c.json(
-      {
-        error: "GINOSHO_NOT_FOUND",
-      },
-      404
-    );
-  }
+    if (!detail) {
+      // 見つからなかった場合は 404 エラーとエラーコードを返す。
+      return c.json(
+        {
+          error: "GINOSHO_NOT_FOUND",
+        },
+        404
+      );
+    }
 
-  return c.json(detail);
-});
+    return c.json(detail);
+  })
 
-mastersRouter.get("/grade", async (c) => {
-  const list = await getGradeMasterList(c.env);
-  return c.json({ items: list });
-});
+  .get("/grade", async (c) => {
+    // 進級章の一覧を取得する。
+    const list = await getGradeMasterList(c.env);
+    return c.json({ items: list });
+  })
 
-mastersRouter.get("/grade/:id", async (c) => {
-  const id = c.req.param("id");
-  const detail = await getGradeMaster(c.env, id);
+  .get("/grade/:id", async (c) => {
+    const id = c.req.param("id");
+    const detail = await getGradeMaster(c.env, id);
 
-  if (!detail) {
-    return c.json(
-      {
-        error: "GRADE_NOT_FOUND",
-      },
-      404
-    );
-  }
+    if (!detail) {
+      // 対応する進級章が存在しない場合は 404 を返す。
+      return c.json(
+        {
+          error: "GRADE_NOT_FOUND",
+        },
+        404
+      );
+    }
 
-  return c.json(detail);
-});
+    return c.json(detail);
+  });
 
 export default mastersRouter;
