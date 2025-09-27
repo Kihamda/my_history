@@ -1,8 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-
-import staticLandingPage from "./landing/landing";
-import templateBuilder from "./builder";
+import { buildLandingPage } from "./builder";
 
 /**
  * Markdownファイルを読み込み、HTMLに変換して保存する関数
@@ -12,7 +10,7 @@ export const __dirname = path.join(path.resolve());
 
 const getAllMarkdownFiles = (): string[] => {
   const markdownFiles: string[] = [];
-  const dirPath = path.join(__dirname, "../../", "helpPageContent");
+  const dirPath = path.join(__dirname, "help/pages");
 
   fs.readdirSync(dirPath).forEach((file) => {
     if (file.endsWith(".md")) {
@@ -23,19 +21,17 @@ const getAllMarkdownFiles = (): string[] => {
   return markdownFiles;
 };
 
-// LPをビルドしてdistにぶち込む関数
-const buildLandingPage = async () => {
-  const landingContent = staticLandingPage();
-  const finalHtml = templateBuilder(landingContent, "My Historyアプリ");
+const copyToBackend = () => {
+  const sourcePath = path.join(__dirname, "../frontend/dist");
+  const destPath = path.join(__dirname, "../backend/buildTmp");
 
-  const outputPath = path.join(__dirname, "dist", "index.html");
-  fs.writeFileSync(outputPath, finalHtml, "utf-8");
+  fs.cpSync(sourcePath, destPath, { recursive: true });
 };
 
 // build時にviteの方のdistにコピーする。
 const copyToDist = () => {
   const sourcePath = path.join(__dirname, "dist");
-  const destPath = path.join(__dirname, "../dist");
+  const destPath = path.join(__dirname, "../frontend/dist/");
 
   if (!fs.existsSync(path.join(destPath, "spa.html"))) {
     fs.cpSync(
@@ -68,13 +64,24 @@ const createDistDir = () => {
   fs.mkdirSync(path.join(distPath, "help"), { recursive: true });
 };
 
-const main = async () => {
+const copyPublicAssets = () => {
+  const publicPath = path.join(__dirname, "public");
+  const distPublicPath = path.join(__dirname, "dist");
+
+  fs.cpSync(publicPath, distPublicPath, { recursive: true });
+};
+
+export const main = async (test: boolean) => {
   console.log("Starting static site generation...");
   const markdownFiles = getAllMarkdownFiles();
   console.log(`Found ${markdownFiles} markdown files.`);
   createDistDir();
   buildLandingPage();
-  copyToDist();
-};
+  copyPublicAssets();
 
-main();
+  console.log(test);
+  if (!test) {
+    copyToDist();
+    copyToBackend();
+  }
+};

@@ -13,7 +13,7 @@ import { faArrowRight } from "@fortawesome/free-solid-svg-icons/faArrowRight";
 
 const LandTop: React.FC = () => {
   return (
-    <FillBackgroundDesign backgroundImagePath="/assets/landing/bg.webp">
+    <FillBackgroundDesign backgroundImagePath="landing/bg.webp">
       <div className="container text-white d-flex justify-content-left align-items-center position-relative">
         <div
           className="p-5 "

@@ -5,6 +5,9 @@
   "compatibility_date": "2025-09-25",
   "vars": {
     "FIREBASE_PROJECT_ID": "my-history-v2"
+  },
+  "site": {
+    "bucket": "./buildTmp"
   }
   // "compatibility_flags": [
   //   "nodejs_compat"

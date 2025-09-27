@@ -23,7 +23,7 @@ const Link: React.FC<LinkWithOffsetProps> = ({
   style,
 }) => {
   return (
-    <a href={to} className={className} style={style}>
+    <a href={`#${to}`} className={className} style={style}>
       {children}
     </a>
   );

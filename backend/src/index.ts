@@ -10,6 +10,7 @@ import groupsRouter from "./routers/groups";
 import scoutsRouter from "./routers/scouts";
 import mastersRouter from "./routers/masters";
 import type { AppVariables } from "./middleware/auth";
+import { serveStatic } from "hono/cloudflare-workers";
 
 // Hono のレスポンスに利用できる範囲へ HTTP ステータスコードを正規化する。
 const toStatus = (status: number): ContentfulStatusCode => {
@@ -64,19 +65,19 @@ const app = new Hono<{
     )
   )
 
-  // ルートパスはヘルスチェック用の軽量レスポンスを返す。
-  .get("/", (c) =>
-    c.json({
-      message: "My History backend is running",
-      endpoints: {
-        auth: "/api/auth/*",
-        users: "/api/users/*",
-        groups: "/api/groups/*",
-        scouts: "/api/scouts/*",
-        masters: "/api/masters/*",
-      },
-    })
+  // ルートパスはbuildTmpの中身をいい感じに返す
+  .get("/", serveStatic({ manifest: { relative: true }, path: "index.html" }))
+  .get(
+    "/app/*",
+    serveStatic({ manifest: { relative: true }, path: "spa.html" })
   )
+  .get(
+    "/auth/*",
+    serveStatic({ manifest: { relative: true }, path: "spa.html" })
+  )
+  .get("/help/*", serveStatic({ manifest: { relative: true }, path: "help/" }))
+  .get("/*", serveStatic({ manifest: { relative: true } }))
+  //
 
   // ドメイン毎のルーターを/api 以下にマウントする。
   .route("/api/auth", authRouter)
