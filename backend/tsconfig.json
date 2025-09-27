@@ -9,5 +9,24 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
   },
-  "exclude": ["tmp", "node_modules"]
+  "include": [
+    "src/index.ts",
+    "src/client.ts",
+    "src/firebase.ts",
+    "src/lib/**/*.ts",
+    "src/middleware/**/*.ts",
+    "src/routers/auth.ts",
+    "src/routers/groups.ts",
+    "src/routers/scouts.ts",
+    "src/types/bindings.ts"
+  ],
+  "exclude": [
+    "tmp",
+    "node_modules",
+    "src/repositories",
+    "src/services",
+    "src/transformers",
+    "src/types/api",
+    "src/types/domain"
+  ]
 }

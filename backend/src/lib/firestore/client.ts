@@ -160,77 +160,11 @@ export class FirestoreClient {
     });
   }
 
-  async createDocument(
-    parentPath: string,
-    data: Record<string, unknown>,
-    documentId?: string
-  ): Promise<void> {
-    // ドキュメント ID を指定する場合と自動採番する場合の両方に対応。
-    const query = documentId ? { documentId } : undefined;
-    await this.authorizedFetch(this.documentsPath(parentPath), {
-      method: "POST",
-      body: JSON.stringify(encodeDocument(data)),
-      query,
-    });
-  }
-
   async deleteDocument(documentPath: string): Promise<void> {
     // ドキュメントを完全に削除する。
     await this.authorizedFetch(this.documentsPath(documentPath), {
       method: "DELETE",
     });
-  }
-
-  async commit(body: unknown): Promise<void> {
-    // Firestore の commit API を呼び出し、複数操作をまとめて適用する。
-    await this.authorizedFetch(`${this.projectPath}/documents:commit`, {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-  }
-
-  async batchGet<T = Record<string, unknown>>(
-    documentPaths: string[]
-  ): Promise<T[]> {
-    // 複数ドキュメントを一括取得するユーティリティ。
-    const results = await this.authorizedFetch<
-      Array<{ found?: FirestoreDocument }>
-    >(`${this.projectPath}/documents:batchGet`, {
-      method: "POST",
-      body: JSON.stringify({
-        documents: documentPaths.map(
-          (path) => `${this.projectPath}/documents/${path}`
-        ),
-      }),
-    });
-
-    return results
-      .filter((item) => item.found)
-      .map((item) => decodeDocument(item.found!) as T);
-  }
-
-  async runQuery<T = Record<string, unknown>>(
-    body: unknown,
-    parentPath?: string
-  ): Promise<Array<T & { id: string }>> {
-    // StructuredQuery を実行し、デコード済みデータに ID を付与して返す。
-    const endpoint = parentPath
-      ? `${this.projectPath}/documents/${parentPath}:runQuery`
-      : `${this.projectPath}/documents:runQuery`;
-
-    const results = await this.authorizedFetch<
-      Array<{ document?: FirestoreDocument }>
-    >(endpoint, {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-
-    return results
-      .filter((item) => item.document)
-      .map((item) => ({
-        ...(decodeDocument(item.document!) as T),
-        id: extractDocumentId(item.document?.name),
-      }));
   }
 
   async listDocuments<T = Record<string, unknown>>(

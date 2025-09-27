@@ -95,10 +95,10 @@ def build():
     )
 
     # publicに複製
-    os.makedirs(path + "/../public/data", exist_ok=True)
+    os.makedirs(path + "/../src/master", exist_ok=True)
     shutil.copytree(
         path + "dist",
-        path + "/../public/data",
+        path + "/../src/master",
         dirs_exist_ok=True,
     )
 
