@@ -1,13 +1,11 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { MiddlewareHandler } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import type { AppBindings } from "./types/bindings";
-import authRouter from "./routers/auth";
 import groupsRouter from "./routers/groups";
 import scoutsRouter from "./routers/scouts";
 import type { AppVariables } from "./middleware/auth";
 import { serveStatic } from "hono/cloudflare-workers";
+import { VerifyFirebaseAuthEnv } from "@hono/firebase-auth";
 
 // Hono のレスポンスに利用できる範囲へ HTTP ステータスコードを正規化する。
 const toStatus = (status: number): ContentfulStatusCode => {
@@ -17,7 +15,7 @@ const toStatus = (status: number): ContentfulStatusCode => {
 
 // Cloudflare Workers 上で動かす Hono アプリケーションの本体。
 const app = new Hono<{
-  Bindings: AppBindings;
+  Bindings: VerifyFirebaseAuthEnv;
   Variables: AppVariables;
 }>()
 
@@ -61,10 +59,8 @@ const app = new Hono<{
   //
 
   // ドメイン毎のルーターを/api 以下にマウントする。
-  .route("/api/auth", authRouter)
   .route("/api/groups", groupsRouter)
-  .route("/api/scouts", scoutsRouter)
-  .route("/api/masters", mastersRouter);
+  .route("/api/scouts", scoutsRouter);
 
 export type CloudflareBindings = AppBindings;
 export type AppType = typeof app;

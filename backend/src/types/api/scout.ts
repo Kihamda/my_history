@@ -1,11 +1,19 @@
+type Detail = {
+  number: string;
+  description: string;
+  achievedDate: Date;
+  done: boolean;
+};
+
 export interface Scout {
   id: string;
   personal: ScoutPersonal;
   unit: ScoutUnit[];
-  ginosho;
-  event;
+  ginosho: ScoutGinosho[];
+  event: ScoutEvent[];
 }
 
+// 個人情報のデータ これに
 export interface ScoutPersonal {
   name: string;
   scoutId: string;
@@ -48,8 +56,9 @@ export interface ScoutUnitWork {
 
 export interface ScoutUnitGrade {
   name: string;
-  level: number;
+  uniqueId: string;
   joinedDate: Date;
+  details: Detail[];
 }
 
 // 技能章のデータ
@@ -57,4 +66,17 @@ export interface ScoutGinosho {
   id: string;
   uniqueId: string;
   name: string;
+  requireCert: boolean;
+  certBy: string;
+  achievedDate: Date;
+  details: Detail[];
+}
+
+// 行事章のデータ
+export interface ScoutEvent {
+  id: string;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  description: string;
 }
