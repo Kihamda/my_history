@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-09-25",
   "vars": {
-    "FIREBASE_PROJECT_ID": "my-history-v2",
+    "PROJECT_ID": "my-history-v2",
     "PUBLIC_JWK_CACHE_KEY": "my-history-public-jwk"
   },
   "site": {
@@ -12,7 +12,7 @@
   },
   "kv_namespaces": [
     {
-      "binding": "my-history-firebase-kv-cache",
+      "binding": "MY_HISTORY_KV_CACHE",
       "id": "3de538a7c1cf4b929e5f241625c5649e"
     }
   ]

@@ -1,4 +1,4 @@
-import { SearchResult } from "@/types/frontend/search/searchQueryType";
+import type { SearchResult } from "b@/types/api/search";
 
 const SearchResultCard = ({ result }: { result: SearchResult }) => {
   return (
@@ -6,10 +6,7 @@ const SearchResultCard = ({ result }: { result: SearchResult }) => {
       <div className="card-body">
         <h5 className="card-title">{result.name}</h5>
         <p className="card-text">Scout ID: {result.scoutId}</p>
-        <p className="card-text">Current Unit: {result.currentUnit}</p>
-        <p className="card-text">
-          経験隊: {result.experiencedUnits.join(", ")}
-        </p>
+        <p className="card-text">Current Unit: {result.currentUnitName}</p>
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
-import { useAuthContext } from "@/backend/authContext";
+import { useAuthContext } from "@/authContext";
 import { Navigate, Route, Routes } from "react-router";
 import Header from "./parts/header";
 
 import { lazy, Suspense } from "react";
-import LoadingSplash from "@/frontend/style/loadingSplash";
+import LoadingSplash from "@/style/loadingSplash";
 
 // 遅延読み込みするコンポーネント
 const LeaderHome = lazy(() => import("./home/leaderHome"));
@@ -14,7 +14,7 @@ const NewScoutWizard = lazy(() => import("./scoutDetail/newScoutWizard"));
 
 const App = () => {
   // ログアウト状態なのに/appにアクセスした人をログインページに送還する
-  const user = useAuthContext();
+  const user = useAuthContext()?.user;
   if (!user) {
     return <Navigate to="/auth/login" />;
   }
@@ -23,8 +23,8 @@ const App = () => {
   // const uid = user.uid;
   const userName = user.displayName || "名称未設定";
   const emailVerified = user.emailVerified; // メールアドレスの確認状態
-  const isLeader = user.currentGroup?.isLeader || false; // リーダーかどうかのフラグ。
-  const isAdmin = user.currentGroup?.isAdmin || false; // 管理者かどうかのフラグ。userオブジェクトのisAdminプロパティを使用して判定
+  const isAdmin = user.joinedGroup?.role == "ADMIN" || false; // 管理者かどうかのフラグ。userオブジェクトのisAdminプロパティを使用して判定
+  const isLeader = user.joinedGroup != undefined || false; // リーダーかどうかのフラグ。
   // const isEditable = user.currentGroup?.isEditable || false; // スカウトを編集可能かどうかのフラグ。userオブジェクトのisEditableプロパティを使用して判定
 
   if (emailVerified === false) {

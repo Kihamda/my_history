@@ -1,11 +1,9 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import groupsRouter from "./routers/groups";
-import scoutsRouter from "./routers/scouts";
-import type { AppVariables } from "./middleware/auth";
+import apiRouter from "./apiRotuer";
 import { serveStatic } from "hono/cloudflare-workers";
-import { VerifyFirebaseAuthEnv } from "@hono/firebase-auth";
+import { cors } from "hono/cors";
 
 // Hono のレスポンスに利用できる範囲へ HTTP ステータスコードを正規化する。
 const toStatus = (status: number): ContentfulStatusCode => {
@@ -14,10 +12,7 @@ const toStatus = (status: number): ContentfulStatusCode => {
 };
 
 // Cloudflare Workers 上で動かす Hono アプリケーションの本体。
-const app = new Hono<{
-  Bindings: VerifyFirebaseAuthEnv;
-  Variables: AppVariables;
-}>()
+const app = new Hono()
 
   // 共通のエラーハンドラー。HTTPException を尊重し、それ以外は 500 を返す。
   .onError((error, c) => {
@@ -43,6 +38,18 @@ const app = new Hono<{
       toStatus(404)
     )
   )
+  .use(
+    "*",
+    cors({
+      origin: [
+        "https://myhis.kihamda.net",
+        "http://localhost:5173",
+        "http://localhost:5174",
+      ],
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowHeaders: ["Content-Type", "Authorization"],
+    })
+  )
 
   // ルートパスはbuildTmpの中身をいい感じに返す
   .get("/", serveStatic({ manifest: { relative: true }, path: "index.html" }))
@@ -54,15 +61,12 @@ const app = new Hono<{
     "/auth/*",
     serveStatic({ manifest: { relative: true }, path: "spa.html" })
   )
-  .get("/help/*", serveStatic({ manifest: { relative: true }, path: "help/" }))
   .get("/*", serveStatic({ manifest: { relative: true } }))
   //
 
   // ドメイン毎のルーターを/api 以下にマウントする。
-  .route("/api/groups", groupsRouter)
-  .route("/api/scouts", scoutsRouter);
+  .route("/api/", apiRouter);
 
-export type CloudflareBindings = AppBindings;
 export type AppType = typeof app;
 
 export default app;

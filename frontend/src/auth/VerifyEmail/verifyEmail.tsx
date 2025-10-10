@@ -1,8 +1,7 @@
-import { FC } from "react";
+import { type FC } from "react";
 import { Button, Card } from "react-bootstrap";
-import { useAuthContext } from "@/backend/authContext";
+import { useAuthContext, resetPassword } from "@/authContext";
 import { Navigate } from "react-router";
-import resetPassword from "@/backend/userAuth/reset";
 
 /**
  * @fileoverview

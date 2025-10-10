@@ -1,7 +1,7 @@
-import { ScoutUnit, ScoutUnitList } from "@/types/frontend/scout/unit";
-import { SearchQuery } from "@/types/frontend/search/searchQueryType";
+import { ScoutUnitNameMap, type ScoutUnit } from "b@/types/common/scoutGroup";
+import type { SearchRequest } from "b@/types/api/search";
 
-const queryParser = (searchName: string): SearchQuery => {
+const queryParser = (searchName: string): SearchRequest => {
   // 送られてきた文字列が何かを判定する［名前・登録番号・所属隊］
   let scoutId: string = "";
   let name: string = "";
@@ -35,13 +35,16 @@ const queryParser = (searchName: string): SearchQuery => {
     // カンマで分割して重複を除去、各要素が所属隊のIDと一致するかチェック
     const potentialUnits = [...new Set(normalizedSearchName.split(","))];
     const allUnitsMatch = potentialUnits.every((unit) =>
-      ScoutUnitList.some((scoutUnit) => scoutUnit === unit)
+      Object.keys(ScoutUnitNameMap).some((scoutUnit) => scoutUnit === unit)
     );
 
     if (allUnitsMatch && potentialUnits.join("") !== "") {
       // すべてが所属隊リストに存在する場合
       currentUnit = potentialUnits.map(
-        (unitId) => ScoutUnitList.find((scoutUnit) => scoutUnit === unitId)!
+        (unitId) =>
+          Object.keys(ScoutUnitNameMap).find(
+            (scoutUnit) => scoutUnit === unitId
+          )!
       ) as ScoutUnit[];
     } else if (normalizedSearchName.match(/^\d{9,12}$/)) {
       // 9-12桁の数字の場合

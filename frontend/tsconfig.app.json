@@ -10,7 +10,7 @@
 
     "paths": {
       "@/*": ["./src/*"],
-      "b@/*": ["../backend/*"]
+      "b@/*": ["../backend/src/*"]
     },
 
     /* Bundler mode */

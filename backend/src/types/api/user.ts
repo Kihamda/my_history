@@ -1,8 +1,14 @@
-export interface User {
+import { GroupRole } from "./group";
+
+export interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
-  joinedGroupId?: string;
+  joinedGroup?: {
+    id: string;
+    name: string;
+    role: GroupRole;
+  };
   knowGroupId: string[];
   emailVerified: boolean;
 }

@@ -1,46 +1,23 @@
 import { useState } from "react";
-import {
-  Scout,
-  ScoutPersonalData,
-  ScoutPersonalDataDefault,
-} from "@/types/frontend/scout/scout";
-import { getOptedUnitDataDefault } from "@/types/frontend/scout/unit";
-import { useAuthContext } from "@/backend/authContext";
-import { setScoutRecord } from "@/backend/scoutDb/scout";
+import { Scout, ScoutPersonalDataDefault } from "@/types/frontend/scout/scout";
+import { ScoutCreate } from "b@/types/api/scout";
+import { hc, useAuthContext } from "@/authContext";
 import { Navigate, useNavigate } from "react-router";
-import convertInputDate from "@/tools/date/convertInputDate";
 import getRandomStr from "@/tools/getRandomStr";
 import { raiseError } from "@/frontend/errorHandler";
 import FullWidthCardHeader from "@/frontend/style/fullWidthCardHeader";
 import InputGroupUI from "@/frontend/style/imputGroupUI";
 
 const NewScoutWizard = () => {
-  const user = useAuthContext();
   const nav = useNavigate();
 
-  if (!user?.joinGroupId) {
-    return <Navigate to="/login" replace />;
-  }
+  const [scoutData, setScoutData] = useState<ScoutCreate>();
 
-  const [scoutData, setScoutData] = useState<ScoutPersonalData>({
-    ...ScoutPersonalDataDefault,
-    belongs: user?.joinGroupId,
-  });
-
-  const handleSave = async (personalData: ScoutPersonalData) => {
-    const unit = await getOptedUnitDataDefault(scoutData.birthday);
-    const newScoutData: Scout = {
-      id: getRandomStr(20),
-      personal: personalData,
-      unit: unit,
-      ginosho: [],
-      events: [],
-    };
-
-    const result = await setScoutRecord(newScoutData);
-    if (result.status === "success") {
+  const handleSave = async (newScoutData: ScoutCreate) => {
+    const result = await hc?.api.scout.create.$post({});
+    if (result?.ok) {
       // 保存成功時はスカウトの詳細ページにリダイレクト
-      nav(`/app/scouts/${result.data.id}/view`, {
+      nav(`/app/scouts/${result.id}/view`, {
         replace: true,
         state: { scout: newScoutData },
       });

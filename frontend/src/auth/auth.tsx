@@ -2,9 +2,9 @@ import { Navigate, Route, Routes, useLocation } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 
-import BlurCard from "@/frontend/style/cardDesign";
-import FillBackgroundDesign from "@/frontend/style/fillBackgroundDesign";
-import { useAuthContext } from "@/backend/authContext";
+import BlurCard from "@/style/cardDesign";
+import FillBackgroundDesign from "@/style/fillBackgroundDesign";
+import { useAuthContext } from "@/authContext";
 
 import Register from "./Register/register";
 import Reset from "./Reset/reset";
@@ -29,13 +29,13 @@ import VerifyEmail from "./VerifyEmail/verifyEmail";
 
 const Auth = () => {
   // ユーザーの認証状態を取得
-  const user = useAuthContext();
+  const context = useAuthContext();
   const url = useLocation();
 
   //ログインしているのにもう一回ログインしようとした人を/appに送る
   if (url.pathname !== "/auth/verify") {
-    if (user) {
-      if (user.emailVerified) {
+    if (context?.user) {
+      if (context.user.emailVerified) {
         // メールアドレスが確認済みの場合、アプリケーションのホームにリダイレクト
         return <Navigate to="/app" />;
       }
@@ -46,7 +46,7 @@ const Auth = () => {
   return (
     <FillBackgroundDesign
       className="vh-100"
-      backgroundImagePath="/assets/auth/bg.webp"
+      backgroundImagePath="/spaAssets/auth/bg.webp"
     >
       <div className="row w-100">
         <BlurCard className="col-10 col-md-6 col-lg-4 mx-auto">

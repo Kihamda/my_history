@@ -1,7 +1,7 @@
 import { NavLink } from "react-router";
 
-import { logout } from "@/backend/userAuth/loginLogout";
-import { FC } from "react";
+import { logout } from "@/authContext";
+import type { FC } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 

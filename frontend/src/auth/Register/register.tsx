@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
 import FormGroup from "../formGroup";
-import createUser from "@/backend/userAuth/createUser";
+import { register } from "@/authContext";
 
 /**
  * @fileoverview
@@ -43,7 +43,7 @@ const Register: React.FC = () => {
     }
 
     try {
-      await createUser(email, password);
+      await register(email, password);
       alert(
         "ユーザーが成功裏に作成されました。メールアドレス認証のためのメールを送信したので、URLをクリックして続行してください。"
       );

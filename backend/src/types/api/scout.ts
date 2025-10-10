@@ -5,12 +5,24 @@ type Detail = {
   done: boolean;
 };
 
+export type CurrentUnitId = "bvs" | "cs" | "bs" | "vs" | "rs" | "ob";
+
 export interface Scout {
   id: string;
   personal: ScoutPersonal;
   unit: ScoutUnit[];
   ginosho: ScoutGinosho[];
   event: ScoutEvent[];
+}
+
+export interface ScoutCreate {
+  name: string;
+  scoutId: string;
+  birthDate: Date;
+  joinedDate: Date;
+  belongGroupId: string;
+  currentUnitId: CurrentUnitId;
+  memo: string;
 }
 
 // 個人情報のデータ これに
@@ -20,7 +32,7 @@ export interface ScoutPersonal {
   birthDate: Date;
   joinedDate: Date;
   belongGroupId: string;
-  currentUnitId: "bvs" | "cs" | "bs" | "vs" | "rs" | "ob";
+  currentUnitId: CurrentUnitId;
   memo: string;
   declare: {
     date: Date;

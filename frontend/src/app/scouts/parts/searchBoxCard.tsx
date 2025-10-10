@@ -1,30 +1,34 @@
-import UnitSelector from "@/tools/components/unitSelector";
-import { ScoutUnitNameMap } from "@/types/frontend/scout/unit";
-import { SearchQuery } from "@/types/frontend/search/searchQueryType";
+import UnitSelector from "@/lib/components/unitSelector";
+import { ScoutUnitNameMap } from "b@/types/common/scoutGroup";
+import type { SearchRequest } from "b@/types/api/search";
 import { useState } from "react";
 import { Card, FormControl, InputGroup } from "react-bootstrap";
 
 const SearchboxCard = ({
-  searchQuery,
+  SearchRequest,
   SearchFunc,
 }: {
-  searchQuery: SearchQuery;
-  SearchFunc: (query: SearchQuery) => void;
+  SearchRequest: SearchRequest;
+  SearchFunc: (query: SearchRequest) => void;
 }) => {
-  const [searchQueryInput, setSearchQueryInput] =
-    useState<SearchQuery>(searchQuery);
+  const [SearchRequestInput, setSearchRequestInput] =
+    useState<SearchRequest>(SearchRequest);
 
   // 検索ボックスのコンポーネント
   // 検索クエリを更新するための関数を定義
-  const handleSearch = (query: SearchQuery) => {
+  const handleSearch = (query: SearchRequest) => {
     SearchFunc(query);
-    // searchQueryが変わるとscouts.tsxのuseEffectが発火する
+    // SearchRequestが変わるとscouts.tsxのuseEffectが発火する
   };
 
-  const getExplain = (current: SearchQuery) => {
+  const getExplain = (current: SearchRequest) => {
     let explainMessage: string[] = [];
 
-    if (!current.name && !current.scoutId && current.currentUnit.length === 0) {
+    if (
+      !current.name &&
+      !current.scoutId &&
+      current.currentUnit?.length === 0
+    ) {
       return "検索条件が設定されていません。";
     }
 
@@ -74,10 +78,10 @@ const SearchboxCard = ({
               <InputGroup.Text>名前</InputGroup.Text>
               <FormControl
                 placeholder="松田 太郎"
-                value={searchQueryInput?.name}
+                value={SearchRequestInput?.name}
                 onChange={(e) =>
-                  setSearchQueryInput({
-                    ...searchQueryInput,
+                  setSearchRequestInput({
+                    ...SearchRequestInput,
                     name: e.target.value,
                   })
                 }
@@ -88,10 +92,10 @@ const SearchboxCard = ({
               <FormControl
                 type="number"
                 placeholder="1234567890"
-                value={searchQueryInput?.scoutId}
+                value={SearchRequestInput?.scoutId}
                 onChange={(e) =>
-                  setSearchQueryInput({
-                    ...searchQueryInput,
+                  setSearchRequestInput({
+                    ...SearchRequestInput,
                     scoutId: e.target.value,
                   })
                 }
@@ -101,10 +105,10 @@ const SearchboxCard = ({
           <div className="col-12 col-md-6">
             <label className="form-label">現在の所属隊</label>
             <UnitSelector
-              units={searchQueryInput?.currentUnit}
+              units={SearchRequestInput?.currentUnit}
               onChange={(units) =>
-                setSearchQueryInput({
-                  ...searchQueryInput,
+                setSearchRequestInput({
+                  ...SearchRequestInput,
                   currentUnit: units,
                 })
               }
@@ -117,19 +121,19 @@ const SearchboxCard = ({
         <div className="row">
           <div className="col-12 col-md-9">
             <span style={{ whiteSpace: "pre-line" }}>
-              {getExplain(searchQueryInput)}
+              {getExplain(SearchRequestInput)}
             </span>
           </div>
           <div className="col-12 col-md-3 d-flex justify-content-end align-items-center">
             <button
               className="btn btn-primary me-2 text-nowrap"
-              onClick={() => handleSearch(searchQueryInput)}
+              onClick={() => handleSearch(SearchRequestInput)}
             >
               検索
             </button>
             <button
               className="btn btn-secondary text-nowrap"
-              onClick={() => setSearchQueryInput(searchQuery)}
+              onClick={() => setSearchRequestInput(SearchRequest)}
             >
               リセット
             </button>
