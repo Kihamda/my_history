@@ -1,6 +1,6 @@
 import { Context } from "../apiRotuer";
 import { Scout } from "../types/api/scout";
-import { FirestoreScout } from "../types/firestore/scout";
+import { FirestoreScout } from "../lib/firestore/scout";
 
 const updateScout = async (c: Context) => {
   const data: Scout = await c.req.json();

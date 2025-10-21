@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import { UserProfile } from "../types/api/user";
+import { UserProfileType } from "../types/api/user";
 import { AppContext } from "../apiRotuer";
-import { FirestoreUser } from "../types/firestore/user";
-import { FirestoreGroup } from "../types/firestore/group";
+import { FirestoreUser } from "../lib/firestore/user";
+import { FirestoreGroup } from "../lib/firestore/group";
 
 const userRouter = new Hono<AppContext>()
 
@@ -27,7 +27,7 @@ const userRouter = new Hono<AppContext>()
 
     const group = groupRaw.data() as FirestoreGroup | undefined;
 
-    const userData: UserProfile = {
+    const userData: UserProfileType = {
       uid: token.uid,
       email: token.email || "",
       displayName: usertmp.displayName,

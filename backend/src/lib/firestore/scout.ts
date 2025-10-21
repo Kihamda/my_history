@@ -1,7 +1,17 @@
+import { Context } from "../../apiRotuer";
+import { ScoutType } from "../../types/api/scout";
+
 type Detail = Date | null;
 
+type FirestoreScout = {
+  personal: FirestoreScoutPersonal;
+  units: FirestoreScoutUnit[];
+  ginoshos: ScoutGinosho[];
+  events: ScoutEvent[];
+};
+
 // 個人情報のデータ これに
-export interface FirestoreScout {
+type FirestoreScoutPersonal = {
   name: string;
   scoutId: string;
   birthDate: Date;
@@ -20,39 +30,51 @@ export interface FirestoreScout {
   faith: {
     date: Date | null;
   };
-}
+};
 
-export interface FirestoreScoutUnit {
+type FirestoreScoutUnit = {
   uniqueId: "bvs" | "cs" | "bs" | "vs" | "rs";
   joinedDate: Date;
   work: ScoutUnitWork[];
   grade: ScoutUnitGrade[];
-}
+};
 
-export interface ScoutUnitWork {
+type ScoutUnitWork = {
   name: string;
   begin: Date;
   end?: Date;
-}
+};
 
-export interface ScoutUnitGrade {
+type ScoutUnitGrade = {
   uniqueId: string;
   joinedDate: Date;
   details: Detail[];
-}
+};
 
-// 技能章のデータ
-export interface ScoutGinosho {
+type ScoutGinosho = {
   uniqueId: string;
   certBy: string;
   achievedDate: Date | null;
   details: Detail[];
-}
+};
 
 // 行事章のデータ
-export interface ScoutEvent {
+type ScoutEvent = {
   name: string;
   startDate: Date;
   endDate: Date;
   description: string;
-}
+};
+
+const getScoutData = async (id: string, c: Context): Promise<ScoutType> => {
+  const data = (
+    await c.var.db.collection("scouts").doc(id).get()
+  ).data() as FirestoreScout;
+
+  return {
+    personal: data.personal,
+    units: data.units,
+    ginoshos: data.ginoshos,
+    events: data.events,
+  };
+};

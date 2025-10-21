@@ -1,55 +1,52 @@
-import { Scout, ScoutPersonalData } from "@/types/frontend/scout/scout";
-import { UnitExperience } from "@/types/frontend/scout/unit";
+import type{ ScoutType} from "b@/types/api/scout";
 import Profile from "./edit/profile";
 import Units from "./edit/units";
-import FullWidthCardHeader from "@/frontend/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@/style/fullWidthCardHeader";
 import { Link, useNavigate } from "react-router";
 import { Button } from "react-bootstrap";
 import { useState } from "react";
-import { setScoutRecord } from "@/backend/scoutDb/scout";
-import { Ginosho } from "@/types/frontend/scout/ginosho";
-import { ScoutEvent } from "@/types/frontend/scout/event";
 import GinoshoList from "./edit/ginosho";
 import Events from "./edit/events";
+import { hc } from "@/authContext";
 
 const ScoutDetailEditor = ({
   scoutData,
   setScoutData,
 }: {
-  scoutData: Scout;
-  setScoutData: React.Dispatch<React.SetStateAction<Scout>>;
+  scoutData: ScoutType;
+  setScoutData: React.Dispatch<React.SetStateAction<ScoutType>>;
 }): React.ReactElement => {
   // TMP置き場
-  const [scoutDataPersonal, setScoutDataPersonal] = useState<ScoutPersonalData>(
+  const [scoutDataPersonal, setScoutDataPersonal] = useState<ScoutType["personal"]>(
     scoutData.personal
   );
 
-  const [scoutDataUnit, setScoutDataUnit] = useState<UnitExperience[]>(
+  const [scoutDataUnit, setScoutDataUnit] = useState<ScoutType["unit"]>(
     scoutData.unit
   );
 
-  const [scoutDataGinosho, setScoutDataGinosho] = useState<Ginosho[]>(
+  const [scoutDataGinosho, setScoutDataGinosho] = useState<ScoutType["ginosho"]>(
     scoutData.ginosho
   );
 
-  const [scoutDataEvents, setScoutDataEvents] = useState<ScoutEvent[]>(
-    scoutData.events
+  const [scoutDataEvents, setScoutDataEvents] = useState<ScoutType["event"]>(
+    scoutData.event
   );
 
   // 保存時遷移用
   const nav = useNavigate();
 
   //　保存時にプロファイルの変更をローカルで反映させるための関数
-  const handleProfileChange = async (data: Scout) => {
-    const updatedData = {
-      ...data,
+  const handleProfileChange = async () => {
+    const updatedData: ScoutType = {
+      id: scoutData.id,
       personal: scoutDataPersonal,
       unit: scoutDataUnit,
       ginosho: scoutDataGinosho,
-      events: scoutDataEvents,
+      event: scoutDataEvents,
     };
 
-    const result = await setScoutRecord(updatedData);
+    const result = await hc?.apiv1.;
 
     if (result.status === "success") {
       setScoutData(() => ({

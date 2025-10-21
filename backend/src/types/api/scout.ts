@@ -1,94 +1,99 @@
-type Detail = {
-  number: string;
-  description: string;
-  achievedDate: Date;
-  done: boolean;
-};
+import { z } from "zod";
 
-export type CurrentUnitId = "bvs" | "cs" | "bs" | "vs" | "rs" | "ob";
+const Detail = z.object({
+  number: z.string(),
+  description: z.string(),
+  achievedDate: z.date(),
+  done: z.boolean(),
+});
 
-export interface Scout {
-  id: string;
-  personal: ScoutPersonal;
-  unit: ScoutUnit[];
-  ginosho: ScoutGinosho[];
-  event: ScoutEvent[];
-}
+export const CurrentUnitId = z.enum(["bvs", "cs", "bs", "vs", "rs", "ob"]);
 
-export interface ScoutCreate {
-  name: string;
-  scoutId: string;
-  birthDate: Date;
-  joinedDate: Date;
-  belongGroupId: string;
-  currentUnitId: CurrentUnitId;
-  memo: string;
-}
+export const ScoutCreate = z.object({
+  name: z.string().min(1).max(100),
+  scoutId: z.string().min(1).max(100),
+  birthDate: z.date(),
+  joinedDate: z.date(),
+  belongGroupId: z.string().min(1).max(100),
+  currentUnitId: CurrentUnitId,
+  memo: z.string().max(500),
+});
+export type ScoutCreateType = z.infer<typeof ScoutCreate>;
 
 // 個人情報のデータ これに
-export interface ScoutPersonal {
-  name: string;
-  scoutId: string;
-  birthDate: Date;
-  joinedDate: Date;
-  belongGroupId: string;
-  currentUnitId: CurrentUnitId;
-  memo: string;
-  declare: {
-    date: Date;
-    place: string;
-    done: boolean;
-  };
-  religion: {
-    date: Date;
-    type: string;
-    done: boolean;
-  };
-  faith: {
-    date: Date;
-    done: boolean;
-  };
-}
+export const ScoutPersonal = z.object({
+  name: z.string(),
+  scoutId: z.string(),
+  birthDate: z.date(),
+  joinedDate: z.date(),
+  belongGroupId: z.string(),
+  currentUnitId: CurrentUnitId,
+  memo: z.string(),
+  declare: z.object({
+    date: z.date(),
+    place: z.string(),
+    done: z.boolean(),
+  }),
+  religion: z.object({
+    date: z.date(),
+    type: z.string(),
+    done: z.boolean(),
+  }),
+  faith: z.object({
+    date: z.date(),
+    done: z.boolean(),
+  }),
+});
 
-export interface ScoutUnit {
-  id: string;
-  uniqueId: "bvs" | "cs" | "bs" | "vs" | "rs";
-  name: string;
-  experienced: boolean;
-  joinedDate: Date;
-  work: ScoutUnitWork[];
-  grade: ScoutUnitGrade[];
-}
+export const ScoutUnit = z.object({
+  id: z.string(),
+  uniqueId: z.enum(["bvs", "cs", "bs", "vs", "rs"]),
+  name: z.string(),
+  experienced: z.boolean(),
+  joinedDate: z.date(),
+  work: z.array(z.object({})),
+  grade: z.array(z.object({})),
+});
 
-export interface ScoutUnitWork {
-  name: string;
-  begin: Date;
-  end?: Date;
-}
+export const ScoutUnitWork = z.object({
+  name: z.string(),
+  begin: z.date(),
+  end: z.date().optional(),
+});
 
-export interface ScoutUnitGrade {
-  name: string;
-  uniqueId: string;
-  joinedDate: Date;
-  details: Detail[];
-}
+export const ScoutUnitGrade = z.object({
+  name: z.string(),
+  uniqueId: z.string(),
+  joinedDate: z.date(),
+  details: z.array(Detail),
+});
 
 // 技能章のデータ
-export interface ScoutGinosho {
-  id: string;
-  uniqueId: string;
-  name: string;
-  requireCert: boolean;
-  certBy: string;
-  achievedDate: Date;
-  details: Detail[];
-}
+export const ScoutGinosho = z.object({
+  id: z.string(),
+  uniqueId: z.string(),
+  name: z.string(),
+  requireCert: z.boolean(),
+  certBy: z.string(),
+  achievedDate: z.date(),
+  details: z.array(Detail),
+});
 
 // 行事章のデータ
-export interface ScoutEvent {
-  id: string;
-  name: string;
-  startDate: Date;
-  endDate: Date;
-  description: string;
-}
+export const ScoutEvent = z.object({
+  id: z.string(),
+  name: z.string(),
+  startDate: z.date(),
+  endDate: z.date(),
+  description: z.string(),
+});
+
+export const Scout = z.object({
+  id: z.string(),
+  personal: ScoutPersonal,
+  unit: z.array(ScoutUnit),
+  ginosho: z.array(ScoutGinosho),
+  event: z.array(ScoutEvent),
+});
+
+export type ScoutType = z.infer<typeof Scout>;

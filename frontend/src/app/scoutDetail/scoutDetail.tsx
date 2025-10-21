@@ -3,10 +3,9 @@ import ScoutDetailViewer from "./viewer";
 import { Scout } from "@/types/frontend/scout/scout";
 import { useEffect, useState } from "react";
 import ScoutDetailEditor from "./editor";
-import LoadingSplash from "@/frontend/style/loadingSplash";
-import { getScoutData } from "@/backend/scoutDb/scout";
-import { raiseError } from "@/frontend/errorHandler";
-import { useAuthContext } from "@/backend/authContext";
+import LoadingSplash from "@/style/loadingSplash";
+import { raiseError } from "@/errorHandler";
+import { useAuthContext } from "@/authContext";
 const ScoutDetail = (): React.ReactElement => {
   // URLを取得→参照するスカウトの情報を決定。
   const id = useLocation().pathname.split("/")[3]; // /app/scouts/:id newになることはない。
@@ -14,7 +13,7 @@ const ScoutDetail = (): React.ReactElement => {
 
   const [scoutData, setScoutData] = useState<Scout>(null as unknown as Scout);
 
-  const isEditable = useAuthContext()?.currentGroup?.isEditable || false;
+  const isEditable = useAuthContext()?.user?.joinedGroup?.role || false;
 
   useEffect(() => {
     getScoutData(id).then((data) => {

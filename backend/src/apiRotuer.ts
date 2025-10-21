@@ -1,6 +1,6 @@
 import { authorize, FirebaseAuthBindings } from "./lib/auth";
 import { Context as honoContext, Hono } from "hono";
-import { firestoreMiddleware } from "./lib/firestore";
+import { firestoreMiddleware } from "./lib/firestore/firestore";
 import { FirestoreClient } from "firebase-rest-firestore";
 import userRouter from "./user/userRoute";
 import scoutRouter from "./scout/scoutRoute";

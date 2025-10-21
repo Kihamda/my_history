@@ -1,23 +1,29 @@
 import { useState } from "react";
-import { Scout, ScoutPersonalDataDefault } from "@/types/frontend/scout/scout";
-import { ScoutCreate } from "b@/types/api/scout";
-import { hc, useAuthContext } from "@/authContext";
-import { Navigate, useNavigate } from "react-router";
-import getRandomStr from "@/tools/getRandomStr";
-import { raiseError } from "@/frontend/errorHandler";
-import FullWidthCardHeader from "@/frontend/style/fullWidthCardHeader";
-import InputGroupUI from "@/frontend/style/imputGroupUI";
+import type { ScoutCreate } from "b@/types/api/scout";
+import { hc } from "@/authContext";
+import { useNavigate } from "react-router";
+import { raiseError } from "@/errorHandler";
+import FullWidthCardHeader from "@/style/fullWidthCardHeader";
+import InputGroupUI from "@/style/imputGroupUI";
 
 const NewScoutWizard = () => {
   const nav = useNavigate();
 
-  const [scoutData, setScoutData] = useState<ScoutCreate>();
+  const [scoutData, setScoutData] = useState<ScoutCreate>({
+    name: "",
+    scoutId: "",
+    birthDate: new Date(),
+    joinedDate: new Date(),
+    belongGroupId: "",
+    currentUnitId: "bs",
+    memo: "",
+  });
 
   const handleSave = async (newScoutData: ScoutCreate) => {
     const result = await hc?.api.scout.create.$post({});
     if (result?.ok) {
       // 保存成功時はスカウトの詳細ページにリダイレクト
-      nav(`/app/scouts/${result.id}/view`, {
+      nav(`/app/scouts/${(await result.json()).id}/view`, {
         replace: true,
         state: { scout: newScoutData },
       });
@@ -53,18 +59,18 @@ const NewScoutWizard = () => {
               <InputGroupUI
                 label="登録番号"
                 type="number"
-                value={scoutData.ScoutId}
+                value={scoutData.scoutId}
                 placeholder="1234567890"
-                setValueFunc={(e) => setScoutData({ ...scoutData, ScoutId: e })}
+                setValueFunc={(e) => setScoutData({ ...scoutData, scoutId: e })}
               />
             </div>
             <div className="col-12 col-md-6 mb-3">
               <InputGroupUI
                 label="生年月日"
                 type="date"
-                value={convertInputDate(scoutData.birthday)}
+                value={scoutData.birthDate}
                 setValueFunc={(e) =>
-                  setScoutData({ ...scoutData, birthday: new Date(e) })
+                  setScoutData({ ...scoutData, birthDate: e })
                 }
               />
             </div>

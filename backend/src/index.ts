@@ -65,7 +65,8 @@ const app = new Hono()
   //
 
   // ドメイン毎のルーターを/api 以下にマウントする。
-  .route("/api/", apiRouter);
+  // v1から増やすとき、v2にしたくないならv1aとかにする。
+  .route("/apiv1/", apiRouter);
 
 export type AppType = typeof app;
 

@@ -1,29 +1,21 @@
 import { Context } from "../apiRotuer";
-import { FirestoreReturn } from "../lib/firestore";
-import { SearchRequest, SearchResult } from "../types/api/search";
-import { ScoutUnit, ScoutUnitNameMap } from "../types/common/scoutGroup";
-import { FirestoreScout } from "../types/firestore/scout";
-import { FirestoreUser } from "../types/firestore/user";
+import { FirestoreReturn } from "../lib/firestore/firestore";
+import { SearchRequestType, SearchResultType } from "../types/api/search";
+import { ScoutUnitNameMap } from "../types/common/scoutGroup";
+import { FirestoreScout } from "../lib/firestore/scout";
 
-const searchScouts = async (c: Context) => {
-  const user = c.var.authToken;
+/**
+ * Scout 一覧を検索する
+ * @param query 検索クエリ
+ * @return 検索結果
+ *
+ */
 
-  if (!c.req.query()) {
-    return c.json({ error: "Query parameter 'q' is required" }, 400);
-  }
+interface SearchScoutsQuery extends SearchRequestType {
+  groupId: string;
+}
 
-  const queryRaw = JSON.parse(c.req.query().q || "{}");
-
-  const query: SearchRequest = {
-    name: queryRaw.name || "",
-    scoutId: queryRaw.scoutId || "",
-    currentUnit: queryRaw.currentUnit
-      ? ((Array.isArray(queryRaw.currentUnit)
-          ? queryRaw.currentUnit
-          : [queryRaw.currentUnit]) as ScoutUnit[])
-      : [],
-  };
-
+const searchScouts = async (query: SearchScoutsQuery, c: Context) => {
   const firestoreQuery = [];
 
   if (query.name) {
@@ -63,9 +55,7 @@ const searchScouts = async (c: Context) => {
   firestoreQuery.push({
     field: "personal.belongs",
     op: "==",
-    value: (
-      (await c.var.db.get(`users/`, user.uid)) as FirestoreReturn<FirestoreUser>
-    ).joinedGroupId,
+    value: query.groupId,
   });
 
   console.log(firestoreQuery);
@@ -79,7 +69,7 @@ const searchScouts = async (c: Context) => {
   return c.json(
     results.map((doc) => {
       console.log(doc);
-      const ot: SearchResult = {
+      const ot: SearchResultType = {
         id: doc.id,
         name: doc.name,
         scoutId: doc.scoutId,

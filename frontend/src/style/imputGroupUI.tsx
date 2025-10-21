@@ -1,6 +1,6 @@
 import { InputGroup } from "react-bootstrap";
 
-const InputGroupUI = ({
+const InputGroupUI = <T extends string | Date | number>({
   label,
   chkbox,
   setChkboxFunc,
@@ -13,9 +13,9 @@ const InputGroupUI = ({
   explain,
 }: {
   label: string;
-  value: string;
+  value: T;
   type?: string;
-  setValueFunc: (value: string) => void;
+  setValueFunc: (changedValue: T) => void;
   valueDisabled?: boolean;
   chkbox?: boolean;
   setChkboxFunc?: (checked: boolean) => void;
@@ -23,6 +23,10 @@ const InputGroupUI = ({
   className?: string;
   explain?: string;
 }): React.ReactElement => {
+  const isDate = value instanceof Date;
+  const isString = typeof value === "string";
+  const isNumber = typeof value === "number";
+
   return (
     <div className={`mb-3 ${className}`}>
       <InputGroup>
@@ -43,16 +47,40 @@ const InputGroupUI = ({
           {label}
         </InputGroup.Text>
         <input
-          type={type}
+          type={
+            type !== undefined
+              ? type
+              : isDate
+              ? "date"
+              : isNumber
+              ? "number"
+              : "text"
+          }
           placeholder={placeholder}
           className="form-control"
-          value={value}
+          value={
+            isDate
+              ? value.toISOString().split("T")[0]
+              : isNumber
+              ? value
+              : isString
+              ? value
+              : ""
+          }
           disabled={
             valueDisabled != undefined
               ? valueDisabled
               : chkbox !== undefined && !chkbox
           }
-          onChange={(e) => setValueFunc(e.target.value)}
+          onChange={(e) =>
+            setValueFunc(
+              (isDate
+                ? new Date(e.target.value)
+                : isNumber
+                ? Number(e.target.value)
+                : e.target.value) as T
+            )
+          }
         />
       </InputGroup>
       {explain && (
