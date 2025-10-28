@@ -3,15 +3,15 @@ import { ScoutType } from "../../types/api/scout";
 
 type Detail = Date | null;
 
-type FirestoreScout = {
+interface FirestoreScout {
   personal: FirestoreScoutPersonal;
   units: FirestoreScoutUnit[];
   ginoshos: ScoutGinosho[];
   events: ScoutEvent[];
-};
+}
 
 // 個人情報のデータ これに
-type FirestoreScoutPersonal = {
+interface FirestoreScoutPersonal {
   name: string;
   scoutId: string;
   birthDate: Date;
@@ -25,46 +25,46 @@ type FirestoreScoutPersonal = {
   };
   religion: {
     date: Date | null;
-    type: string;
+    interface: string;
   };
   faith: {
     date: Date | null;
   };
-};
+}
 
-type FirestoreScoutUnit = {
+interface FirestoreScoutUnit {
   uniqueId: "bvs" | "cs" | "bs" | "vs" | "rs";
   joinedDate: Date;
   work: ScoutUnitWork[];
   grade: ScoutUnitGrade[];
-};
+}
 
-type ScoutUnitWork = {
+interface ScoutUnitWork {
   name: string;
   begin: Date;
   end?: Date;
-};
+}
 
-type ScoutUnitGrade = {
+interface ScoutUnitGrade {
   uniqueId: string;
   joinedDate: Date;
   details: Detail[];
-};
+}
 
-type ScoutGinosho = {
+interface ScoutGinosho {
   uniqueId: string;
   certBy: string;
   achievedDate: Date | null;
   details: Detail[];
-};
+}
 
 // 行事章のデータ
-type ScoutEvent = {
+interface ScoutEvent {
   name: string;
   startDate: Date;
   endDate: Date;
   description: string;
-};
+}
 
 const getScoutData = async (id: string, c: Context): Promise<ScoutType> => {
   const data = (

@@ -1,44 +1,47 @@
 import { Hono } from "hono";
 import { AppContext } from "../apiRotuer";
 import searchScouts from "./search";
-import createScout from "./create";
 import { zValidator } from "@hono/zod-validator";
-import { SearchRequest } from "../types/api/search";
-import { Scout, ScoutCreate } from "../types/api/scout";
-import z from "zod";
+import { SearchRequest, SearchResultType } from "../types/api/search";
+import updateScout, { updateScoutSchema } from "./update";
+import { createScout, ScoutCreateSchema } from "./create";
+import { getScout } from "./get";
 
 const scoutRouter = new Hono<AppContext>()
-
   // Scout 一覧を検索する
   .get("/search", zValidator("query", SearchRequest), async (c) => {
     const query = {
       ...c.req.valid("query"),
       groupId: c.var.authToken?.groupId,
     };
-    const result = await searchScouts(query, c);
+    const result: SearchResultType[] = await searchScouts(query, c);
 
-    return result;
+    return c.json(result);
   })
 
   // Scout 作成
-  .post("/create", zValidator("form", ScoutCreate), async (c) => {
+  .post("/create", zValidator("form", ScoutCreateSchema), async (c) => {
     const form = c.req.valid("form");
     const result = await createScout(form, c);
 
-    return result;
+    return c.json(result);
   })
 
   // Scout 取得
   .get("/:id", async (c) => {
     const id = c.req.param("id");
     // 取得ロジックをここに実装
+
+    const result = await getScout(id, c);
+    return c.json(result);
   })
 
   // Scout 更新
-  .put("/:id", zValidator("form", Scout), async (c) => {
+  .put("/:id", zValidator("form", updateScoutSchema), async (c) => {
     const id = c.req.param("id");
-    const data = await c.req.json();
-    // 更新ロジックをここに実装
+    const data = c.req.valid("form");
+
+    const result = await updateScout(id, data, c);
     return c.json({ message: `Scout with ID ${id} updated successfully` });
   })
 

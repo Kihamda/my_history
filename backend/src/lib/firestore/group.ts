@@ -1,9 +1,10 @@
 export interface FirestoreGroup {
   name: string;
   status: "ACTIVE" | "INACTIVE";
+  members: FirestoreGroupMember[];
 }
 
 export interface FirestoreGroupMember {
-  userId: string;
+  userEmail: string;
   role: "ADMIN" | "VIEW" | "EDIT";
 }

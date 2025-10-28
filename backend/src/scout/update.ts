@@ -1,17 +1,27 @@
+import z from "zod";
 import { Context } from "../apiRotuer";
-import { Scout } from "../types/api/scout";
-import { FirestoreScout } from "../lib/firestore/scout";
+import {
+  ScoutRecordSchema,
+  ScoutRecordSchemaType,
+} from "../lib/firestore/scoute";
 
-const updateScout = async (c: Context) => {
-  const data: Scout = await c.req.json();
+export const updateScoutSchema = z.object({
+  old: ScoutRecordSchema,
+  new: ScoutRecordSchema,
+});
 
-  const validatedData: FirestoreScout = {};
-
+const updateScout = async (
+  id: string,
+  scout: z.infer<typeof updateScoutSchema>,
+  c: Context
+) => {
   const db = c.var.db;
-  const response = await db
-    .collection("scouts")
-    .doc(data.id)
-    .update({ _id: data.id }, { $set: data });
+
+  const before = (
+    await db.collection("scouts").doc(id).get()
+  ).data() as unknown as ScoutRecordSchemaType;
+
+  const response = await db.collection("scouts").doc(id).update(after);
   return response;
 };
 

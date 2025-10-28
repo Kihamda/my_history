@@ -1,10 +1,11 @@
 import { z } from "zod";
-import { CurrentUnitId } from "./scout";
+import { CurrentUnitId } from "../../lib/firestore/scoute";
 
 export const SearchRequest = z.object({
   name: z.string(),
   scoutId: z.string(),
   currentUnit: z.array(CurrentUnitId),
+  page: z.number().min(1),
 });
 
 export type SearchRequestType = z.infer<typeof SearchRequest>;

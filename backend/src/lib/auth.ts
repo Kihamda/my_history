@@ -7,11 +7,15 @@ import { Context } from "../apiRotuer";
 export const authorize = async (c: Context, next: () => Promise<void>) => {
   const header = c.req.header("Authorization");
   if (header == undefined) {
-    return c.body("Unauthorized", 401);
+    return c.json("UNAUTHORIZED", 401);
   }
   const token = await verifyJWT(header, c.env);
   if (token == null) {
-    return c.body("Unauthorized", 401);
+    return c.json("UNAUTHORIZED", 401);
+  }
+
+  if (!token.email_verified) {
+    return c.json("EMAIL_VERIFY_MISSING", 403);
   }
 
   // Optionally attach token to context for downstream handlers
@@ -48,7 +52,6 @@ const verifyJWT = async (
     const firebaseToken = await auth.verifyIdToken(jwt, false, env);
     return firebaseToken;
   } catch (error) {
-    console.error("Error verifying JWT:", error);
     return null;
   }
 };

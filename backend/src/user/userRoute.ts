@@ -27,16 +27,22 @@ const userRouter = new Hono<AppContext>()
 
     const group = groupRaw.data() as FirestoreGroup | undefined;
 
+    const userDataOnGroup = group?.members.find(
+      (m) => m.userEmail === token.email
+    );
+
     const userData: UserProfileType = {
       uid: token.uid,
       email: token.email || "",
       displayName: usertmp.displayName,
       knowGroupId: usertmp.knowGroupId || [],
-      joinedGroup: {
-        id: usertmp.joinedGroupId || "",
-        name: group?.name || "",
-        role: "ADMIN", // TODO: 役割の取得 (FirestoreGroupMemberから取得するなど
-      },
+      joinedGroup: userDataOnGroup
+        ? {
+            id: usertmp.joinedGroupId || "",
+            name: group?.name || "",
+            role: userDataOnGroup.role,
+          }
+        : undefined,
       emailVerified: token.email_verified || false,
     };
     return c.json(userData);
