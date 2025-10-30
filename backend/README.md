@@ -1,81 +1,79 @@
-## Backend overview
+# My History Backend
 
-This Worker keeps just the essentials:
+ボーイスカウトの活動履歴を管理するバックエンド API
 
-- Firebase handles authentication UI and token lifecycle. The Worker only verifies ID tokens and exposes a `/api/auth/session` check.
-- Group and Scout data is stored in Firestore. Incoming payloads are validated with Zod before writing.
-- Responses are enriched on the fly with master data (name, description, url) fetched from `masterRecord/data` so clients stay dumb and small.
+## 概要
 
-Everything is implemented inside `src/routers`, `src/lib/firestore`, and `src/lib/masterData` to keep the codebase compact.
+Cloudflare Workers + Hono + Firebase Firestore + TypeScript で構築された、スカウト活動履歴管理システムのバックエンド
 
-## Setup
+**主な機能:**
 
-```txt
+- スカウト活動履歴の管理(進級・技能章・行事章)
+- グループ(団)管理とメンバー権限管理
+- ユーザープロファイル管理
+
+## クイックスタート
+
+```bash
+# 依存関係のインストール
 npm install
-```
 
-Configure Cloudflare bindings before running locally or deploying:
-
-| Name                          | Type             | Description                                                       |
-| ----------------------------- | ---------------- | ----------------------------------------------------------------- |
-| `FIREBASE_PROJECT_ID`         | env var          | Firebase project ID (non-sensitive)                               |
-| `FIREBASE_API_KEY`            | secret           | Firebase Web API key used for Firestore REST calls                |
-| `FIREBASE_AUTH_EMULATOR_HOST` | optional env var | Host (`host:port`) of Firebase Auth emulator when running locally |
-| `MASTER_DATA_BASE_URL`        | optional env var | Override URL for static master JSON files                         |
-
-```powershell
-wrangler var put FIREBASE_PROJECT_ID <your-project-id>
-wrangler secret put FIREBASE_API_KEY
-# Optional when Firebase Auth emulator is running locally
-wrangler var put FIREBASE_AUTH_EMULATOR_HOST localhost:9099
-```
-
-`FIREBASE_API_KEY` must stay in Wrangler secrets. It is forwarded to the Firestore REST API even though the Worker runs on Cloudflare.
-
-### Local development
-
-```txt
+# ローカル開発サーバー起動
 npm run dev
-```
 
-### Deployment
-
-```txt
+# デプロイ
 npm run deploy
 ```
 
-### Type generation
+## ドキュメント
 
-```txt
-npm run cf-typegen
+詳細な仕様書とガイドは [`docs/`](./docs/) ディレクトリを参照
+
+### 基本ドキュメント
+
+- [プロジェクト概要](./docs/00-overview.md) - 技術スタックと主要機能
+- [アーキテクチャ設計](./docs/01-architecture.md) - 3 層アーキテクチャの詳細
+- [セットアップとデプロイ](./docs/02-setup.md) - 環境構築手順
+- [開発ガイドライン](./docs/03-development.md) - コーディング規約
+
+### API 仕様
+
+- [Scout API](./docs/api/scout.md) - スカウト管理 API
+- [User API](./docs/api/user.md) - ユーザー管理 API
+- [Group API](./docs/api/group.md) - グループ管理 API
+
+### モジュール仕様
+
+- [Scout モジュール](./docs/modules/scout.md) - 内部実装詳細
+- [User モジュール](./docs/modules/user.md) - 内部実装詳細
+- [Group モジュール](./docs/modules/group.md) - 内部実装詳細
+- [Lib モジュール](./docs/modules/lib.md) - ライブラリ層詳細
+
+## 技術スタック
+
+| 項目               | 技術                            |
+| ------------------ | ------------------------------- |
+| **ランタイム**     | Cloudflare Workers              |
+| **フレームワーク** | Hono v4                         |
+| **データベース**   | Cloud Firestore (REST API 経由) |
+| **認証**           | Firebase Authentication         |
+| **バリデーション** | Zod                             |
+| **言語**           | TypeScript                      |
+
+## アーキテクチャ
+
+3 層アーキテクチャを採用し関心の分離を実現
+
+```
+API処理層 (Route Handlers)
+    ↓
+ビジネスロジック層 (Services + Permissions)
+    ↓
+Firestore操作層 (Data Access)
 ```
 
-## API surface
+詳細は [アーキテクチャ設計](./docs/01-architecture.md) を参照
 
-All routes live under `/api/*`. Send `Authorization: Bearer <idToken>` with a Firebase ID token issued for the same project.
+## ライセンス
 
-| Method   | Path                   | Auth   | Description                                               |
-| -------- | ---------------------- | ------ | --------------------------------------------------------- |
-| `GET`    | `/api/auth/session`    | Bearer | Verify the token and return `uid`, `email`, and `groupId` |
-| `GET`    | `/api/groups/current`  | Bearer | Fetch the caller's group record enriched with highlights  |
-| `PUT`    | `/api/groups/current`  | Bearer | Replace the caller's group record after validation        |
-| `GET`    | `/api/scouts`          | Bearer | List scouts in the caller's group with enriched data      |
-| `POST`   | `/api/scouts`          | Bearer | Create a scout (server generates the ID)                  |
-| `GET`    | `/api/scouts/:scoutId` | Bearer | Fetch a single scout by ID                                |
-| `PUT`    | `/api/scouts/:scoutId` | Bearer | Replace a scout document                                  |
-| `DELETE` | `/api/scouts/:scoutId` | Bearer | Delete a scout                                            |
-
-Payloads accept simple JSON structures. Strings are trimmed, duplicates removed, and empty strings normalised to `null` before they are written to Firestore.
-
-## Client helper
-
-Use `src/client.ts` if you want a typed caller from the frontend:
-
-```ts
-import { createAuthenticatedClient } from "@backend/src/client";
-
-const api = createAuthenticatedClient(yourBaseUrl, idToken);
-const scouts = await api.api.scouts.$get();
-```
-
-The helper just wires the Bearer token into `hono/client`; no extra abstractions remain.
+(ライセンス情報を記載)

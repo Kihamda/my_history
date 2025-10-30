@@ -1,4 +1,4 @@
-import { GroupRole } from "./group";
+import { GroupRoleSchema } from "../../lib/firestore/schemas";
 import { z } from "zod";
 
 export const UserProfile = z.object({
@@ -9,7 +9,7 @@ export const UserProfile = z.object({
     .object({
       id: z.string(),
       name: z.string(),
-      role: GroupRole,
+      role: GroupRoleSchema,
     })
     .optional(),
   knowGroupId: z.array(z.string()),

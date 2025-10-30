@@ -1,4 +1,10 @@
 import { z } from "zod";
+import { CurrentUnitId, ScoutRecordSchema } from "../../lib/firestore/schemas";
+
+// APIレスポンス用の型定義
+// Firestore内部スキーマとは別にAPIレスポンス用に整形された型
+
+export { CurrentUnitId };
 
 const Detail = z.object({
   number: z.string(),
@@ -7,20 +13,18 @@ const Detail = z.object({
   done: z.boolean(),
 });
 
-export const CurrentUnitId = z.enum(["bvs", "cs", "bs", "vs", "rs", "ob"]);
-
 export const ScoutCreate = z.object({
   name: z.string().min(1).max(100),
   scoutId: z.string().min(1).max(100),
-  birthDate: z.date(),
-  joinedDate: z.date(),
+  birthDate: z.coerce.date(),
+  joinedDate: z.coerce.date(),
   belongGroupId: z.string().min(1).max(100),
   currentUnitId: CurrentUnitId,
-  memo: z.string().max(500),
+  memo: z.string().max(500).default(""),
 });
 export type ScoutCreateType = z.infer<typeof ScoutCreate>;
 
-// 個人情報のデータ これに
+// 個人情報のデータ
 export const ScoutPersonal = z.object({
   name: z.string(),
   scoutId: z.string(),
@@ -30,17 +34,17 @@ export const ScoutPersonal = z.object({
   currentUnitId: CurrentUnitId,
   memo: z.string(),
   declare: z.object({
-    date: z.date(),
+    date: z.date().nullable(),
     place: z.string(),
     done: z.boolean(),
   }),
   religion: z.object({
-    date: z.date(),
+    date: z.date().nullable(),
     type: z.string(),
     done: z.boolean(),
   }),
   faith: z.object({
-    date: z.date(),
+    date: z.date().nullable(),
     done: z.boolean(),
   }),
 });
@@ -75,7 +79,7 @@ export const ScoutGinosho = z.object({
   name: z.string(),
   requireCert: z.boolean(),
   certBy: z.string(),
-  achievedDate: z.date(),
+  achievedDate: z.date().nullable(),
   details: z.array(Detail),
 });
 
@@ -88,6 +92,7 @@ export const ScoutEvent = z.object({
   description: z.string(),
 });
 
+// APIレスポンス用のScout型
 export const Scout = z.object({
   id: z.string(),
   personal: ScoutPersonal,
@@ -97,3 +102,7 @@ export const Scout = z.object({
 });
 
 export type ScoutType = z.infer<typeof Scout>;
+
+// Firestore内部スキーマをそのまま使う場合のエクスポート
+export { ScoutRecordSchema } from "../../lib/firestore/schemas";
+export type { ScoutRecordSchemaType } from "../../lib/firestore/schemas";

@@ -1,5 +1,5 @@
 import { z } from "zod";
+import { GroupRoleSchema } from "../../lib/firestore/schemas";
 
-export const GroupRole = z.enum(["ADMIN", "VIEW", "EDIT"]);
-
-type GroupRole = "ADMIN" | "VIEW" | "EDIT";
+export const GroupRole = GroupRoleSchema;
+export type GroupRoleType = z.infer<typeof GroupRole>;

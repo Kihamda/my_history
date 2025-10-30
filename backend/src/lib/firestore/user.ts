@@ -1,5 +1,3 @@
-export interface FirestoreUser {
-  displayName: string;
-  joinedGroupId?: string;
-  knowGroupId: string[];
-}
+import { UserRecordSchemaType } from "./schemas";
+
+export type FirestoreUser = UserRecordSchemaType;

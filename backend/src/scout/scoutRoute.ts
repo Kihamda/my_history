@@ -1,61 +1,118 @@
+/**
+ * @fileoverview スカウトAPI ルーター
+ *
+ * このファイルの責務:
+ * - スカウト関連のHTTPエンドポイントの定義
+ * - リクエストのルーティング
+ * - バリデーションミドルウェアの適用
+ * - ハンドラー関数の呼び出し
+ *
+ * エンドポイント一覧:
+ * - GET  /search - スカウト検索
+ * - POST /create - スカウト作成
+ * - GET  /:id    - スカウト取得
+ * - PUT  /:id    - スカウト更新
+ * - DELETE /:id  - スカウト削除
+ *
+ * @module scout/routes
+ */
+
 import { Hono } from "hono";
 import { AppContext } from "../apiRotuer";
-import searchScouts from "./search";
+import searchScouts from "./handlers/search";
 import { zValidator } from "@hono/zod-validator";
-import { SearchRequest, SearchResultType } from "../types/api/search";
-import updateScout, { updateScoutSchema } from "./update";
-import { createScout, ScoutCreateSchema } from "./create";
+import { SearchRequest } from "../types/api/search";
+import { updateScout, updateScoutSchema } from "./handlers/update";
+import { createScout, ScoutCreateSchema } from "./handlers/create";
 import { getScout } from "./get";
+import { deleteScout } from "./handlers/delete";
 
 const scoutRouter = new Hono<AppContext>()
-  // Scout 一覧を検索する
+  /**
+   * GET /search - スカウト検索
+   *
+   * クエリパラメータ:
+   * - name: スカウト名(部分一致)
+   * - scoutId: スカウトID(完全一致)
+   * - currentUnit: 現在の所属隊(配列)
+   * - page: ページ番号(1始まり)
+   *
+   * レスポンス: SearchResultType[]
+   */
   .get("/search", zValidator("query", SearchRequest), async (c) => {
-    const query = {
-      ...c.req.valid("query"),
-      groupId: c.var.authToken?.groupId,
-    };
-    const result: SearchResultType[] = await searchScouts(query, c);
-
+    const query = c.req.valid("query");
+    const result = await searchScouts(query, c);
     return c.json(result);
   })
 
-  // Scout 作成
-  .post("/create", zValidator("form", ScoutCreateSchema), async (c) => {
-    const form = c.req.valid("form");
+  /**
+   * POST /create - スカウト作成
+   *
+   * リクエストボディ: ScoutCreateSchemaType
+   * - name: スカウト名
+   * - scoutId: スカウトID
+   * - birthDate: 生年月日
+   * - joinedDate: 入団日
+   * - belongGroupId: 所属グループID
+   * - currentUnitId: 現在の所属隊
+   * - memo: メモ
+   *
+   * レスポンス: { id: string, message: string }
+   * 権限: グループのEDIT以上
+   */
+  .post("/create", zValidator("json", ScoutCreateSchema), async (c) => {
+    const form = c.req.valid("json");
     const result = await createScout(form, c);
-
-    return c.json(result);
+    return c.json(result, 201);
   })
 
-  // Scout 取得
+  /**
+   * GET /:id - スカウト取得
+   *
+   * パスパラメータ:
+   * - id: スカウトID
+   *
+   * レスポンス: ScoutRecordSchemaType
+   * 権限: グループメンバーまたはauthedIdsに含まれる
+   */
   .get("/:id", async (c) => {
     const id = c.req.param("id");
-    // 取得ロジックをここに実装
-
     const result = await getScout(id, c);
     return c.json(result);
   })
 
-  // Scout 更新
-  .put("/:id", zValidator("form", updateScoutSchema), async (c) => {
+  /**
+   * PUT /:id - スカウト更新
+   *
+   * パスパラメータ:
+   * - id: スカウトID
+   *
+   * リクエストボディ:
+   * - data: ScoutRecordSchema.partial() (部分更新)
+   *
+   * レスポンス: { message: string }
+   * 権限: グループのEDIT以上
+   */
+  .put("/:id", zValidator("json", updateScoutSchema), async (c) => {
     const id = c.req.param("id");
-    const data = c.req.valid("form");
-
+    const data = c.req.valid("json");
     const result = await updateScout(id, data, c);
-    return c.json({ message: `Scout with ID ${id} updated successfully` });
+    return c.json(result);
   })
 
-  // Scout 削除
+  /**
+   * DELETE /:id - スカウト削除
+   *
+   * パスパラメータ:
+   * - id: スカウトID
+   *
+   * レスポンス: { message: string }
+   * 権限: グループのADMINのみ
+   */
   .delete("/:id", async (c) => {
     const id = c.req.param("id");
-    // 削除ロジック
-    const data = (await c.var.db.collection("scouts").doc(id).get()).data();
-    if (!data) {
-      return c.notFound();
-    }
-
-    await c.var.db.collection("scouts").doc(id).delete();
-    return c.json({ message: `Scout with ID ${id} deleted successfully` });
+    const result = await deleteScout(id, c);
+    return c.json(result);
   });
 
 export default scoutRouter;

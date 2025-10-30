@@ -4,7 +4,9 @@ import { firestoreMiddleware } from "./lib/firestore/firestore";
 import { FirestoreClient } from "firebase-rest-firestore";
 import userRouter from "./user/userRoute";
 import scoutRouter from "./scout/scoutRoute";
+import groupRouter from "./group/groupRoute";
 import { FirebaseIdToken } from "firebase-auth-cloudflare-workers";
+import { cors } from "hono/cors";
 
 export interface AppContext {
   Bindings: FirebaseAuthBindings;
@@ -30,5 +32,9 @@ const apiRouter = new Hono<AppContext>()
   .route("/user", userRouter)
 
   // スカウト情報
-  .route("/scout", scoutRouter);
+  .route("/scout", scoutRouter)
+
+  // グループ情報
+  .route("/group", groupRouter);
+
 export default apiRouter;

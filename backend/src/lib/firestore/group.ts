@@ -1,10 +1,4 @@
-export interface FirestoreGroup {
-  name: string;
-  status: "ACTIVE" | "INACTIVE";
-  members: FirestoreGroupMember[];
-}
+import { GroupRecordSchemaType, GroupMemberSchemaType } from "./schemas";
 
-export interface FirestoreGroupMember {
-  userEmail: string;
-  role: "ADMIN" | "VIEW" | "EDIT";
-}
+export type FirestoreGroup = GroupRecordSchemaType;
+export type FirestoreGroupMember = GroupMemberSchemaType;
