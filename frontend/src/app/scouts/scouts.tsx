@@ -5,18 +5,20 @@ import queryParser from "./queryParser";
 import SearchResultCard from "./parts/result";
 import { getSearchQueryCache, setSearchQueryCache } from "@/lib/localCache";
 import FullWidthCardHeader from "@/style/fullWidthCardHeader";
-import { hc } from "@/authContext";
 import { getResultsCache } from "./cache";
 import { raiseError } from "@/errorHandler";
 import LoadingSplash from "@/style/loadingSplash";
-import type { SearchRequestType, SearchResultType } from "b@/types/api/search";
-
+import type {
+  ScoutSearchRequest,
+  ScoutSearchResponse,
+} from "@/lib/api/apiTypes";
+import { hc } from "@/lib/api/api";
 const Scouts: React.FC = () => {
   // 遷移元からの検索名を取得
   const searchBox = (useLocation().state?.searchName || "") as string;
 
   // 検索クエリの初期化
-  let initialSearchQuery: SearchRequestType = getSearchQueryCache() || {
+  let initialSearchQuery: ScoutSearchRequest = getSearchQueryCache() || {
     scoutId: "",
     name: "",
     currentUnit: [],
@@ -34,23 +36,23 @@ const Scouts: React.FC = () => {
   }
 
   const [searchQuery, setSearchQuery] =
-    useState<SearchRequestType>(initialSearchQuery);
+    useState<ScoutSearchRequest>(initialSearchQuery);
 
-  const [result, setResult] = useState<SearchResultType[]>(
+  const [result, setResult] = useState<ScoutSearchResponse>(
     getResultsCache() || []
   ); // 初期値としてローカルストレージから取得したスカウトデータを使用
 
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  const handleSearch = async (query: SearchRequestType) => {
+  const handleSearch = async (query: ScoutSearchRequest) => {
     setIsPending(true);
     setSearchQuery(query);
     setSearchQueryCache(searchQuery);
 
     // 検索実行
     try {
-      const search = await hc?.api.scout.search.$get({
-        query: query,
+      const search = await hc?.apiv1.scout.search.$post({
+        json: query,
       });
 
       if (search?.status !== 200) {
@@ -59,7 +61,7 @@ const Scouts: React.FC = () => {
         setIsPending(false);
         return;
       }
-      const searchResult: SearchResultType[] = (await search?.json()) || [];
+      const searchResult: ScoutSearchResponse = (await search?.json()) || [];
       setResult(searchResult);
     } catch (error) {
       raiseError("Search API call failed:" + error);

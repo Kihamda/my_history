@@ -1,6 +1,10 @@
-import type { SearchResult } from "b@/types/api/search";
+import type { ScoutSearchResponse } from "@/lib/api/apiTypes";
 
-const SearchResultCard = ({ result }: { result: SearchResult }) => {
+const SearchResultCard = ({
+  result,
+}: {
+  result: ScoutSearchResponse[number];
+}) => {
   return (
     <div className="card">
       <div className="card-body">

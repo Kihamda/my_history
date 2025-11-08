@@ -14,72 +14,106 @@ export type UnitIdType = z.infer<typeof UnitId>;
 // Scout Firestore Schema
 // ========================================
 
+const ymdSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, {
+    message: "Invalid format: expected YYYY-MM-DD",
+  })
+  .refine(
+    (v) => {
+      const [y, m, d] = v.split("-").map(Number);
+      const date = new Date(Date.UTC(y, m - 1, d));
+      return (
+        date.getUTCFullYear() === y &&
+        date.getUTCMonth() + 1 === m &&
+        date.getUTCDate() === d
+      );
+    },
+    { message: "Invalid calendar date" }
+  );
+export type YMDType = z.infer<typeof ymdSchema>;
+
 const Detail = z.object({
-  number: z.string(),
-  description: z.string(),
-  achievedDate: z.date().nullable(),
+  achievedDate: ymdSchema.nullable(),
   done: z.boolean(),
 });
 
 const ScoutPersonalSchema = z.object({
   name: z.string(),
   scoutId: z.string(),
-  birthDate: z.date(),
-  joinedDate: z.date(),
+  birthDate: ymdSchema,
+  joinedDate: ymdSchema,
   belongGroupId: z.string(),
   currentUnitId: CurrentUnitId,
   memo: z.string(),
   declare: z.object({
-    date: z.date().nullable(),
+    date: ymdSchema,
     place: z.string(),
     done: z.boolean(),
   }),
   religion: z.object({
-    date: z.date().nullable(),
+    date: ymdSchema,
     type: z.string(),
     done: z.boolean(),
   }),
   faith: z.object({
-    date: z.date().nullable(),
+    date: ymdSchema,
     done: z.boolean(),
   }),
 });
 
 const ScoutUnitWorkSchema = z.object({
   name: z.string(),
-  begin: z.date(),
-  end: z.date().nullable(),
+  begin: ymdSchema,
+  end: ymdSchema.nullable(),
 });
 
 const ScoutUnitGradeSchema = z.object({
   uniqueId: z.string(),
-  joinedDate: z.date(),
-  details: z.array(Detail),
+  completedDate: ymdSchema,
+  completed: z.boolean(),
+  details: z
+    .array(Detail)
+    .nullable()
+    .transform((v) => v ?? []),
 });
 
 const ScoutUnitDataSchema = z.object({
   experienced: z.boolean(),
-  joinedDate: z.date(),
-  work: z.array(ScoutUnitWorkSchema),
-  grade: z.array(ScoutUnitGradeSchema),
+  joinedDate: ymdSchema,
+  work: z
+    .array(ScoutUnitWorkSchema)
+    .nullable()
+    .transform((v) => v ?? []),
+  grade: z
+    .array(ScoutUnitGradeSchema)
+    .nullable()
+    .transform((v) => v ?? []),
 });
 
 const ScoutGinoshoSchema = z.object({
   uniqueId: z.string(),
   certBy: z.string(),
-  achievedDate: z.date().nullable(),
-  details: z.array(Detail),
+  achievedDate: ymdSchema.nullable(),
+  details: z
+    .array(Detail)
+    .nullable()
+    .transform((v) => v ?? []),
 });
 
 const ScoutEventSchema = z.object({
   name: z.string(),
-  startDate: z.date(),
-  endDate: z.date(),
+  type: z.enum(["camp", "volunteer", "training", "overseas", "award", "other"]),
+  startDate: ymdSchema,
+  endDate: ymdSchema,
   description: z.string(),
 });
 
 export const ScoutRecordSchema = z.object({
-  authedIds: z.array(z.string()),
+  authedIds: z
+    .array(z.string())
+    .nullable()
+    .transform((v) => v ?? []),
   personal: ScoutPersonalSchema,
   unit: z.object({
     bvs: ScoutUnitDataSchema,
@@ -88,9 +122,15 @@ export const ScoutRecordSchema = z.object({
     vs: ScoutUnitDataSchema,
     rs: ScoutUnitDataSchema,
   }),
-  ginosho: z.array(ScoutGinoshoSchema),
-  event: z.array(ScoutEventSchema),
-  last_Edited: z.date(),
+  ginosho: z
+    .array(ScoutGinoshoSchema)
+    .nullable()
+    .transform((v) => v ?? []),
+  event: z
+    .array(ScoutEventSchema)
+    .nullable()
+    .transform((v) => v ?? []),
+  last_Edited: ymdSchema,
 });
 
 export type ScoutRecordSchemaType = z.infer<typeof ScoutRecordSchema>;
@@ -127,7 +167,7 @@ const GroupMemberSchema = z.object({
 
 export const GroupRecordSchema = z.object({
   name: z.string(),
-  status: z.enum(["ACTIVE", "INACTIVE"]),
+  status: z.enum(["active", "inactive", "archived"]),
   members: z.array(GroupMemberSchema),
 });
 

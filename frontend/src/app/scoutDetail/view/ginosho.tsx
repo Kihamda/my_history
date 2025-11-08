@@ -1,7 +1,14 @@
-import convertInputDate from "@/tools/date/convertInputDate";
-import { Ginosho } from "@/types/frontend/scout/ginosho";
-import ShowData from "@/frontend/style/showData";
-import { usePopup } from "@/frontend/style/fullscreanPopup";
+import ShowData from "@/style/showData";
+import { usePopup } from "@/style/fullscreanPopup";
+import type { ScoutData } from "@/lib/api/apiTypes";
+import ginoshoMap from "@/lib/master/ginoshos";
+
+type Ginosho = ScoutData["ginosho"][number];
+
+type GinoshoWithMaster = {
+  data: Ginosho;
+  master: (typeof ginoshoMap)[string];
+};
 
 const GinoshoList = ({
   ginosho,
@@ -10,7 +17,11 @@ const GinoshoList = ({
 }): React.ReactElement => {
   const popup = usePopup();
 
-  const certCount = ginosho.filter((item) => item.cert).length;
+  const ginoshoList: GinoshoWithMaster[] = ginosho
+    .map((item) => ({ data: item, master: ginoshoMap[item.uniqueId] }))
+    .filter((item) => item !== undefined);
+
+  const certCount = ginoshoList.filter((item) => item.master.cert).length;
 
   return (
     <div className="card">
@@ -18,18 +29,19 @@ const GinoshoList = ({
         <h5 className="mb-0">技能章</h5>
       </div>
       <div className="card-body">
-        {ginosho && ginosho.length > 0 ? (
-          ginosho.map((doc, index) => {
+        {ginoshoList.length > 0 ? (
+          ginoshoList.map((doc, index) => {
+            const dt = doc.data;
+            const ms = doc.master;
             return (
               <ShowData
-                key={doc.id}
-                label={doc.name + (doc.cert ? " (考査員認定)" : " (隊長認定)")}
+                key={dt.uniqueId}
+                label={ms.name + (ms.cert ? " (考査員認定)" : " (隊長認定)")}
                 value={
-                  doc.has
-                    ? convertInputDate(doc.date)
-                    : `未取得 (${doc.details.filter((d) => d.has).length}/${
-                        doc.details.length
-                      })`
+                  dt.achievedDate ||
+                  `未取得 (${dt.details.filter((d) => d.done).length}/${
+                    dt.details.length
+                  })`
                 }
                 bordered={ginosho.length - index > 1 && true}
                 detailAction={() => {
@@ -38,7 +50,7 @@ const GinoshoList = ({
                     title: "技能章詳細",
                     footer: (
                       <a
-                        href={doc.url}
+                        href={ms.url}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -63,34 +75,44 @@ const GinoshoList = ({
 
 export default GinoshoList;
 
-const DetailPopup = ({ data }: { data: Ginosho }): React.ReactElement => {
+const DetailPopup = ({
+  data,
+}: {
+  data: GinoshoWithMaster;
+}): React.ReactElement => {
+  const dt = data.data;
+  const ms = data.master;
   return (
     <>
       <h4 className="pb-1" style={{ borderBottom: "1px solid #000000ff" }}>
-        {data.name}
+        {ms.name + (ms.cert ? " (考査員認定)" : " (隊長認定)")}
       </h4>
-      <div key={data.id}>
+      <div key={dt.uniqueId}>
         <ShowData
           label="取得日時"
-          value={data.has ? convertInputDate(data.date) : "未取得"}
+          value={dt.achievedDate ? dt.achievedDate : "未取得"}
         />
         <ShowData
           label="認定区分"
-          value={data.cert ? "考査員認定" : "隊長認定"}
+          value={ms.cert ? "考査員認定" : "隊長認定"}
         />
-        <ShowData label={data.cert ? "考査員" : "隊長"} value={data.certName} />
+        <ShowData label={ms.cert ? "考査員" : "隊長"} value={dt.certBy} />
         <h4
           style={{ borderBottom: "1px solid #000000ff" }}
           className="mt-3 pb-1"
         >
           細目
         </h4>
-        {data.details && data.details.length > 0 ? (
-          data.details.map((detail) => (
+        {ms.details && ms.details.length > 0 ? (
+          ms.details.map((detail, index) => (
             <ShowData
-              key={detail.sort}
+              key={`${dt.uniqueId}-${index}`}
               label={`細目 ${detail.number}`}
-              value={detail.has ? convertInputDate(detail.date) : `未取得`}
+              value={
+                dt.details[index].achievedDate
+                  ? dt.details[index].achievedDate
+                  : `未取得`
+              }
               memo={detail.description}
             />
           ))

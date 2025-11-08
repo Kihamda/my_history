@@ -12,10 +12,7 @@
 
 import z from "zod";
 import { Context } from "../../apiRotuer";
-import {
-  CurrentUnitId,
-  ScoutRecordSchemaType,
-} from "../../lib/firestore/schemas";
+import { ScoutRecordSchemaType } from "../../lib/firestore/schemas";
 import { generateRandomId } from "../../lib/randomId";
 import { createScoutWithAuth } from "../services/scoutService";
 /**
@@ -33,11 +30,10 @@ import { createScoutWithAuth } from "../services/scoutService";
 export const ScoutCreateSchema = z.object({
   name: z.string().min(1).max(100),
   scoutId: z.string().min(1).max(100),
-  birthDate: z.coerce.date(),
-  joinedDate: z.coerce.date(),
-  belongGroupId: z.string().min(1).max(100),
-  currentUnitId: CurrentUnitId,
-  memo: z.string().max(500).default(""),
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Invalid date format" }),
+  belongGroupId: z.string().min(1).max(50),
 });
 
 export type ScoutCreateSchemaType = z.infer<typeof ScoutCreateSchema>;
@@ -61,48 +57,76 @@ export const createScout = async (
   c: Context
 ): Promise<{ id: string; message: string }> => {
   // 初期スカウトデータを構築
+
+  // 学年計算用の基準生年月日を設定(4月1日基準)
+  const birthDate =
+    new Date(data.birthDate).getMonth() < 4
+      ? new Date(data.birthDate).getFullYear() - 1
+      : new Date(data.birthDate).getFullYear();
+
+  const ageMap: string[] = [];
+  for (let i = 0; i < 30; i++) {
+    ageMap.push(`${birthDate + i}-04-01`);
+  }
+
+  const age = birthDate - new Date().getFullYear();
+
   const newScout: ScoutRecordSchemaType = {
     // 作成者をアクセス許可ユーザーに追加
-    authedIds: [c.var.authToken.uid],
+    authedIds: [],
 
     // 個人情報
     personal: {
       name: data.name,
       scoutId: data.scoutId,
       birthDate: data.birthDate,
-      joinedDate: data.joinedDate,
+      joinedDate: ageMap[10],
       belongGroupId: data.belongGroupId,
-      currentUnitId: data.currentUnitId,
-      memo: data.memo,
+      currentUnitId: (() => {
+        if (age < 8) {
+          return "bvs";
+        } else if (age < 11) {
+          return "cs";
+        } else if (age < 14) {
+          return "bs";
+        } else if (age < 17) {
+          return "vs";
+        } else if (age < 20) {
+          return "rs";
+        } else {
+          return "ob";
+        }
+      })(),
+      memo: "",
 
       // ちかい・やくそく(未実施)
       declare: {
-        date: null,
+        date: ageMap[10],
         place: "",
         done: false,
       },
 
       // 信仰奨励章(未実施)
       religion: {
-        date: null,
+        date: ageMap[10],
         type: "",
         done: false,
       },
 
       // 富士スカウト章/菊スカウト章(未実施)
       faith: {
-        date: null,
+        date: ageMap[10],
         done: false,
       },
     },
 
     // 各隊の活動履歴(全て未経験で初期化)
     unit: {
-      bvs: { experienced: false, joinedDate: new Date(0), work: [], grade: [] },
-      cs: { experienced: false, joinedDate: new Date(0), work: [], grade: [] },
-      bs: { experienced: false, joinedDate: new Date(0), work: [], grade: [] },
-      vs: { experienced: false, joinedDate: new Date(0), work: [], grade: [] },
-      rs: { experienced: false, joinedDate: new Date(0), work: [], grade: [] },
+      bvs: { experienced: false, joinedDate: ageMap[10], work: [], grade: [] },
+      cs: { experienced: false, joinedDate: ageMap[10], work: [], grade: [] },
+      bs: { experienced: false, joinedDate: ageMap[10], work: [], grade: [] },
+      vs: { experienced: false, joinedDate: ageMap[10], work: [], grade: [] },
+      rs: { experienced: false, joinedDate: ageMap[10], work: [], grade: [] },
     },
 
     // 技能章リスト(空)
@@ -112,7 +136,7 @@ export const createScout = async (
     event: [],
 
     // 最終編集日時
-    last_Edited: new Date(),
+    last_Edited: new Date().toISOString().split("T")[0],
   };
 
   // ランダムなスカウトIDを生成(30文字)

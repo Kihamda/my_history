@@ -1,14 +1,13 @@
-import ShowData from "@/frontend/style/showData";
-import convertInputDate from "@/tools/date/convertInputDate";
-import {
-  ScoutEvent,
-  ScoutEventType,
-  ScoutEventTypeMap,
-} from "@/types/frontend/scout/event";
+import type { ScoutData } from "@/lib/api/apiTypes";
+import { ScoutEventTypeMap, type ScoutEventType } from "@/lib/master/events";
+import ShowData from "@/style/showData";
+
 import { useState } from "react";
 
-const Events = ({ events }: { events: ScoutEvent[] }) => {
-  const [eventFilter, setEventFilter] = useState<ScoutEventType>();
+type Event = ScoutData["event"][number];
+
+const Events = ({ events }: { events: Event[] }) => {
+  const [eventFilter, setEventFilter] = useState<ScoutEventType | undefined>();
 
   const eventList = events.filter((event) =>
     eventFilter ? event.type == eventFilter : true
@@ -63,13 +62,11 @@ const Events = ({ events }: { events: ScoutEvent[] }) => {
           </div>
         </div>
         {eventList && eventList.length > 0 ? (
-          eventList.map((event) => (
+          eventList.map((event, index) => (
             <ShowData
-              key={event.id}
-              label={event.title}
-              value={`${convertInputDate(event.start)}～${convertInputDate(
-                event.end
-              )}`}
+              key={"event-" + index}
+              label={event.startDate}
+              value={`${event.startDate}～${event.endDate}`}
             />
           ))
         ) : (

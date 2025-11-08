@@ -1,11 +1,13 @@
-import { ScoutUnitNameMap, type ScoutUnit } from "b@/types/common/scoutGroup";
-import type { SearchRequest } from "b@/types/api/search";
+import type { ScoutSearchRequest } from "@/lib/api/apiTypes";
+import { ScoutUnitNameMap, UnitIdList } from "@/lib/clientCommons/scout";
 
-const queryParser = (searchName: string): SearchRequest => {
+const queryParser = (searchName: string): ScoutSearchRequest => {
+  type ScoutUnit = (typeof UnitIdList)[number] | "ob";
+
   // 送られてきた文字列が何かを判定する［名前・登録番号・所属隊］
   let scoutId: string = "";
   let name: string = "";
-  let currentUnit: ScoutUnit[] = [];
+  let currentUnit: ScoutUnit[] = [...UnitIdList, "ob"];
 
   if (searchName) {
     /* 条件

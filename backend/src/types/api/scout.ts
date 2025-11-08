@@ -1,18 +1,26 @@
 import { z } from "zod";
 import { CurrentUnitId, ScoutRecordSchema } from "../../lib/firestore/schemas";
 
-// APIレスポンス用の型定義
-// Firestore内部スキーマとは別にAPIレスポンス用に整形された型
+/**
+ * @fileoverview Scout API型定義
+ *
+ * このファイルの責務:
+ * - Scout作成時のリクエストスキーマ定義
+ * - FirestoreスキーマをAPI型として再エクスポート
+ *
+ * 注意:
+ * - APIレスポンスはFirestoreスキーマ(ScoutRecordSchemaType)をそのまま使用
+ * - カスタムレスポンス型は定義しない(データ構造の統一のため)
+ */
 
 export { CurrentUnitId };
 
-const Detail = z.object({
-  number: z.string(),
-  description: z.string(),
-  achievedDate: z.date(),
-  done: z.boolean(),
-});
-
+/**
+ * スカウト作成リクエストスキーマ
+ *
+ * 必須項目のみを含む最小限のスキーマ
+ * 作成後は完全なScoutRecordSchemaTypeに変換される
+ */
 export const ScoutCreate = z.object({
   name: z.string().min(1).max(100),
   scoutId: z.string().min(1).max(100),
@@ -22,87 +30,27 @@ export const ScoutCreate = z.object({
   currentUnitId: CurrentUnitId,
   memo: z.string().max(500).default(""),
 });
+
 export type ScoutCreateType = z.infer<typeof ScoutCreate>;
 
-// 個人情報のデータ
-export const ScoutPersonal = z.object({
-  name: z.string(),
-  scoutId: z.string(),
-  birthDate: z.date(),
-  joinedDate: z.date(),
-  belongGroupId: z.string(),
-  currentUnitId: CurrentUnitId,
-  memo: z.string(),
-  declare: z.object({
-    date: z.date().nullable(),
-    place: z.string(),
-    done: z.boolean(),
-  }),
-  religion: z.object({
-    date: z.date().nullable(),
-    type: z.string(),
-    done: z.boolean(),
-  }),
-  faith: z.object({
-    date: z.date().nullable(),
-    done: z.boolean(),
-  }),
-});
+/**
+ * FirestoreスキーマをAPI型として再エクスポート
+ *
+ * APIレスポンスはFirestoreの構造と完全に一致させる
+ * これにより:
+ * - フロントエンドとバックエンドでデータ構造が統一される
+ * - 型定義の重複が避けられる
+ * - データ変換処理が不要になる
+ */
+export const ScoutUpdateSchema = ScoutRecordSchema.omit({ authedIds: true });
 
-export const ScoutUnit = z.object({
-  id: z.string(),
-  uniqueId: z.enum(["bvs", "cs", "bs", "vs", "rs"]),
-  name: z.string(),
-  experienced: z.boolean(),
-  joinedDate: z.date(),
-  work: z.array(z.object({})),
-  grade: z.array(z.object({})),
-});
+export {
+  ScoutPersonalSchemaType,
+  ScoutUnitDataSchemaType,
+  ScoutUnitWorkSchemaType,
+  ScoutUnitGradeSchemaType,
+  ScoutGinoshoSchemaType,
+  ScoutEventSchemaType,
+} from "../../lib/firestore/schemas";
 
-export const ScoutUnitWork = z.object({
-  name: z.string(),
-  begin: z.date(),
-  end: z.date().optional(),
-});
-
-export const ScoutUnitGrade = z.object({
-  name: z.string(),
-  uniqueId: z.string(),
-  joinedDate: z.date(),
-  details: z.array(Detail),
-});
-
-// 技能章のデータ
-export const ScoutGinosho = z.object({
-  id: z.string(),
-  uniqueId: z.string(),
-  name: z.string(),
-  requireCert: z.boolean(),
-  certBy: z.string(),
-  achievedDate: z.date().nullable(),
-  details: z.array(Detail),
-});
-
-// 行事章のデータ
-export const ScoutEvent = z.object({
-  id: z.string(),
-  name: z.string(),
-  startDate: z.date(),
-  endDate: z.date(),
-  description: z.string(),
-});
-
-// APIレスポンス用のScout型
-export const Scout = z.object({
-  id: z.string(),
-  personal: ScoutPersonal,
-  unit: z.array(ScoutUnit),
-  ginosho: z.array(ScoutGinosho),
-  event: z.array(ScoutEvent),
-});
-
-export type ScoutType = z.infer<typeof Scout>;
-
-// Firestore内部スキーマをそのまま使う場合のエクスポート
-export { ScoutRecordSchema } from "../../lib/firestore/schemas";
 export type { ScoutRecordSchemaType } from "../../lib/firestore/schemas";

@@ -1,15 +1,14 @@
-import InputGroupUI from "@/frontend/style/imputGroupUI";
-import convertInputDate from "@/tools/date/convertInputDate";
-import { ScoutPersonalData } from "@/types/frontend/scout/scout";
-import { ScoutUnit, ScoutUnitNameMap } from "@/types/frontend/scout/unit";
+import type { ScoutData } from "@/lib/api/apiTypes";
+import { ScoutUnitNameMap } from "@/lib/clientCommons/scout";
+import InputGroupUI from "@/style/imputGroupUI";
 import { InputGroup } from "react-bootstrap";
 
 const Profile = ({
   scoutData,
   setScoutData,
 }: {
-  scoutData: ScoutPersonalData;
-  setScoutData: React.Dispatch<React.SetStateAction<ScoutPersonalData>>;
+  scoutData: ScoutData["personal"];
+  setScoutData: React.Dispatch<React.SetStateAction<ScoutData["personal"]>>;
 }): React.ReactElement => {
   return (
     <>
@@ -34,26 +33,29 @@ const Profile = ({
                   <InputGroupUI
                     label="登録番号"
                     type="number"
-                    value={scoutData.ScoutId}
+                    value={scoutData.scoutId}
                     placeholder="1234567890"
                     setValueFunc={(e) =>
-                      setScoutData({ ...scoutData, ScoutId: e })
+                      setScoutData({ ...scoutData, scoutId: e })
                     }
                   />
                   <InputGroupUI
                     label="生年月日"
                     type="date"
-                    value={convertInputDate(scoutData.birthday)}
+                    value={scoutData.birthDate}
                     setValueFunc={(e) =>
-                      setScoutData({ ...scoutData, birthday: new Date(e) })
+                      setScoutData({ ...scoutData, birthDate: e })
                     }
                   />
                   <InputGroupUI
                     label="入団の日"
                     type="date"
-                    value={convertInputDate(scoutData.joinedDate)}
+                    value={scoutData.joinedDate}
                     setValueFunc={(e) =>
-                      setScoutData({ ...scoutData, joinedDate: new Date(e) })
+                      setScoutData({
+                        ...scoutData,
+                        joinedDate: e,
+                      })
                     }
                   />
                 </div>
@@ -63,11 +65,12 @@ const Profile = ({
                     <InputGroup.Text>現在の所属隊</InputGroup.Text>
                     <select
                       className="form-select"
-                      value={scoutData.currentUnit}
+                      value={scoutData.currentUnitId}
                       onChange={(e) =>
                         setScoutData({
                           ...scoutData,
-                          currentUnit: e.target.value as ScoutUnit,
+                          currentUnitId: e.target
+                            .value as keyof typeof ScoutUnitNameMap,
                         })
                       }
                     >
@@ -111,25 +114,25 @@ const Profile = ({
                 ちかいを立てた日付と場所を入力します。
               </p>
               <InputGroupUI
-                label={scoutData.declare.isDone ? "実施済" : "未実施"}
+                label={scoutData.declare.done ? "実施済" : "未実施"}
                 type="date"
-                value={convertInputDate(scoutData.declare.date)}
+                value={scoutData.declare.date}
                 setValueFunc={(e) =>
                   setScoutData({
                     ...scoutData,
                     declare: {
                       ...scoutData.declare,
-                      date: new Date(e),
+                      date: e,
                     },
                   })
                 }
-                chkbox={scoutData.declare.isDone}
+                chkbox={scoutData.declare.done}
                 setChkboxFunc={(e) =>
                   setScoutData({
                     ...scoutData,
                     declare: {
                       ...scoutData.declare,
-                      isDone: e,
+                      done: e,
                     },
                   })
                 }
@@ -146,7 +149,7 @@ const Profile = ({
                     },
                   })
                 }
-                valueDisabled={!scoutData.declare.isDone}
+                valueDisabled={!scoutData.declare.done}
               />
             </div>
           </div>
@@ -161,79 +164,64 @@ const Profile = ({
                 信仰奨励章の取得状況と日付を入力します。
               </p>
               <InputGroupUI
-                label={scoutData.religion.faith.has ? "取得済" : "未取得"}
+                label={scoutData.faith.done ? "取得済" : "未取得"}
                 type="date"
-                value={convertInputDate(scoutData.religion.faith.date)}
+                value={scoutData.faith.date}
                 setValueFunc={(e) =>
                   setScoutData({
                     ...scoutData,
-                    religion: {
-                      ...scoutData.religion,
-                      faith: {
-                        ...scoutData.religion.faith,
-                        date: new Date(e),
-                      },
+                    faith: {
+                      ...scoutData.faith,
+                      date: e,
                     },
                   })
                 }
-                chkbox={scoutData.religion.faith.has}
+                chkbox={scoutData.faith.done}
                 setChkboxFunc={(e) =>
                   setScoutData({
                     ...scoutData,
-                    religion: {
-                      ...scoutData.religion,
-                      faith: {
-                        ...scoutData.religion.faith,
-                        has: e,
-                      },
+                    faith: {
+                      ...scoutData.faith,
+                      done: e,
                     },
                   })
                 }
               />
               <p className="card-text">宗教章の取得状況と日付を入力します。</p>
               <InputGroupUI
-                label={scoutData.religion.religion.has ? "取得済" : "未取得"}
+                label={scoutData.religion.done ? "取得済" : "未取得"}
                 type="date"
-                value={convertInputDate(scoutData.religion.religion.date)}
+                value={scoutData.religion.date}
                 setValueFunc={(e) =>
                   setScoutData({
                     ...scoutData,
                     religion: {
                       ...scoutData.religion,
-                      religion: {
-                        ...scoutData.religion.religion,
-                        date: new Date(e),
-                      },
+                      date: e,
                     },
                   })
                 }
-                chkbox={scoutData.religion.religion.has}
+                chkbox={scoutData.religion.done}
                 setChkboxFunc={(e) =>
                   setScoutData({
                     ...scoutData,
                     religion: {
                       ...scoutData.religion,
-                      religion: {
-                        ...scoutData.religion.religion,
-                        has: e,
-                      },
+                      done: e,
                     },
                   })
                 }
               />
               <InputGroupUI
                 label="種類"
-                value={scoutData.religion.religion.type}
-                valueDisabled={!scoutData.religion.religion.has}
+                value={scoutData.religion.type}
+                valueDisabled={!scoutData.religion.done}
                 setValueFunc={(e) =>
                   setScoutData({
                     ...scoutData,
                     religion: {
                       ...scoutData.religion,
-                      religion: {
-                        ...scoutData.religion.religion,
-                        type: e,
-                      },
+                      type: e,
                     },
                   })
                 }

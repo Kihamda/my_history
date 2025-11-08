@@ -1,4 +1,3 @@
-import type{ ScoutType} from "b@/types/api/scout";
 import Profile from "./edit/profile";
 import Units from "./edit/units";
 import FullWidthCardHeader from "@/style/fullWidthCardHeader";
@@ -7,29 +6,32 @@ import { Button } from "react-bootstrap";
 import { useState } from "react";
 import GinoshoList from "./edit/ginosho";
 import Events from "./edit/events";
-import { hc } from "@/authContext";
+import type { ScoutData } from "@/lib/api/apiTypes";
+import { hc } from "@/lib/api/api";
 
 const ScoutDetailEditor = ({
   scoutData,
   setScoutData,
+  scoutID,
 }: {
-  scoutData: ScoutType;
-  setScoutData: React.Dispatch<React.SetStateAction<ScoutType>>;
+  scoutData: ScoutData;
+  setScoutData: React.Dispatch<React.SetStateAction<ScoutData>>;
+  scoutID: string;
 }): React.ReactElement => {
   // TMP置き場
-  const [scoutDataPersonal, setScoutDataPersonal] = useState<ScoutType["personal"]>(
-    scoutData.personal
-  );
+  const [scoutDataPersonal, setScoutDataPersonal] = useState<
+    ScoutData["personal"]
+  >(scoutData.personal);
 
-  const [scoutDataUnit, setScoutDataUnit] = useState<ScoutType["unit"]>(
+  const [scoutDataUnit, setScoutDataUnit] = useState<ScoutData["unit"]>(
     scoutData.unit
   );
 
-  const [scoutDataGinosho, setScoutDataGinosho] = useState<ScoutType["ginosho"]>(
-    scoutData.ginosho
-  );
+  const [scoutDataGinosho, setScoutDataGinosho] = useState<
+    ScoutData["ginosho"]
+  >(scoutData.ginosho);
 
-  const [scoutDataEvents, setScoutDataEvents] = useState<ScoutType["event"]>(
+  const [scoutDataEvents, setScoutDataEvents] = useState<ScoutData["event"]>(
     scoutData.event
   );
 
@@ -38,21 +40,22 @@ const ScoutDetailEditor = ({
 
   //　保存時にプロファイルの変更をローカルで反映させるための関数
   const handleProfileChange = async () => {
-    const updatedData: ScoutType = {
-      id: scoutData.id,
+    const updatedData: ScoutData = {
+      authedIds: scoutData.authedIds,
       personal: scoutDataPersonal,
       unit: scoutDataUnit,
       ginosho: scoutDataGinosho,
       event: scoutDataEvents,
     };
 
-    const result = await hc?.apiv1.;
+    const result = await hc.apiv1.scout[":id"].$put({
+      param: { id: scoutID },
+      json: { data: updatedData },
+    });
 
-    if (result.status === "success") {
-      setScoutData(() => ({
-        ...result.data,
-      }));
-      nav(`/app/scouts/${data.id}/view`);
+    if (result.status === 200) {
+      setScoutData(() => updatedData);
+      nav(`/app/scouts/${scoutID}/view`);
     }
   };
 
@@ -64,14 +67,14 @@ const ScoutDetailEditor = ({
         buttons={
           <>
             <Link
-              to={`/app/scouts/${scoutData.id}/view`}
+              to={`/app/scouts/${scoutID}/view`}
               className="btn btn-outline-secondary me-2"
             >
               キャンセルして戻る
             </Link>
             <Button
               onClick={() => {
-                handleProfileChange(scoutData);
+                handleProfileChange();
               }}
             >
               保存して戻る

@@ -1,6 +1,6 @@
+import type { ScoutSearchRequest } from "@/lib/api/apiTypes";
+import { ScoutUnitNameMap } from "@/lib/clientCommons/scout";
 import UnitSelector from "@/lib/components/unitSelector";
-import { ScoutUnitNameMap } from "b@/types/common/scoutGroup";
-import type { SearchRequest } from "b@/types/api/search";
 import { useState } from "react";
 import { Card, FormControl, InputGroup } from "react-bootstrap";
 
@@ -8,20 +8,19 @@ const SearchboxCard = ({
   SearchRequest,
   SearchFunc,
 }: {
-  SearchRequest: SearchRequest;
-  SearchFunc: (query: SearchRequest) => void;
+  SearchRequest: ScoutSearchRequest;
+  SearchFunc: (query: ScoutSearchRequest) => void;
 }) => {
-  const [SearchRequestInput, setSearchRequestInput] =
-    useState<SearchRequest>(SearchRequest);
+  const [SearchRequestInput, setSearchRequestInput] = useState(SearchRequest);
 
   // 検索ボックスのコンポーネント
   // 検索クエリを更新するための関数を定義
-  const handleSearch = (query: SearchRequest) => {
+  const handleSearch = (query: ScoutSearchRequest) => {
     SearchFunc(query);
     // SearchRequestが変わるとscouts.tsxのuseEffectが発火する
   };
 
-  const getExplain = (current: SearchRequest) => {
+  const getExplain = (current: ScoutSearchRequest) => {
     let explainMessage: string[] = [];
 
     if (
@@ -37,9 +36,9 @@ const SearchboxCard = ({
       return explainMessage.join("");
     }
 
-    if (current.currentUnit.length > 0) {
+    if (current?.currentUnit?.length ?? 0 > 0) {
       explainMessage.push(
-        current.currentUnit.map((unit) => ScoutUnitNameMap[unit]).join(", ") +
+        current?.currentUnit?.map((unit) => ScoutUnitNameMap[unit]).join(", ") +
           "の"
       );
     }
@@ -105,7 +104,7 @@ const SearchboxCard = ({
           <div className="col-12 col-md-6">
             <label className="form-label">現在の所属隊</label>
             <UnitSelector
-              units={SearchRequestInput?.currentUnit}
+              units={SearchRequestInput?.currentUnit || []}
               onChange={(units) =>
                 setSearchRequestInput({
                   ...SearchRequestInput,

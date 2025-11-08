@@ -1,16 +1,15 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "target": "ES2022",
+    "target": "ES2024",
     "useDefineForClassFields": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "types": ["vite/client"],
     "skipLibCheck": true,
 
     "paths": {
-      "@/*": ["./src/*"],
-      "b@/*": ["../backend/src/*"]
+      "@/*": ["./src/*"]
     },
 
     /* Bundler mode */
@@ -29,5 +28,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "../backend/src"] // バックエンドから型を提供してもらう
+  "include": ["src"] // バックエンドから型を提供してもらう
 }

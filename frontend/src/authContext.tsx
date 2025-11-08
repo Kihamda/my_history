@@ -16,17 +16,14 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase";
 import LoadingSplash from "@/style/loadingSplash";
-
-import { type UserProfile } from "b@/types/api/user"; // ユーザーデータの型をインポート
-import { createClient, type ClientType } from "b@/client";
+import { setHcClient, hc } from "@/lib/api/api";
+import type { UserProfile } from "./lib/api/apiTypes";
 
 interface AuthContextValue {
   user: UserProfile | null;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-export let hc: ClientType | null = null; // APIクライアントを格納する変数
 
 // AuthProviderコンポーネントの定義
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
@@ -38,17 +35,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (!fbUser) {
         setUser(null);
-        hc = null;
+        setHcClient();
         setIsLoaded(true);
         return;
       }
       try {
-        hc = createClient(
-          import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787",
-          await getIdToken(auth.currentUser!, true)
-        );
+        setHcClient(await getIdToken(fbUser));
 
-        const user = await hc.api.user.$get(); // APIからユーザーデータを取得
+        const user = await hc.apiv1.user.$get(); // APIからユーザーデータを取得
 
         if (user.status === 404) {
           setUser(null);
@@ -70,10 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     const interval = setInterval(async () => {
       if (auth.currentUser) {
-        hc = createClient(
-          import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787",
-          await getIdToken(auth.currentUser, true)
-        );
+        setHcClient(await getIdToken(auth.currentUser, true));
       }
     }, 10 * 60 * 1000); // 10分ごとに更新
     return () => clearInterval(interval);

@@ -24,8 +24,9 @@ import { zValidator } from "@hono/zod-validator";
 import { SearchRequest } from "../types/api/search";
 import { updateScout, updateScoutSchema } from "./handlers/update";
 import { createScout, ScoutCreateSchema } from "./handlers/create";
-import { getScout } from "./get";
+import { getScout } from "./handlers/get";
 import { deleteScout } from "./handlers/delete";
+import { IdSchema } from "../types/common/getQuery";
 
 const scoutRouter = new Hono<AppContext>()
   /**
@@ -39,8 +40,8 @@ const scoutRouter = new Hono<AppContext>()
    *
    * レスポンス: SearchResultType[]
    */
-  .get("/search", zValidator("query", SearchRequest), async (c) => {
-    const query = c.req.valid("query");
+  .post("/search", zValidator("json", SearchRequest), async (c) => {
+    const query = c.req.valid("json");
     const result = await searchScouts(query, c);
     return c.json(result);
   })
@@ -75,7 +76,8 @@ const scoutRouter = new Hono<AppContext>()
    * レスポンス: ScoutRecordSchemaType
    * 権限: グループメンバーまたはauthedIdsに含まれる
    */
-  .get("/:id", async (c) => {
+  .get("/:id", zValidator("param", IdSchema), async (c) => {
+    console.log("Fetched scout:", c);
     const id = c.req.param("id");
     const result = await getScout(id, c);
     return c.json(result);
@@ -109,7 +111,7 @@ const scoutRouter = new Hono<AppContext>()
    * レスポンス: { message: string }
    * 権限: グループのADMINのみ
    */
-  .delete("/:id", async (c) => {
+  .delete("/:id", zValidator("param", IdSchema), async (c) => {
     const id = c.req.param("id");
     const result = await deleteScout(id, c);
     return c.json(result);

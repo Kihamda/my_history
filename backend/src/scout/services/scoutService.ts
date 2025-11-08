@@ -152,7 +152,7 @@ export const updateScoutWithAuth = async (
   // 最終編集日時を自動設定して更新データを準備
   const updateData = {
     ...data,
-    last_Edited: new Date(),
+    last_Edited: new Date().toISOString().split("T")[0],
   };
 
   // Firestoreのスカウトデータを更新

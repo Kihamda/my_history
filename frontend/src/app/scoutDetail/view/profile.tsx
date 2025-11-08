@@ -1,12 +1,11 @@
-import ShowData from "@/frontend/style/showData";
-import convertInputDate from "@/tools/date/convertInputDate";
-import { ScoutPersonalData } from "@/types/frontend/scout/scout";
-import { ScoutUnitNameMap } from "@/types/frontend/scout/unit";
+import type { ScoutData } from "@/lib/api/apiTypes";
+import { ScoutUnitNameMap } from "@/lib/clientCommons/scout";
+import ShowData from "@/style/showData";
 
 const Profile = ({
   scoutDataPersonal,
 }: {
-  scoutDataPersonal: ScoutPersonalData;
+  scoutDataPersonal: ScoutData["personal"];
 }): React.ReactElement => {
   return (
     <div className="row">
@@ -19,22 +18,19 @@ const Profile = ({
             <ShowData label="名前" value={scoutDataPersonal.name} />
             <ShowData
               label="所属"
-              value={ScoutUnitNameMap[scoutDataPersonal.currentUnit]}
+              value={ScoutUnitNameMap[scoutDataPersonal.currentUnitId]}
             />
-            <ShowData label="登録番号" value={scoutDataPersonal.ScoutId} />
+            <ShowData label="登録番号" value={scoutDataPersonal.scoutId} />
             <ShowData
               label="誕生日"
-              value={`${convertInputDate(scoutDataPersonal.birthday)} (満${
+              value={`${scoutDataPersonal.birthDate} (満${
                 new Date(
                   new Date().getTime() -
-                    new Date(scoutDataPersonal.birthday).getTime()
+                    new Date(scoutDataPersonal.birthDate).getTime()
                 ).getFullYear() - 1970
               }歳)`}
             />
-            <ShowData
-              label="入団日"
-              value={convertInputDate(scoutDataPersonal.joinedDate)}
-            />
+            <ShowData label="入団日" value={scoutDataPersonal.joinedDate} />
           </div>
         </div>
       </div>
@@ -44,11 +40,11 @@ const Profile = ({
             <h5 className="mb-0">ちかい</h5>
           </div>
           <div className="card-body">
-            {scoutDataPersonal.declare.isDone ? (
+            {scoutDataPersonal.declare.done ? (
               <>
                 <ShowData
                   label="ちかいを立てた日"
-                  value={convertInputDate(scoutDataPersonal.declare.date)}
+                  value={scoutDataPersonal.declare.date}
                 />
                 <ShowData
                   label="ちかいを立てた場所"
@@ -68,20 +64,19 @@ const Profile = ({
             <ShowData
               label="信仰奨励章"
               value={
-                scoutDataPersonal.religion.faith.has
-                  ? "取得済：" +
-                    convertInputDate(scoutDataPersonal.religion.faith.date)
+                scoutDataPersonal.faith.done
+                  ? "取得済：" + scoutDataPersonal.faith.date
                   : "未取得"
               }
             />
             <ShowData
               label="宗教章"
               value={
-                scoutDataPersonal.religion.religion.has
+                scoutDataPersonal.religion.done
                   ? "取得済(" +
-                    scoutDataPersonal.religion.religion.type +
+                    scoutDataPersonal.religion.type +
                     ")：" +
-                    convertInputDate(scoutDataPersonal.religion.religion.date)
+                    scoutDataPersonal.religion.date
                   : "未取得"
               }
             />

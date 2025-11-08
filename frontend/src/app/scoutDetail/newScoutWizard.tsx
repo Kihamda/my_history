@@ -1,26 +1,32 @@
 import { useState } from "react";
-import type { ScoutCreate } from "b@/types/api/scout";
-import { hc } from "@/authContext";
 import { useNavigate } from "react-router";
 import { raiseError } from "@/errorHandler";
 import FullWidthCardHeader from "@/style/fullWidthCardHeader";
 import InputGroupUI from "@/style/imputGroupUI";
-
+import { hc } from "@/lib/api/api";
+import type { ScoutCreate } from "@/lib/api/apiTypes";
+import { useAuthContext } from "@/authContext";
 const NewScoutWizard = () => {
   const nav = useNavigate();
+  const user = useAuthContext()?.user;
+
+  if (!user?.joinedGroup) {
+    raiseError("グループに所属していないため、スカウトを作成できません。");
+    nav("/app/scouts", { replace: true });
+    return <></>;
+  }
 
   const [scoutData, setScoutData] = useState<ScoutCreate>({
     name: "",
     scoutId: "",
-    birthDate: new Date(),
-    joinedDate: new Date(),
-    belongGroupId: "",
-    currentUnitId: "bs",
-    memo: "",
+    birthDate: new Date().toISOString().split("T")[0],
+    belongGroupId: user.joinedGroup.id,
   });
 
   const handleSave = async (newScoutData: ScoutCreate) => {
-    const result = await hc?.api.scout.create.$post({});
+    const result = await hc.apiv1.scout.create.$post({
+      json: newScoutData,
+    });
     if (result?.ok) {
       // 保存成功時はスカウトの詳細ページにリダイレクト
       nav(`/app/scouts/${(await result.json()).id}/view`, {

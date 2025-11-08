@@ -1,33 +1,27 @@
-import InputGroupUI from "@/frontend/style/imputGroupUI";
-import convertInputDate from "@/tools/date/convertInputDate";
-import {
-  ScoutUnitList,
-  ScoutUnitNameMap,
-  UnitExperience,
-  Work,
-} from "@/types/frontend/scout/unit";
+import InputGroupUI from "@/style/imputGroupUI";
+import type { ScoutData } from "@/lib/api/apiTypes";
+import { ScoutUnitNameMap, UnitIdList } from "@/lib/clientCommons/scout";
+
 import { Button, InputGroup } from "react-bootstrap";
+import { gradeMap } from "@/lib/master/grades";
 
 const Units = ({
   scoutDataUnit,
   setScoutDataUnit,
 }: {
-  scoutDataUnit: UnitExperience[];
-  setScoutDataUnit: React.Dispatch<React.SetStateAction<UnitExperience[]>>;
+  scoutDataUnit: ScoutData["unit"];
+  setScoutDataUnit: React.Dispatch<React.SetStateAction<ScoutData["unit"]>>;
 }): React.ReactElement => {
   return (
     <div className="row">
-      {ScoutUnitList.map((unit) => {
-        const data = scoutDataUnit.find((u) => u.id === unit);
-
-        // データが見つからない場合は何も表示しない
-        if (!data) return null;
+      {UnitIdList.map((unit, index) => {
+        const data = scoutDataUnit[unit];
 
         return (
-          <div key={data.id} className="mt-3 col-12">
+          <div key={index} className="mt-3 col-12">
             <div className="card">
               <div className="card-header">
-                <h5 className="mb-0">{ScoutUnitNameMap[data.id]}</h5>
+                <h5 className="mb-0">{ScoutUnitNameMap[unit]}</h5>
               </div>
               <div className="card-body">
                 <div className="row">
@@ -36,24 +30,24 @@ const Units = ({
                       <h5>基本情報</h5>
                       <InputGroupUI
                         label={data.experienced ? "入団済" : "未入団"}
-                        value={convertInputDate(data.joinedDate)}
+                        value={data.joinedDate}
                         setValueFunc={(e) => {
-                          setScoutDataUnit((prev) =>
-                            prev.map((u) =>
-                              u.id === data.id
-                                ? { ...u, joinedDate: new Date(e) }
-                                : u
-                            )
-                          );
+                          setScoutDataUnit((prev) => {
+                            return {
+                              ...prev,
+                              [unit]: { ...data, joinedDate: e },
+                            };
+                          });
                         }}
                         type="date"
                         chkbox={data.experienced}
                         setChkboxFunc={(experienced) => {
-                          setScoutDataUnit((prev) =>
-                            prev.map((u) =>
-                              u.id === data.id ? { ...u, experienced } : u
-                            )
-                          );
+                          setScoutDataUnit((prev) => {
+                            return {
+                              ...prev,
+                              [unit]: { ...data, experienced },
+                            };
+                          });
                         }}
                       />
                     </div>
@@ -65,39 +59,40 @@ const Units = ({
                           <InputGroupUI
                             key={index}
                             label={
-                              grade.name + (grade.has ? " (修了)" : " (未修了)")
+                              gradeMap[unit][grade.uniqueId] +
+                              (grade.completed ? " (修了)" : " (未修了)")
                             }
-                            chkbox={grade.has}
-                            setChkboxFunc={(has) => {
-                              setScoutDataUnit((prev) =>
-                                prev.map((u) =>
-                                  u.id === data.id
-                                    ? {
-                                        ...u,
-                                        grade: u.grade.map((g) =>
-                                          g.id === grade.id ? { ...g, has } : g
-                                        ),
-                                      }
-                                    : u
-                                )
-                              );
+                            chkbox={grade.completed}
+                            setChkboxFunc={(completed) => {
+                              setScoutDataUnit((prev) => {
+                                return {
+                                  ...prev,
+                                  [unit]: {
+                                    ...data,
+                                    grade: data.grade.map((g) =>
+                                      g.uniqueId === grade.uniqueId
+                                        ? { ...g, completed }
+                                        : g
+                                    ),
+                                  },
+                                };
+                              });
                             }}
-                            value={convertInputDate(grade.date)}
+                            value={grade.completedDate}
                             setValueFunc={(date) => {
-                              setScoutDataUnit((prev) =>
-                                prev.map((u) =>
-                                  u.id === data.id
-                                    ? {
-                                        ...u,
-                                        grade: u.grade.map((g) =>
-                                          g.id === grade.id
-                                            ? { ...g, date: new Date(date) }
-                                            : g
-                                        ),
-                                      }
-                                    : u
-                                )
-                              );
+                              setScoutDataUnit((prev) => {
+                                return {
+                                  ...prev,
+                                  [unit]: {
+                                    ...data,
+                                    grade: data.grade.map((g) =>
+                                      g.uniqueId === grade.uniqueId
+                                        ? { ...g, completedDate: date }
+                                        : g
+                                    ),
+                                  },
+                                };
+                              });
                             }}
                             type="date"
                           />
@@ -114,18 +109,21 @@ const Units = ({
                             variant="primary"
                             className="text-end"
                             onClick={() => {
-                              const newWork: Work = {
-                                type: "",
-                                begin: new Date(),
-                                end: new Date(),
-                              };
-                              setScoutDataUnit((prev) =>
-                                prev.map((u) =>
-                                  u.id === data.id
-                                    ? { ...u, works: [...u.works, newWork] }
-                                    : u
-                                )
-                              );
+                              const newWork: ScoutData["unit"]["bs"]["work"][number] =
+                                {
+                                  name: "",
+                                  begin: "",
+                                  end: "",
+                                };
+                              setScoutDataUnit((prev) => {
+                                return {
+                                  ...prev,
+                                  [unit]: {
+                                    ...data,
+                                    work: [...data.work, newWork],
+                                  },
+                                };
+                              });
                             }}
                           >
                             役務を追加
@@ -136,7 +134,7 @@ const Units = ({
                           className="mt-2 pt-2"
                           style={{ borderTop: "1px solid #000000ff" }}
                         >
-                          {data.works.map((work, index) => (
+                          {data.work.map((work, index) => (
                             <div
                               className="pb-2 mb-2"
                               style={{ borderBottom: "1px solid #000000ff" }}
@@ -144,20 +142,19 @@ const Units = ({
                             >
                               <InputGroupUI
                                 label="役務名"
-                                value={work.type}
-                                setValueFunc={(type) => {
-                                  setScoutDataUnit((prev) =>
-                                    prev.map((u) =>
-                                      u.id === data.id
-                                        ? {
-                                            ...u,
-                                            works: u.works.map((w, i) =>
-                                              i === index ? { ...w, type } : w
-                                            ),
-                                          }
-                                        : u
-                                    )
-                                  );
+                                value={work.name}
+                                setValueFunc={(name) => {
+                                  setScoutDataUnit((prev) => {
+                                    return {
+                                      ...prev,
+                                      [unit]: {
+                                        ...data,
+                                        work: data.work.map((w, i) =>
+                                          i === index ? { ...w, name } : w
+                                        ),
+                                      },
+                                    };
+                                  });
                                 }}
                               />
                               <InputGroup>
@@ -165,23 +162,27 @@ const Units = ({
                                 <input
                                   type="date"
                                   className="form-control"
-                                  value={convertInputDate(work.begin)}
+                                  value={work.begin}
                                   onChange={(e) => {
                                     const newDate = new Date(e.target.value);
-                                    setScoutDataUnit((prev) =>
-                                      prev.map((u) =>
-                                        u.id === data.id
-                                          ? {
-                                              ...u,
-                                              works: u.works.map((w, i) =>
-                                                i === index
-                                                  ? { ...w, begin: newDate }
-                                                  : w
-                                              ),
-                                            }
-                                          : u
-                                      )
-                                    );
+                                    setScoutDataUnit((prev) => {
+                                      return {
+                                        ...prev,
+                                        [unit]: {
+                                          ...data,
+                                          work: data.work.map((w, i) =>
+                                            i === index
+                                              ? {
+                                                  ...w,
+                                                  begin: newDate
+                                                    .toISOString()
+                                                    .split("T")[0],
+                                                }
+                                              : w
+                                          ),
+                                        },
+                                      };
+                                    });
                                   }}
                                 />
                                 <InputGroup.Text> ~ </InputGroup.Text>
@@ -189,23 +190,27 @@ const Units = ({
                                 <input
                                   type="date"
                                   className="form-control"
-                                  value={convertInputDate(work.end)}
+                                  value={work.end || ""}
                                   onChange={(e) => {
                                     const newDate = new Date(e.target.value);
-                                    setScoutDataUnit((prev) =>
-                                      prev.map((u) =>
-                                        u.id === data.id
-                                          ? {
-                                              ...u,
-                                              works: u.works.map((w, i) =>
-                                                i === index
-                                                  ? { ...w, end: newDate }
-                                                  : w
-                                              ),
-                                            }
-                                          : u
-                                      )
-                                    );
+                                    setScoutDataUnit((prev) => {
+                                      return {
+                                        ...prev,
+                                        [unit]: {
+                                          ...data,
+                                          work: data.work.map((w, i) =>
+                                            i === index
+                                              ? {
+                                                  ...w,
+                                                  end: newDate
+                                                    .toISOString()
+                                                    .split("T")[0],
+                                                }
+                                              : w
+                                          ),
+                                        },
+                                      };
+                                    });
                                   }}
                                 />
                               </InputGroup>
@@ -213,18 +218,17 @@ const Units = ({
                                 <Button
                                   variant="danger"
                                   onClick={() => {
-                                    setScoutDataUnit((prev) =>
-                                      prev.map((u) =>
-                                        u.id === data.id
-                                          ? {
-                                              ...u,
-                                              works: u.works.filter(
-                                                (_, i) => i !== index
-                                              ),
-                                            }
-                                          : u
-                                      )
-                                    );
+                                    setScoutDataUnit((prev) => {
+                                      return {
+                                        ...prev,
+                                        [unit]: {
+                                          ...data,
+                                          work: data.work.filter(
+                                            (_, i) => i !== index
+                                          ),
+                                        },
+                                      };
+                                    });
                                   }}
                                 >
                                   削除

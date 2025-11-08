@@ -1,10 +1,5 @@
-import convertInputDate from "@/tools/date/convertInputDate";
-import getRandomStr from "@/tools/getRandomStr";
-import {
-  ScoutEvent,
-  ScoutEventType,
-  ScoutEventTypeMap,
-} from "@/types/frontend/scout/event";
+import type { ScoutData } from "@/lib/api/apiTypes";
+import { ScoutEventTypeMap, type ScoutEventType } from "@/lib/master/events";
 import { useState } from "react";
 import { Button, InputGroup } from "react-bootstrap";
 
@@ -12,22 +7,21 @@ const Events = ({
   events,
   setEventFunc,
 }: {
-  events: ScoutEvent[];
-  setEventFunc: (events: ScoutEvent[]) => void;
+  events: ScoutData["event"];
+  setEventFunc: (events: ScoutData["event"]) => void;
 }) => {
-  const [eventFilter, setEventFilter] = useState<ScoutEventType>();
+  const [eventFilter, setEventFilter] = useState<ScoutEventType | null>(null);
 
-  const eventList = events.filter((event) =>
+  const eventListLength = events.filter((event) =>
     eventFilter ? event.type == eventFilter : true
-  );
+  ).length;
 
   const createNewRecord = () => {
     // 新規作成処理
-    const newData: ScoutEvent = {
-      id: getRandomStr(20),
-      title: "",
-      start: new Date(),
-      end: new Date(),
+    const newData: ScoutData["event"][number] = {
+      name: "",
+      startDate: new Date().toUTCString().split("T")[0],
+      endDate: new Date().toUTCString().split("T")[0],
       description: "",
       type: eventFilter || "camp",
     };
@@ -42,7 +36,7 @@ const Events = ({
       <div className="card-body">
         <div className="d-flex">
           <p className="mb-0 flex-grow-1">
-            {eventList.length}件が見つかりました
+            {eventListLength}件が見つかりました
           </p>
           <div className="dropdown">
             <button
@@ -59,7 +53,7 @@ const Events = ({
                   className={`dropdown-item ${
                     eventFilter === undefined ? "active" : ""
                   }`}
-                  onClick={() => setEventFilter(undefined)}
+                  onClick={() => setEventFilter(null)}
                 >
                   すべて表示
                 </span>
@@ -82,110 +76,113 @@ const Events = ({
             </ul>
           </div>
         </div>
-        {eventList && eventList.length > 0 ? (
-          eventList.map((event) => (
-            <div
-              key={event.id}
-              style={{ borderTop: "1px solid #ccc" }}
-              className="pt-2 mt-2"
-            >
-              <InputGroup>
-                <InputGroup.Text>名目</InputGroup.Text>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={event.title}
-                  onChange={(e) => {
-                    setEventFunc(
-                      events.map((ev) =>
-                        ev.id === event.id
-                          ? { ...ev, title: e.target.value }
-                          : ev
-                      )
-                    );
-                  }}
-                />
-                <InputGroup.Text>分類</InputGroup.Text>
-                <select
-                  className="form-select"
-                  value={event.type}
-                  onChange={(e) => {
-                    setEventFunc(
-                      events.map((ev) =>
-                        ev.id === event.id
-                          ? { ...ev, type: e.target.value as ScoutEventType }
-                          : ev
-                      )
-                    );
-                  }}
-                >
-                  {Object.keys(ScoutEventTypeMap).map((key) => (
-                    <option key={key} value={key}>
-                      {ScoutEventTypeMap[key as ScoutEventType]}
-                    </option>
-                  ))}
-                </select>
-              </InputGroup>
-              <InputGroup className="mt-2">
-                <InputGroup.Text>期間</InputGroup.Text>
-                <input
-                  type="date"
-                  className="form-control"
-                  value={convertInputDate(event.start)}
-                  onChange={(e) => {
-                    const newDate = new Date(e.target.value);
-                    setEventFunc(
-                      events.map((ev) =>
-                        ev.id === event.id ? { ...ev, start: newDate } : ev
-                      )
-                    );
-                  }}
-                />
+        {events && eventListLength > 0 ? (
+          events.map((event, index) => {
+            if (eventFilter && event.type !== eventFilter) {
+              return null;
+            }
 
-                <InputGroup.Text>～</InputGroup.Text>
-                <input
-                  type="date"
-                  className="form-control"
-                  value={convertInputDate(event.end)}
-                  onChange={(e) => {
-                    const newDate = new Date(e.target.value);
-                    setEventFunc(
-                      events.map((ev) =>
-                        ev.id === event.id ? { ...ev, end: newDate } : ev
+            return (
+              <div
+                key={index}
+                style={{ borderTop: "1px solid #ccc" }}
+                className="pt-2 mt-2"
+              >
+                <InputGroup>
+                  <InputGroup.Text>名目</InputGroup.Text>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={event.name}
+                    onChange={(e) => {
+                      setEventFunc(
+                        events.toSpliced(index, 1, {
+                          ...event,
+                          name: e.target.value,
+                        })
+                      );
+                    }}
+                  />
+                  <InputGroup.Text>分類</InputGroup.Text>
+                  <select
+                    className="form-select"
+                    value={event.type}
+                    onChange={(e) => {
+                      setEventFunc(
+                        events.toSpliced(index, 1, {
+                          ...event,
+                          type: e.target.value as ScoutEventType,
+                        })
+                      );
+                    }}
+                  >
+                    {Object.keys(ScoutEventTypeMap).map((key) => (
+                      <option key={key} value={key}>
+                        {ScoutEventTypeMap[key as ScoutEventType]}
+                      </option>
+                    ))}
+                  </select>
+                </InputGroup>
+                <InputGroup className="mt-2">
+                  <InputGroup.Text>期間</InputGroup.Text>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={event.startDate}
+                    onChange={(e) => {
+                      setEventFunc(
+                        events.toSpliced(index, 1, {
+                          ...event,
+                          startDate: e.target.value,
+                        })
+                      );
+                    }}
+                  />
+
+                  <InputGroup.Text>～</InputGroup.Text>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={event.endDate}
+                    onChange={(e) => {
+                      setEventFunc(
+                        events.toSpliced(index, 1, {
+                          ...event,
+                          endDate: e.target.value,
+                        })
+                      );
+                    }}
+                  />
+                </InputGroup>
+                <InputGroup className="mt-2">
+                  <InputGroup.Text>メモ</InputGroup.Text>
+                  <textarea
+                    className="form-control"
+                    value={event.description}
+                    placeholder="イベントに関するメモ"
+                    onChange={(e) =>
+                      setEventFunc(
+                        events.toSpliced(index, 1, {
+                          ...event,
+                          description: e.target.value,
+                        })
                       )
-                    );
-                  }}
-                />
-              </InputGroup>
-              <InputGroup className="mt-2">
-                <InputGroup.Text>メモ</InputGroup.Text>
-                <textarea
-                  className="form-control"
-                  value={event.description}
-                  placeholder="イベントに関するメモ"
-                  onChange={(e) =>
-                    setEventFunc(
-                      events.map((ev) =>
-                        ev.id === event.id
-                          ? { ...ev, description: e.target.value }
-                          : ev
-                      )
-                    )
-                  }
-                />
-              </InputGroup>
-              <div className="mt-2 text-end">
-                <Button
-                  variant="danger"
-                  onClick={() =>
-                    setEventFunc(events.filter((ev) => ev.id !== event.id))
-                  }
-                >
-                  この記録を削除
-                </Button>
+                    }
+                  />
+                </InputGroup>
+                <div className="mt-2 text-end">
+                  <Button
+                    variant="danger"
+                    onClick={() =>
+                      setEventFunc(events.filter((_, i) => i !== index))
+                    }
+                  >
+                    この記録を削除
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <p>イベント情報はありません。</p>
         )}

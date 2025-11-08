@@ -1,4 +1,4 @@
-import { ScoutUnitNameMap, type ScoutUnit } from "b@/types/common/scoutGroup";
+import { type UnitType } from "../api/apiTypes";
 import { ToggleButton, ToggleButtonGroup } from "react-bootstrap";
 
 /**
@@ -11,6 +11,17 @@ import { ToggleButton, ToggleButtonGroup } from "react-bootstrap";
  * <UnitSelector units={selectedUnits} onChange={(units) => setSelectedUnits(units)} />
  * ```
  */
+
+type ScoutUnit = UnitType | "ob";
+const ScoutUnitNameMap: Record<ScoutUnit, string> = {
+  bvs: "ビーバー",
+  cs: "カブ",
+  bs: "ボーイ",
+  vs: "ベンチャー",
+  rs: "ローバー",
+  ob: "既卒",
+};
+
 const UnitSelector = ({
   units,
   onChange,

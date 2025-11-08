@@ -1,17 +1,18 @@
-import { Ginosho } from "@/types/frontend/scout/ginosho";
-import { usePopup } from "@/frontend/style/fullscreanPopup";
+import { usePopup } from "@/style/fullscreanPopup";
 import { Button, InputGroup } from "react-bootstrap";
-import getRandomStr from "@/tools/getRandomStr";
-import {
-  getGinoshoDetail,
-  getGinoshoMasterList,
-  GinoshoMaster,
-} from "@/types/backend/master/ginosho";
-import { Suspense, useEffect, useState } from "react";
-import LoadingSplash from "@/frontend/style/loadingSplash";
-import InputGroupUI from "@/frontend/style/imputGroupUI";
-import convertInputDate from "@/tools/date/convertInputDate";
-import ShowData from "@/frontend/style/showData";
+import { Suspense, useState } from "react";
+import LoadingSplash from "@/style/loadingSplash";
+import InputGroupUI from "@/style/imputGroupUI";
+import ShowData from "@/style/showData";
+import type { ScoutData } from "@/lib/api/apiTypes";
+import ginoshoMap from "@/lib/master/ginoshos";
+
+type Ginosho = ScoutData["ginosho"][number];
+
+type GinoshoWithMaster = {
+  data: Ginosho;
+  master: (typeof ginoshoMap)[string];
+};
 
 const GinoshoList = ({
   ginosho,
@@ -30,8 +31,14 @@ const GinoshoList = ({
             data={data}
             setDataFunc={(newData) => {
               const newList = [...ginosho];
-              const index = newList.findIndex((item) => item.id === newData.id);
-              if (index !== -1) {
+              const index = newList.findIndex(
+                (item) => item.uniqueId === data.uniqueId
+              );
+              if (newData === null) {
+                // 削除
+                newList.splice(index, 1);
+                setGinoshoFunc(newList);
+              } else if (index !== -1) {
                 newList[index] = newData;
                 setGinoshoFunc(newList);
               } else {
@@ -47,15 +54,10 @@ const GinoshoList = ({
 
   const createNewRecord = () => {
     // 新規作成処理
-    const newData = {
-      id: getRandomStr(20),
-      unique: "",
-      name: "",
-      date: new Date(),
-      cert: false,
-      certName: "",
-      has: false,
-      url: "",
+    const newData: Ginosho = {
+      uniqueId: "",
+      achievedDate: "",
+      certBy: "",
       details: [],
     };
 
@@ -73,17 +75,20 @@ const GinoshoList = ({
           ginosho.map((doc, index) => {
             return (
               <ShowData
-                key={doc.id}
+                key={doc.uniqueId}
                 value={
-                  doc.has
-                    ? convertInputDate(doc.date)
-                    : `未取得(${doc.details.filter((d) => d.has).length}/${
-                        doc.details.length
-                      })`
+                  doc.achievedDate
+                    ? doc.achievedDate
+                    : `未取得(${
+                        doc.details.filter((d) => d.achievedDate).length
+                      }/${doc.details.length})`
                 }
                 label={
-                  doc.name
-                    ? doc.name + (doc.cert ? " (考査員認定)" : " (隊長認定)")
+                  doc.uniqueId
+                    ? ginoshoMap[doc.uniqueId].name +
+                      (ginoshoMap[doc.uniqueId].cert
+                        ? " (考査員認定)"
+                        : " (隊長認定)")
                     : `未設定`
                 }
                 detailButtonContent="編集"
@@ -111,16 +116,12 @@ const DetailPopup = ({
   setDataFunc,
 }: {
   data: Ginosho;
-  setDataFunc: (data: Ginosho) => void;
+  setDataFunc: (data: Ginosho | null) => void;
 }): React.ReactElement => {
-  const [masterData, setMasterData] = useState<GinoshoMaster[]>();
-  const [dataTmp, setDataTmp] = useState<Ginosho>(data);
-
-  useEffect(() => {
-    getGinoshoMasterList().then((m) => {
-      if (m) setMasterData(m);
-    });
-  }, []);
+  const [dataTmp, setDataTmp] = useState<GinoshoWithMaster>({
+    data,
+    master: ginoshoMap[data.uniqueId],
+  });
 
   const popup = usePopup();
 
@@ -136,7 +137,7 @@ const DetailPopup = ({
             variant="primary"
             className="m-1"
             onClick={() => {
-              setDataFunc(dataTmp);
+              setDataFunc(dataTmp.data);
               popup.hidePopup();
             }}
           >
@@ -147,7 +148,7 @@ const DetailPopup = ({
             className="m-1"
             onClick={() => {
               if (confirm("この技能章の記録を削除します。よろしいですか？")) {
-                setDataFunc({ ...dataTmp, id: "" });
+                setDataFunc(null);
                 popup.hidePopup();
               }
             }}
@@ -156,85 +157,108 @@ const DetailPopup = ({
           </Button>
         </div>
       </div>
-      <div key={data.id}>
+      <div key={data.uniqueId}>
         <InputGroup>
           <InputGroup.Text>技能章名</InputGroup.Text>
           <select
             className="form-select"
-            value={dataTmp.unique}
+            value={dataTmp.data.uniqueId}
             onChange={async (e) => {
-              const selectedMaster = await getGinoshoDetail(e.target.value);
               setDataTmp({
                 ...dataTmp,
-                unique: selectedMaster?.id || "",
-                name: selectedMaster?.name || "",
-                cert: selectedMaster?.cert || false,
-                details:
-                  selectedMaster?.details.map((detail) => ({
-                    sort: detail.sort,
-                    has: false,
-                    date: new Date(),
-                    description: detail.description,
-                    number: detail.number,
-                  })) || [],
+                data: {
+                  ...dataTmp.data,
+                  uniqueId: e.target.value,
+                  details: e.target.value
+                    ? ginoshoMap[e.target.value].details.map(() => ({
+                        done: false,
+                        achievedDate: "",
+                      }))
+                    : [],
+                },
               });
             }}
           >
             <option value="">選択してください</option>
-            {masterData?.map((item) => (
-              <option key={item.id} value={item.id}>
+            {Object.entries(ginoshoMap).map(([id, item]) => (
+              <option key={id} value={id}>
                 {item.name + (item.cert ? " (考査員認定)" : " (隊長認定)")}
               </option>
             ))}
           </select>
         </InputGroup>
         <InputGroupUI
-          label={dataTmp.cert ? "考査員名" : "隊長名"}
+          label={dataTmp.master.cert ? "考査員名" : "隊長名"}
           className="mt-2"
-          value={dataTmp.certName}
+          value={dataTmp.data.certBy}
           setValueFunc={(v) => {
-            setDataTmp({ ...dataTmp, certName: v });
+            setDataTmp({ ...dataTmp, data: { ...dataTmp.data, certBy: v } });
           }}
         />
         <InputGroupUI
-          label={dataTmp.has ? "取得済" : "未取得"}
+          label={dataTmp.data.achievedDate ? "取得済" : "未取得"}
           type="date"
           className="mt-2"
-          chkbox={dataTmp.has}
+          chkbox={dataTmp.data.achievedDate !== ""}
           setChkboxFunc={(checked) => {
-            setDataTmp({ ...dataTmp, has: checked });
+            setDataTmp({
+              ...dataTmp,
+              data: {
+                ...dataTmp.data,
+                achievedDate: checked
+                  ? new Date().toISOString().split("T")[0]
+                  : "",
+              },
+            });
           }}
-          value={convertInputDate(dataTmp.date)}
+          value={dataTmp.data.achievedDate || ""}
           setValueFunc={(v) => {
-            setDataTmp({ ...dataTmp, date: new Date(v) });
+            setDataTmp({
+              ...dataTmp,
+              data: { ...dataTmp.data, achievedDate: v },
+            });
           }}
         />
         <h4 style={{ borderBottom: "1px solid #000000ff" }}>細目</h4>
-        {dataTmp.details.length > 0 ? (
-          dataTmp.details.map((detail, index) => (
-            <InputGroupUI
-              key={index}
-              type="date"
-              label={`細目 ${detail.number}`}
-              value={convertInputDate(dataTmp.details[index].date)}
-              setValueFunc={(v) => {
-                const newDetails = [...dataTmp.details];
-                newDetails[index] = { ...newDetails[index], date: new Date(v) };
-                setDataTmp({ ...dataTmp, details: newDetails });
-              }}
-              explain={detail.description}
-              chkbox={dataTmp.details[index].has}
-              setChkboxFunc={(checked) => {
-                const newDetails = [...dataTmp.details];
-                newDetails[index] = {
-                  ...newDetails[index],
-                  has: checked,
-                  date: checked ? new Date() : newDetails[index].date,
-                };
-                setDataTmp({ ...dataTmp, details: newDetails });
-              }}
-            />
-          ))
+        {dataTmp.data.details.length > 0 ? (
+          dataTmp.data.details.map((detail, index) => {
+            const ms = dataTmp.master.details[index];
+            return (
+              <InputGroupUI
+                key={index}
+                type="date"
+                label={`細目 ${ms.number}`}
+                value={detail.achievedDate || ""}
+                setValueFunc={(v) => {
+                  const newDetails = [...dataTmp.data.details];
+                  newDetails[index] = {
+                    ...newDetails[index],
+                    achievedDate: new Date(v).toISOString().split("T")[0],
+                  };
+                  setDataTmp({
+                    ...dataTmp,
+                    data: { ...dataTmp.data, details: newDetails },
+                  });
+                }}
+                explain={ms.description}
+                chkbox={detail.done}
+                setChkboxFunc={(checked) => {
+                  const newDetails = [...dataTmp.data.details];
+                  newDetails[index] = {
+                    ...newDetails[index],
+                    done: checked,
+                    achievedDate: checked
+                      ? new Date().toISOString().split("T")[0]
+                      : newDetails[index].achievedDate,
+                  };
+                  setDataTmp({
+                    ...dataTmp,
+                    data: { ...dataTmp.data, details: newDetails },
+                  });
+                }}
+              />
+            );
+          })
         ) : (
           <p>細目はありません</p>
         )}

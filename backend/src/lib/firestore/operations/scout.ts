@@ -23,6 +23,7 @@ export const getScoutById = async (
   if (!doc.exists) return null;
 
   const data = doc.data() as unknown as ScoutRecordSchemaType;
+  console.log("Raw scout data:", data);
   return ScoutRecordSchema.parse(data);
 };
 
