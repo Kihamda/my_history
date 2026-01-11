@@ -1,18 +1,17 @@
-import { authorize, FirebaseAuthBindings } from "./lib/auth";
-import { Context as honoContext, Hono } from "hono";
+import { authorize, type FirebaseAuthBindings } from "./lib/auth";
+import { type Context as honoContext, Hono } from "hono";
 import { firestoreMiddleware } from "./lib/firestore/firestore";
-import { FirestoreClient } from "firebase-rest-firestore";
 import userRouter from "./user/userRoute";
 import scoutRouter from "./scout/scoutRoute";
 import groupRouter from "./group/groupRoute";
-import { FirebaseIdToken } from "firebase-auth-cloudflare-workers";
-import { cors } from "hono/cors";
+import type { FirebaseIdToken } from "firebase-auth-cloudflare-workers";
+import type { UserDataContext } from "./lib/userData";
 
 export interface AppContext {
   Bindings: FirebaseAuthBindings;
   Variables: {
-    authToken: FirebaseIdToken;
-    db: FirestoreClient;
+    user: UserDataContext;
+    token: FirebaseIdToken;
   };
 }
 
@@ -24,7 +23,7 @@ const apiRouter = new Hono<AppContext>()
   // APIルート
   .get("/", async (c) =>
     c.json({
-      message: "Let's work together -> kihamda.net",
+      message: "Let's work together -> https://kihamda.net/form",
     })
   )
 

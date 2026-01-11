@@ -1,17 +1,7 @@
-/**
- * @fileoverview スカウト取得ハンドラー
- *
- * このファイルの責務:
- * - 単一スカウトデータの取得処理
- * - サービス層への処理委譲
- * - 認証・認可チェックはサービス層で実施
- *
- * @module scout/handlers/get
- */
-
-import { Context } from "../../apiRotuer";
-import { ScoutRecordSchemaType } from "../../lib/firestore/schemas";
-import { getScoutWithAuth } from "../services/scoutService";
+import { HTTPException } from "hono/http-exception";
+import type { Context } from "../../apiRotuer";
+import { db } from "../../lib/firestore/firestore";
+import type { ScoutRecordSchemaType } from "../../lib/firestore/schemas";
 /**
  * スカウトデータを取得する
  *
@@ -30,7 +20,30 @@ export const getScout = async (
   id: string,
   c: Context
 ): Promise<ScoutRecordSchemaType> => {
-  // サービス層で権限チェック済みのスカウトデータを取得
-  const scout = await getScoutWithAuth(c, id);
+  // Firestoreからスカウトデータを取得
+  const scout = await db().scouts.get(id);
+
+  if (!scout) {
+    throw new HTTPException(404, { message: "Scout not found" });
+  }
+
+  // 認可処理
+  const { memberships, shares } = c.var.user.auth;
+
+  const hasAccess =
+    memberships.find((m) => m.id === scout.belongGroupId) ||
+    shares.find((s) => s.id === id);
+
+  if (!hasAccess) {
+    throw new HTTPException(403, {
+      message: "You do not have permission to access this scout",
+    });
+  }
+
+  // データの存在確認
+  if (!scout) {
+    throw new HTTPException(404, { message: "Scout not found" });
+  }
+
   return scout;
 };

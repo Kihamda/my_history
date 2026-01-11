@@ -20,29 +20,25 @@
  */
 
 import { Hono } from "hono";
-import { AppContext } from "../apiRotuer";
+import type { AppContext } from "../apiRotuer";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
-import { GroupRecordSchema } from "../lib/firestore/schemas";
+import { z } from "zod/v4";
 import {
-  getGroupWithAuth,
-  createGroup,
-  updateGroupWithAuth,
-  deleteGroupWithAuth,
-  addGroupMember,
+  addGroupInvite,
   removeGroupMember,
   updateMemberRole,
-} from "./services/groupService";
-import { generateRandomId } from "../lib/randomId";
+  getGroupMembers,
+} from "./handler";
+import { genIdSchema } from "@b/lib/randomId";
+import { loadUserData } from "@b/lib/userData";
 
-// バリデーションスキーマ
-const GroupCreateSchema = GroupRecordSchema.omit({ members: true });
-const GroupMemberAddSchema = z.object({
-  userEmail: z.string().email(),
+const CreateGroupInviteSchema = z.object({
+  targetUid: genIdSchema,
   role: z.enum(["ADMIN", "EDIT", "VIEW"]),
 });
 
 const groupRouter = new Hono<AppContext>()
+  .use("*", loadUserData)
   /**
    * GET /:id - グループ取得
    *
@@ -52,65 +48,14 @@ const groupRouter = new Hono<AppContext>()
    * レスポンス: GroupRecordSchemaType
    * 権限: グループメンバー(ロール問わず)
    */
-  .get("/:id", async (c) => {
+  .get("/:id", zValidator("param", z.object({ id: z.string() })), async (c) => {
     const id = c.req.param("id");
-    const group = await getGroupWithAuth(c, id);
+    const group = await getGroupMembers(c, id);
     return c.json(group);
   })
 
   /**
-   * POST / - グループ作成
-   *
-   * リクエストボディ:
-   * - name: グループ名
-   * - status: ステータス(ACTIVE/INACTIVE)
-   *
-   * レスポンス: { id: string, message: string }
-   * 権限: 認証済みユーザー(作成者が自動的にADMINになる)
-   */
-  .post("/", zValidator("json", GroupCreateSchema), async (c) => {
-    const data = c.req.valid("json");
-    const id = generateRandomId(20);
-    await createGroup(c, id, data);
-    return c.json({ id, message: "Group created successfully" }, 201);
-  })
-
-  /**
-   * PUT /:id - グループ更新
-   *
-   * パスパラメータ:
-   * - id: グループID
-   *
-   * リクエストボディ: GroupRecordSchema.partial()
-   *
-   * レスポンス: { message: string }
-   * 権限: グループのADMINのみ
-   */
-  .put("/:id", zValidator("json", GroupRecordSchema.partial()), async (c) => {
-    const id = c.req.param("id");
-    const data = c.req.valid("json");
-    await updateGroupWithAuth(c, id, data);
-    return c.json({ message: "Group updated successfully" });
-  })
-
-  /**
-   * DELETE /:id - グループ削除
-   *
-   * パスパラメータ:
-   * - id: グループID
-   *
-   * レスポンス: { message: string }
-   * 権限: グループのADMINのみ
-   * 制限: メンバーが1人のみの場合のみ削除可能
-   */
-  .delete("/:id", async (c) => {
-    const id = c.req.param("id");
-    await deleteGroupWithAuth(c, id);
-    return c.json({ message: "Group deleted successfully" });
-  })
-
-  /**
-   * POST /:id/members - メンバー追加
+   * POST /:id/members - メンバー招待追加
    *
    * パスパラメータ:
    * - id: グループID
@@ -122,37 +67,63 @@ const groupRouter = new Hono<AppContext>()
    * レスポンス: { message: string }
    * 権限: グループのADMINのみ
    */
-  .post("/:id/members", zValidator("json", GroupMemberAddSchema), async (c) => {
-    const id = c.req.param("id");
-    const member = c.req.valid("json");
-    await addGroupMember(c, id, member);
-    return c.json({ message: "Member added successfully" });
-  })
+  .post(
+    "/:id/invites/create",
+    zValidator("json", CreateGroupInviteSchema),
+    async (c) => {
+      const id = c.req.param("id");
+      const invite = c.req.valid("json");
+      await addGroupInvite(c, id, invite);
+      return c.json({ message: "Member added successfully" });
+    }
+  )
 
   /**
-   * DELETE /:id/members/:email - メンバー削除
+   * GET /:id/members - メンバー一覧取得
+   *
+   * パスパラメータ:
+   */
+
+  .get(
+    "/:id/members",
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator(
+      "query",
+      z.object({
+        page: z.number().int().min(1).optional(),
+      })
+    ),
+    async (c) => {
+      const id = c.req.param("id");
+      const group = await getGroupMembers(c, id);
+      return c.json({ members: group });
+    }
+  )
+
+  /**
+   * DELETE /:id/members/:uid - メンバー削除
    *
    * パスパラメータ:
    * - id: グループID
-   * - email: 削除対象のメールアドレス
+   * - uid: 削除対象のユーザーID
    *
    * レスポンス: { message: string }
    * 権限: グループのADMINのみ
    * 制限: 最後のADMINは削除不可
    */
-  .delete("/:id/members/:email", async (c) => {
+  .delete("/:id/members/:uid", async (c) => {
     const id = c.req.param("id");
-    const email = c.req.param("email");
-    await removeGroupMember(c, id, email);
+    const uid = c.req.param("uid");
+    await removeGroupMember(c, id, uid);
     return c.json({ message: "Member removed successfully" });
   })
 
   /**
-   * PUT /:id/members/:email/role - メンバーロール更新
+   * PUT /:id/members/:uid/role - メンバーロール更新
    *
    * パスパラメータ:
    * - id: グループID
-   * - email: 更新対象のメールアドレス
+   * - uid: 更新対象のユーザーID
    *
    * リクエストボディ:
    * - role: 新しいロール(ADMIN/EDIT/VIEW)
@@ -162,13 +133,13 @@ const groupRouter = new Hono<AppContext>()
    * 制限: 最後のADMINのロール変更は不可
    */
   .put(
-    "/:id/members/:email/role",
+    "/:id/members/:uid/role",
     zValidator("json", z.object({ role: z.enum(["ADMIN", "EDIT", "VIEW"]) })),
     async (c) => {
       const id = c.req.param("id");
-      const email = c.req.param("email");
+      const uid = c.req.param("uid");
       const { role } = c.req.valid("json");
-      await updateMemberRole(c, id, email, role);
+      await updateMemberRole(c, id, uid, role);
       return c.json({ message: "Member role updated successfully" });
     }
   );

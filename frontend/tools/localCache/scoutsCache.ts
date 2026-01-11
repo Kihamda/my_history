@@ -1,4 +1,4 @@
-import { SearchResult } from "@/types/frontend/search/searchQueryType";
+import { SearchResult } from "@f/types/frontend/search/searchQueryType";
 
 export const setScoutsCache = (scouts: SearchResult[]) => {
   // スカウトデータをローカルストレージに保存する関数

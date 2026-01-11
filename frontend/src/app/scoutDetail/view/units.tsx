@@ -1,7 +1,7 @@
-import type { ScoutData } from "@/lib/api/apiTypes";
-import { ScoutUnitNameMap, UnitIdList } from "@/lib/clientCommons/scout";
-import { gradeMap } from "@/lib/master/grades";
-import ShowData from "@/style/showData";
+import type { ScoutData } from "@f/lib/api/apiTypes";
+import { ScoutUnitNameMap, UnitIdList } from "@f/lib/clientCommons/scout";
+import { gradeMap } from "@f/lib/master/grades";
+import ShowData from "@f/style/showData";
 
 const Units = ({
   scoutDataUnit,
@@ -12,6 +12,7 @@ const Units = ({
     <div className="row">
       {UnitIdList.map((unit) => {
         const data = scoutDataUnit[unit];
+        const master = gradeMap[unit];
         // 入団経験がある場合の表示
         if (data.experienced) {
           return (
@@ -26,20 +27,22 @@ const Units = ({
                       <h5>基本情報</h5>
                       <ShowData label="入隊日時" value={data.joinedDate} />
                     </div>
-                    {data.grade.length > 0 && (
-                      <div className="flex-grow-1 mb-3">
-                        <h5>進級章</h5>
-                        {data.grade.map((grade) => (
-                          <ShowData
-                            key={grade.uniqueId}
-                            label={gradeMap[unit][grade.uniqueId].name}
-                            value={
-                              grade.completed ? grade.completedDate : "未修了"
-                            }
-                          />
-                        ))}
-                      </div>
-                    )}
+                    <div className="flex-grow-1 mb-3">
+                      <h5>進級章</h5>
+                      {Object.entries(master).map(([key, value]) => (
+                        <ShowData
+                          key={key}
+                          label={value.name}
+                          value={
+                            data.grade.find((g) => g.uniqueId === key)
+                              ?.completed
+                              ? data.grade.find((g) => g.uniqueId === key)
+                                  ?.completedDate || "日付の情報がありません"
+                              : "未取得"
+                          }
+                        />
+                      ))}
+                    </div>
                   </div>
                   {data.work.length > 0 && (
                     <div>

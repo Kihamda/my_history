@@ -1,5 +1,8 @@
-import { type UnitType } from "../api/apiTypes";
 import { ToggleButton, ToggleButtonGroup } from "react-bootstrap";
+import {
+  ScoutUnitNameMap,
+  type ScoutDataUnitIdListType,
+} from "../clientCommons/scout";
 
 /**
  * 所属隊を選択するコンポーネント
@@ -12,23 +15,13 @@ import { ToggleButton, ToggleButtonGroup } from "react-bootstrap";
  * ```
  */
 
-type ScoutUnit = UnitType | "ob";
-const ScoutUnitNameMap: Record<ScoutUnit, string> = {
-  bvs: "ビーバー",
-  cs: "カブ",
-  bs: "ボーイ",
-  vs: "ベンチャー",
-  rs: "ローバー",
-  ob: "既卒",
-};
-
 const UnitSelector = ({
   units,
   onChange,
   id,
 }: {
-  units: ScoutUnit[];
-  onChange: (units: ScoutUnit[]) => void;
+  units: ScoutDataUnitIdListType[];
+  onChange: (units: ScoutDataUnitIdListType[]) => void;
   id: string; // ユニットセレクターのID
 }) => {
   return (

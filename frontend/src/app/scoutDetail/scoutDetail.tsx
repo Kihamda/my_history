@@ -2,11 +2,11 @@ import { Navigate, useLocation } from "react-router";
 import ScoutDetailViewer from "./viewer";
 import { useEffect, useState } from "react";
 import ScoutDetailEditor from "./editor";
-import LoadingSplash from "@/style/loadingSplash";
-import { raiseError } from "@/errorHandler";
-import { useAuthContext } from "@/authContext";
-import type { ScoutData } from "@/lib/api/apiTypes";
-import { hc } from "@/lib/api/api";
+import LoadingSplash from "@f/style/loadingSplash";
+import { raiseError } from "@f/errorHandler";
+import { useAuthContext } from "@f/authContext";
+import type { ScoutData } from "@f/lib/api/apiTypes";
+import { hc } from "@f/lib/api/api";
 
 const ScoutDetail = (): React.ReactElement => {
   // URLを取得→参照するスカウトの情報を決定。

@@ -3,16 +3,16 @@ import { Link, useLocation } from "react-router";
 import SearchboxCard from "./parts/searchBoxCard";
 import queryParser from "./queryParser";
 import SearchResultCard from "./parts/result";
-import { getSearchQueryCache, setSearchQueryCache } from "@/lib/localCache";
-import FullWidthCardHeader from "@/style/fullWidthCardHeader";
-import { getResultsCache } from "./cache";
-import { raiseError } from "@/errorHandler";
-import LoadingSplash from "@/style/loadingSplash";
+import { getSearchQueryCache, setSearchQueryCache } from "@f/lib/localCache";
+import FullWidthCardHeader from "@f/style/fullWidthCardHeader";
+import { getResultsCache, setResultsCache } from "./cache";
+import { raiseError } from "@f/errorHandler";
+import LoadingSplash from "@f/style/loadingSplash";
 import type {
   ScoutSearchRequest,
   ScoutSearchResponse,
-} from "@/lib/api/apiTypes";
-import { hc } from "@/lib/api/api";
+} from "@f/lib/api/apiTypes";
+import { hc } from "@f/lib/api/api";
 const Scouts: React.FC = () => {
   // 遷移元からの検索名を取得
   const searchBox = (useLocation().state?.searchName || "") as string;
@@ -47,7 +47,7 @@ const Scouts: React.FC = () => {
   const handleSearch = async (query: ScoutSearchRequest) => {
     setIsPending(true);
     setSearchQuery(query);
-    setSearchQueryCache(searchQuery);
+    setSearchQueryCache(query);
 
     // 検索実行
     try {
@@ -63,12 +63,11 @@ const Scouts: React.FC = () => {
       }
       const searchResult: ScoutSearchResponse = (await search?.json()) || [];
       setResult(searchResult);
+      setResultsCache(searchResult);
     } catch (error) {
       raiseError("Search API call failed:" + error);
       setResult([]);
     }
-
-    setSearchQueryCache(searchQuery);
     setIsPending(false);
   };
 

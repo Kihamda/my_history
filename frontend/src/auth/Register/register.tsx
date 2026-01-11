@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
 import FormGroup from "../formGroup";
-import { register } from "@/authContext";
+import { register, sendVerificationEmail } from "@f/authContext";
 
 /**
  * @fileoverview
@@ -44,6 +44,7 @@ const Register: React.FC = () => {
 
     try {
       await register(email, password);
+      await sendVerificationEmail();
       alert(
         "ユーザーが成功裏に作成されました。メールアドレス認証のためのメールを送信したので、URLをクリックして続行してください。"
       );

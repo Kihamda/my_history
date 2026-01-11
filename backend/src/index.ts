@@ -68,6 +68,4 @@ const app = new Hono()
   // v1から増やすとき、v2にしたくないならv1aとかにする。
   .route("/apiv1/", apiRouter);
 
-export type AppType = typeof app;
-
 export default app;

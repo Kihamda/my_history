@@ -9,7 +9,8 @@
     "skipLibCheck": true,
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@f/*": ["./src/*"],
+      "@b/*": ["../backend/src/*"]
     },
 
     /* Bundler mode */

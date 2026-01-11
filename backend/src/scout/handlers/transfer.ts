@@ -10,9 +10,7 @@
  * @module scout/handlers/update
  */
 
-import { z } from "zod/v4";
 import type { Context } from "../../apiRotuer";
-import { ScoutRecordSchema } from "../../lib/firestore/schemas";
 import { db } from "../../lib/firestore/firestore";
 /**
  * スカウト更新リクエストのバリデーションスキーマ
@@ -20,9 +18,6 @@ import { db } from "../../lib/firestore/firestore";
  * ScoutRecordSchemaの全フィールドを部分的に更新可能
  * 提供されたフィールドのみが更新される
  */
-export const updateScoutSchema = z.object({
-  data: ScoutRecordSchema.omit({ belongGroupId: true }),
-});
 
 /**
  * スカウトデータを更新する
@@ -41,45 +36,31 @@ export const updateScoutSchema = z.object({
  * @returns 成功メッセージ
  * @throws {HTTPException} サービス層でエラーが発生した場合
  */
-export const updateScout = async (
+export const transferScout = async (
   id: string,
-  scout: z.infer<typeof updateScoutSchema>,
+  targetGroupId: string,
   c: Context
 ): Promise<{ message: string }> => {
   // 過去のデータを参照
   const existingScout = await db().scouts.get(id);
-
   if (!existingScout) {
     throw new Error("Scout not found");
   }
 
   // 認可処理
-  const group = c.var.user.auth.memberships;
-  const shares = c.var.user.auth.shares;
-
-  const hasAccess =
-    group.find(
-      (m) =>
-        m.id ===
-        (existingScout.belongGroupId && (m.role == "ADMIN" || m.role == "EDIT"))
-    ) ||
-    shares.find(
-      (s) => s.id === existingScout.belongGroupId && s.role == "EDIT"
-    );
-
-  if (!hasAccess) {
+  if (!c.var.user.fn.isInRoleOnGroup(existingScout.belongGroupId, ["ADMIN"])) {
     throw new Error("You do not have permission to update this scout");
   }
 
   // 実処理
   await db().scouts.set(id, {
-    belongGroupId: existingScout.belongGroupId,
-    ...scout.data,
+    ...existingScout,
+    belongGroupId: targetGroupId,
     last_Edited: new Date().toISOString().split("T")[0],
   });
 
   // 成功レスポンスを返却
   return {
-    message: "Scout updated successfully",
+    message: "Scout transferred successfully",
   };
 };

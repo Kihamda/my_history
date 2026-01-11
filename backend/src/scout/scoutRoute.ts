@@ -18,17 +18,20 @@
  */
 
 import { Hono } from "hono";
-import { AppContext } from "../apiRotuer";
-import searchScouts from "./handlers/search";
+import type { AppContext } from "../apiRotuer";
+import searchScouts, { SearchRequest } from "./handlers/search";
 import { zValidator } from "@hono/zod-validator";
-import { SearchRequest } from "../types/api/search";
 import { updateScout, updateScoutSchema } from "./handlers/update";
 import { createScout, ScoutCreateSchema } from "./handlers/create";
 import { getScout } from "./handlers/get";
 import { deleteScout } from "./handlers/delete";
-import { IdSchema } from "../types/common/getQuery";
+import { z } from "zod/v4";
+import { transferScout } from "./handlers/transfer";
+import { genIdSchema } from "@b/lib/randomId";
+import { loadUserData } from "@b/lib/userData";
 
 const scoutRouter = new Hono<AppContext>()
+  .use("*", loadUserData)
   /**
    * GET /search - スカウト検索
    *
@@ -76,12 +79,21 @@ const scoutRouter = new Hono<AppContext>()
    * レスポンス: ScoutRecordSchemaType
    * 権限: グループメンバーまたはauthedIdsに含まれる
    */
-  .get("/:id", zValidator("param", IdSchema), async (c) => {
-    console.log("Fetched scout:", c);
-    const id = c.req.param("id");
-    const result = await getScout(id, c);
-    return c.json(result);
-  })
+  .get(
+    "/:id",
+    zValidator(
+      "param",
+      z.object({
+        id: genIdSchema,
+      })
+    ),
+    async (c) => {
+      console.log("Fetched scout:", c);
+      const id = c.req.valid("param").id;
+      const result = await getScout(id, c);
+      return c.json(result);
+    }
+  )
 
   /**
    * PUT /:id - スカウト更新
@@ -95,12 +107,17 @@ const scoutRouter = new Hono<AppContext>()
    * レスポンス: { message: string }
    * 権限: グループのEDIT以上
    */
-  .put("/:id", zValidator("json", updateScoutSchema), async (c) => {
-    const id = c.req.param("id");
-    const data = c.req.valid("json");
-    const result = await updateScout(id, data, c);
-    return c.json(result);
-  })
+  .put(
+    "/:id",
+    zValidator("param", z.object({ id: genIdSchema })),
+    zValidator("json", updateScoutSchema),
+    async (c) => {
+      const id = c.req.valid("param").id;
+      const data = c.req.valid("json");
+      const result = await updateScout(id, data, c);
+      return c.json(result);
+    }
+  )
 
   /**
    * DELETE /:id - スカウト削除
@@ -111,10 +128,37 @@ const scoutRouter = new Hono<AppContext>()
    * レスポンス: { message: string }
    * 権限: グループのADMINのみ
    */
-  .delete("/:id", zValidator("param", IdSchema), async (c) => {
-    const id = c.req.param("id");
-    const result = await deleteScout(id, c);
-    return c.json(result);
-  });
+  .delete(
+    "/:id",
+    zValidator(
+      "param",
+      z.object({
+        id: genIdSchema,
+      })
+    ),
+    async (c) => {
+      const id = c.req.valid("param").id;
+      const result = await deleteScout(id, c);
+      return c.json(result);
+    }
+  )
+
+  // POST /:id/transfer - スカウトのグループ移動
+  .post(
+    "/:id/transfer",
+    zValidator(
+      "json",
+      z.object({
+        targetGroupId: genIdSchema,
+      })
+    ),
+    async (c) => {
+      const id = z.string().parse(c.req.param("id"));
+      const { targetGroupId } = c.req.valid("json");
+      // 移動処理を実行
+      await transferScout(id, targetGroupId, c);
+      return c.json({ message: "Scout transferred successfully" });
+    }
+  );
 
 export default scoutRouter;

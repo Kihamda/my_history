@@ -1,5 +1,5 @@
-import type { ScoutSearchRequest } from "@/lib/api/apiTypes";
-import { ScoutUnitNameMap, UnitIdList } from "@/lib/clientCommons/scout";
+import type { ScoutSearchRequest } from "@f/lib/api/apiTypes";
+import { ScoutUnitNameMap, UnitIdList } from "@f/lib/clientCommons/scout";
 
 const queryParser = (searchName: string): ScoutSearchRequest => {
   type ScoutUnit = (typeof UnitIdList)[number] | "ob";

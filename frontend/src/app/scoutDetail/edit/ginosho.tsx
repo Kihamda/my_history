@@ -1,11 +1,11 @@
-import { usePopup } from "@/style/fullscreanPopup";
+import { usePopup } from "@f/style/fullscreanPopup";
 import { Button, InputGroup } from "react-bootstrap";
 import { Suspense, useState } from "react";
-import LoadingSplash from "@/style/loadingSplash";
-import InputGroupUI from "@/style/imputGroupUI";
-import ShowData from "@/style/showData";
-import type { ScoutData } from "@/lib/api/apiTypes";
-import ginoshoMap from "@/lib/master/ginoshos";
+import LoadingSplash from "@f/style/loadingSplash";
+import InputGroupUI from "@f/style/imputGroupUI";
+import ShowData from "@f/style/showData";
+import type { ScoutData } from "@f/lib/api/apiTypes";
+import ginoshoMap from "@f/lib/master/ginoshos";
 
 type Ginosho = ScoutData["ginosho"][number];
 
@@ -165,7 +165,6 @@ const DetailPopup = ({
             value={dataTmp.data.uniqueId}
             onChange={async (e) => {
               setDataTmp({
-                ...dataTmp,
                 data: {
                   ...dataTmp.data,
                   uniqueId: e.target.value,
@@ -176,8 +175,10 @@ const DetailPopup = ({
                       }))
                     : [],
                 },
+                master: ginoshoMap[e.target.value],
               });
             }}
+            disabled={dataTmp.data.uniqueId !== ""} // 一度設定したら変更不可
           >
             <option value="">選択してください</option>
             {Object.entries(ginoshoMap).map(([id, item]) => (
@@ -187,80 +188,94 @@ const DetailPopup = ({
             ))}
           </select>
         </InputGroup>
-        <InputGroupUI
-          label={dataTmp.master.cert ? "考査員名" : "隊長名"}
-          className="mt-2"
-          value={dataTmp.data.certBy}
-          setValueFunc={(v) => {
-            setDataTmp({ ...dataTmp, data: { ...dataTmp.data, certBy: v } });
-          }}
-        />
-        <InputGroupUI
-          label={dataTmp.data.achievedDate ? "取得済" : "未取得"}
-          type="date"
-          className="mt-2"
-          chkbox={dataTmp.data.achievedDate !== ""}
-          setChkboxFunc={(checked) => {
-            setDataTmp({
-              ...dataTmp,
-              data: {
-                ...dataTmp.data,
-                achievedDate: checked
-                  ? new Date().toISOString().split("T")[0]
-                  : "",
-              },
-            });
-          }}
-          value={dataTmp.data.achievedDate || ""}
-          setValueFunc={(v) => {
-            setDataTmp({
-              ...dataTmp,
-              data: { ...dataTmp.data, achievedDate: v },
-            });
-          }}
-        />
-        <h4 style={{ borderBottom: "1px solid #000000ff" }}>細目</h4>
-        {dataTmp.data.details.length > 0 ? (
-          dataTmp.data.details.map((detail, index) => {
-            const ms = dataTmp.master.details[index];
-            return (
-              <InputGroupUI
-                key={index}
-                type="date"
-                label={`細目 ${ms.number}`}
-                value={detail.achievedDate || ""}
-                setValueFunc={(v) => {
-                  const newDetails = [...dataTmp.data.details];
-                  newDetails[index] = {
-                    ...newDetails[index],
-                    achievedDate: new Date(v).toISOString().split("T")[0],
-                  };
-                  setDataTmp({
-                    ...dataTmp,
-                    data: { ...dataTmp.data, details: newDetails },
-                  });
-                }}
-                explain={ms.description}
-                chkbox={detail.done}
-                setChkboxFunc={(checked) => {
-                  const newDetails = [...dataTmp.data.details];
-                  newDetails[index] = {
-                    ...newDetails[index],
-                    done: checked,
+        {dataTmp.master ? (
+          <>
+            <p>
+              誤選択の場合は一度「削除」してから再度記録を作成してください。
+            </p>
+            <InputGroupUI
+              label={dataTmp.master.cert ? "考査員名" : "隊長名"}
+              className="mt-2"
+              value={dataTmp.data.certBy}
+              setValueFunc={(v) => {
+                setDataTmp({
+                  ...dataTmp,
+                  data: { ...dataTmp.data, certBy: v },
+                });
+              }}
+            />
+            <InputGroupUI
+              label={dataTmp.data.achievedDate ? "取得済" : "未取得"}
+              type="date"
+              className="mt-2"
+              chkbox={dataTmp.data.achievedDate !== ""}
+              setChkboxFunc={(checked) => {
+                setDataTmp({
+                  ...dataTmp,
+                  data: {
+                    ...dataTmp.data,
                     achievedDate: checked
                       ? new Date().toISOString().split("T")[0]
-                      : newDetails[index].achievedDate,
-                  };
-                  setDataTmp({
-                    ...dataTmp,
-                    data: { ...dataTmp.data, details: newDetails },
-                  });
-                }}
-              />
-            );
-          })
+                      : "",
+                  },
+                });
+              }}
+              value={dataTmp.data.achievedDate || ""}
+              setValueFunc={(v) => {
+                setDataTmp({
+                  ...dataTmp,
+                  data: { ...dataTmp.data, achievedDate: v },
+                });
+              }}
+            />
+            <h4 style={{ borderBottom: "1px solid #000000ff" }}>細目</h4>
+            {dataTmp.data.details.length > 0 ? (
+              dataTmp.data.details.map((detail, index) => {
+                const ms = dataTmp.master.details[index];
+                return (
+                  <InputGroupUI
+                    key={index}
+                    type="date"
+                    label={`細目 ${ms.number}`}
+                    value={detail.achievedDate || ""}
+                    setValueFunc={(v) => {
+                      const newDetails = [...dataTmp.data.details];
+                      newDetails[index] = {
+                        ...newDetails[index],
+                        achievedDate: new Date(v).toISOString().split("T")[0],
+                      };
+                      setDataTmp({
+                        ...dataTmp,
+                        data: { ...dataTmp.data, details: newDetails },
+                      });
+                    }}
+                    explain={ms.description}
+                    chkbox={detail.done}
+                    setChkboxFunc={(checked) => {
+                      const newDetails = [...dataTmp.data.details];
+                      newDetails[index] = {
+                        ...newDetails[index],
+                        done: checked,
+                        achievedDate: checked
+                          ? new Date().toISOString().split("T")[0]
+                          : newDetails[index].achievedDate,
+                      };
+                      setDataTmp({
+                        ...dataTmp,
+                        data: { ...dataTmp.data, details: newDetails },
+                      });
+                    }}
+                  />
+                );
+              })
+            ) : (
+              <p>細目はありません</p>
+            )}
+          </>
         ) : (
-          <p>細目はありません</p>
+          <p>
+            技能章が選択されていません。一度選択すると二度と変更できません。
+          </p>
         )}
       </div>
     </>

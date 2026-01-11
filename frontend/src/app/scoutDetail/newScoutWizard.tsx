@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { raiseError } from "@/errorHandler";
-import FullWidthCardHeader from "@/style/fullWidthCardHeader";
-import InputGroupUI from "@/style/imputGroupUI";
-import { hc } from "@/lib/api/api";
-import type { ScoutCreate } from "@/lib/api/apiTypes";
-import { useAuthContext } from "@/authContext";
+import { raiseError } from "@f/errorHandler";
+import FullWidthCardHeader from "@f/style/fullWidthCardHeader";
+import InputGroupUI from "@f/style/imputGroupUI";
+import { hc } from "@f/lib/api/api";
+import type { ScoutCreate } from "@f/lib/api/apiTypes";
+import { useAuthContext } from "@f/authContext";
 const NewScoutWizard = () => {
   const nav = useNavigate();
   const user = useAuthContext()?.user;

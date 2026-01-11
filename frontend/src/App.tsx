@@ -9,12 +9,12 @@ import { ErrorProvider } from "./errorHandler";
  * 各コンポーネントはパフォーマンス向上のため遅延読み込みする
  */
 import { lazy, Suspense, useEffect } from "react";
-import LoadingSplash from "@/style/loadingSplash";
+import LoadingSplash from "@f/style/loadingSplash";
 
-const Auth = lazy(() => import("@/auth/auth"));
-const AppPage = lazy(() => import("@/app/app"));
-const AuthProvider = lazy(() => import("@/authContext"));
-const PopupProvider = lazy(() => import("@/style/fullscreanPopup"));
+const Auth = lazy(() => import("@f/auth/auth"));
+const AppPage = lazy(() => import("@f/app/app"));
+const AuthProvider = lazy(() => import("@f/authContext"));
+const PopupProvider = lazy(() => import("@f/style/fullscreanPopup"));
 
 // ここで/〇〇/の変更が生じるときはfirebase.jsonのrewritesも変更すること
 
@@ -41,17 +41,18 @@ function MainApp() {
 const Reload = () => {
   useEffect(() => {
     // ページが読み込まれたときにリロードする
-    setTimeout(() => {
+    const reloader = setTimeout(() => {
       // 1秒後にリロード
       window.location.reload();
     }, 1000);
+    return () => clearTimeout(reloader);
   }, []);
 
   return (
     <div className="text-center vh-100 d-flex flex-column justify-content-center align-items-center">
       <h1>こんにちは</h1>
       <p>
-        あなたがこの画面を見ているということは、トップ画面を作った人が何かをやらかしたということです。
+        あなたがこの画面を見ているということは、制作者が何かをやらかしたということです。
       </p>
       <p>
         続行するには、以下のボタンを押してページをリロードしてみてください。

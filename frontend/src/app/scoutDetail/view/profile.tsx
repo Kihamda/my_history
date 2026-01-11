@@ -1,6 +1,6 @@
-import type { ScoutData } from "@/lib/api/apiTypes";
-import { ScoutUnitNameMap } from "@/lib/clientCommons/scout";
-import ShowData from "@/style/showData";
+import type { ScoutData } from "@f/lib/api/apiTypes";
+import { ScoutUnitNameMap } from "@f/lib/clientCommons/scout";
+import ShowData from "@f/style/showData";
 
 const Profile = ({
   scoutDataPersonal,

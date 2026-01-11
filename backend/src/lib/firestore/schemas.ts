@@ -1,36 +1,123 @@
-import { z } from "zod";
+import { z } from "zod/v4";
+import { GroupRoleSchema, ShareRoleSchema, UnitId } from "../scoutGroup";
 
 // ========================================
 // 共通型定義
 // ========================================
 
-export const CurrentUnitId = z.enum(["bvs", "cs", "bs", "vs", "rs", "ob"]);
-export type CurrentUnitIdType = z.infer<typeof CurrentUnitId>;
+export const CurrentUnitId = z.enum([...UnitId.options, "ob"]);
 
-export const UnitId = z.enum(["bvs", "cs", "bs", "vs", "rs"]);
-export type UnitIdType = z.infer<typeof UnitId>;
+// ========================================
+// GroupRole付きID型定義
+// ========================================
+
+export const IdWithGroupRoleString = z.string().refine(
+  (val) => {
+    const parts = val.split(";");
+    if (parts.length !== 2) return false;
+    const [role, gid] = parts;
+
+    // Roleが定義済みのものであること
+    if (!GroupRoleSchema.safeParse(role).success) return false;
+
+    // GIDが空でないこと
+    if (gid.length === 0) return false;
+
+    // GIDにセミコロンが含まれていないこと
+    if (gid.includes(";")) return false;
+
+    // 再チェック
+    return (
+      GroupRoleSchema.safeParse(role).success &&
+      gid.length > 0 &&
+      !gid.includes(";")
+    );
+  },
+  {
+    message:
+      "Invalid membership format. Expected 'ROLE;groupId' (e.g. 'ADMIN;abc')",
+  }
+);
+export const IdWithShareRoleString = z.string().refine(
+  (val) => {
+    const parts = val.split(";");
+    if (parts.length !== 2) return false;
+    const [role, gid] = parts;
+
+    // Roleが定義済みのものであること
+    if (!GroupRoleSchema.safeParse(role).success) return false;
+
+    // GIDが空でないこと
+    if (gid.length === 0) return false;
+
+    // GIDにセミコロンが含まれていないこと
+    if (gid.includes(";")) return false;
+
+    // 再チェック
+    return (
+      GroupRoleSchema.safeParse(role).success &&
+      gid.length > 0 &&
+      !gid.includes(";")
+    );
+  },
+  {
+    message:
+      "Invalid membership format. Expected 'ROLE;groupId' (e.g. 'ADMIN;abc')",
+  }
+);
+
+export const IdWithGroupRole = z.object({
+  role: GroupRoleSchema,
+  id: z.string(),
+});
+
+export const IdWithShareRole = z.object({
+  role: ShareRoleSchema,
+  id: z.string(),
+});
+
+export const IdWithGroupRoleParser = (val: string) => {
+  const [role, gid] = val.split(";");
+  return { role: GroupRoleSchema.parse(role), id: gid };
+};
+
+export const IdWithShareRoleParser = (val: string) => {
+  const [role, gid] = val.split(";");
+  return { role: ShareRoleSchema.parse(role), id: gid };
+};
+
+export const IdWithGroupRoleStringifier = (
+  obj: z.infer<typeof IdWithGroupRole>
+) => {
+  const role = GroupRoleSchema.parse(obj.role);
+  return `${role};${obj.id}`;
+};
+
+export const IdWithShareRoleStringifier = (
+  obj: z.infer<typeof IdWithShareRole>
+) => {
+  const role = ShareRoleSchema.parse(obj.role);
+  return `${role};${obj.id}`;
+};
 
 // ========================================
 // Scout Firestore Schema
 // ========================================
 
-const ymdSchema = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, {
-    message: "Invalid format: expected YYYY-MM-DD",
-  })
-  .refine(
-    (v) => {
-      const [y, m, d] = v.split("-").map(Number);
-      const date = new Date(Date.UTC(y, m - 1, d));
-      return (
-        date.getUTCFullYear() === y &&
-        date.getUTCMonth() + 1 === m &&
-        date.getUTCDate() === d
-      );
-    },
-    { message: "Invalid calendar date" }
-  );
+const ymdSchema = z.string().refine(
+  (v) => {
+    if (v === "") return true;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+    const [y, m, d] = v.split("-").map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+    return (
+      date.getUTCFullYear() === y &&
+      date.getUTCMonth() + 1 === m &&
+      date.getUTCDate() === d
+    );
+  },
+  { message: "Invalid format: expected YYYY-MM-DD or empty string" }
+);
 export type YMDType = z.infer<typeof ymdSchema>;
 
 const Detail = z.object({
@@ -43,7 +130,6 @@ const ScoutPersonalSchema = z.object({
   scoutId: z.string(),
   birthDate: ymdSchema,
   joinedDate: ymdSchema,
-  belongGroupId: z.string(),
   currentUnitId: CurrentUnitId,
   memo: z.string(),
   declare: z.object({
@@ -110,10 +196,7 @@ const ScoutEventSchema = z.object({
 });
 
 export const ScoutRecordSchema = z.object({
-  authedIds: z
-    .array(z.string())
-    .nullable()
-    .transform((v) => v ?? []),
+  belongGroupId: z.string(),
   personal: ScoutPersonalSchema,
   unit: z.object({
     bvs: ScoutUnitDataSchema,
@@ -145,32 +228,64 @@ export type ScoutEventSchemaType = z.infer<typeof ScoutEventSchema>;
 // User Firestore Schema
 // ========================================
 
-export const GroupRoleSchema = z.enum(["ADMIN", "EDIT", "VIEW"]);
-export type GroupRoleSchemaType = z.infer<typeof GroupRoleSchema>;
-
-export const UserRecordSchema = z.object({
-  displayName: z.string(),
-  joinedGroupId: z.string().optional(),
-  knowGroupId: z.array(z.string()),
+export const UserAuthSchemaString = z.object({
+  /**
+   * 所属グループと権限を "ROLE;groupId" 形式で保持
+   * 例: ["ADMIN;groupA", "VIEW;groupB"]
+   * クエリ時は array-contains-any で検索する
+   */
+  memberships: z
+    .array(IdWithGroupRoleString)
+    .max(10)
+    .nullable()
+    .transform((v) => v ?? []),
+  invites: z
+    .array(IdWithGroupRoleString)
+    .max(10)
+    .nullable()
+    .transform((v) => v ?? []),
+  shares: z
+    .array(IdWithShareRoleString)
+    .max(10)
+    .nullable()
+    .transform((v) => v ?? []),
+  acceptsInvite: z.boolean(),
+  isGod: z.boolean().default(false),
 });
 
+export const UserAuthSchema = z.object({
+  memberships: z.array(IdWithGroupRole).max(10),
+  invites: z.array(IdWithGroupRole).max(10),
+  shares: z.array(IdWithShareRole).max(10),
+  acceptsInvite: z.boolean(),
+  isGod: z.boolean().default(false),
+});
+
+export const UserProfileSchema = z.object({
+  displayName: z.string(),
+  statusMessage: z.string(),
+});
+
+export const UserRecordSchemaString = z.object({
+  email: z.email(),
+  auth: UserAuthSchemaString,
+  profile: UserProfileSchema,
+});
+
+export const UserRecordSchema = UserRecordSchemaString.extend({
+  auth: UserAuthSchema,
+});
+
+export type UserRecordSchemaStringType = z.infer<typeof UserRecordSchemaString>;
 export type UserRecordSchemaType = z.infer<typeof UserRecordSchema>;
 
 // ========================================
 // Group Firestore Schema
 // ========================================
 
-const GroupMemberSchema = z.object({
-  userEmail: z.string().email(),
-  role: GroupRoleSchema,
-});
-
 export const GroupRecordSchema = z.object({
   name: z.string(),
   status: z.enum(["active", "inactive", "archived"]),
-  members: z.array(GroupMemberSchema),
 });
 
 export type GroupRecordSchemaType = z.infer<typeof GroupRecordSchema>;
-export type GroupMemberSchemaType = z.infer<typeof GroupMemberSchema>;
-export { GroupMemberSchema };

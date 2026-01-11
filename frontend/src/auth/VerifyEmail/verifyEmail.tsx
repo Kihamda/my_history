@@ -1,6 +1,6 @@
 import { type FC } from "react";
 import { Button, Card } from "react-bootstrap";
-import { useAuthContext, resetPassword } from "@/authContext";
+import { useAuthContext, sendVerificationEmail } from "@f/authContext";
 import { Navigate } from "react-router";
 
 /**
@@ -21,13 +21,13 @@ import { Navigate } from "react-router";
  */
 
 const VerifyEmail: FC = () => {
-  const user = useAuthContext();
+  const user = useAuthContext()?.user;
 
   if (!user) {
     return <Navigate to="/auth/login" />;
   }
 
-  if (user.emailVerified) {
+  if (user.token.emailVerified) {
     // メールアドレスが既に確認済みの場合、アプリケーションのホームにリダイレクト
     return <Navigate to="/app" />;
   }
@@ -46,8 +46,9 @@ const VerifyEmail: FC = () => {
         <div className="row justify-content-around pb-3">
           <div className="mt-3 d-flex flex-column align-items-center col-12 col-md-6">
             <Button
-              onClick={() => {
-                resetPassword(user.email);
+              onClick={async () => {
+                await sendVerificationEmail();
+                alert("認証メールを再送信しました。");
               }}
             >
               認証メールの再送信

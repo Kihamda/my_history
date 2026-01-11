@@ -51,7 +51,7 @@ lib/
 **使用例:**
 
 ```typescript
-import { ScoutRecordSchema, ScoutRecordSchemaType } from '@/lib/firestore/schemas';
+import { ScoutRecordSchema, ScoutRecordSchemaType } from '@b/lib/firestore/schemas';
 
 // バリデーション
 const scout = ScoutRecordSchema.parse(data);
@@ -205,7 +205,7 @@ import {
   ScoutRecordSchemaType,
   getScoutById,
   createScoutRecord,
-} from "@/lib/firestore";
+} from "@b/lib/firestore";
 ```
 
 ### auth.ts (認証関連)
@@ -237,7 +237,7 @@ authMiddleware(c: Context, next: Next): Promise<void>
 **例:**
 
 ```typescript
-import { authMiddleware } from "@/lib/auth";
+import { authMiddleware } from "@b/lib/auth";
 
 const app = new Hono();
 app.use("/apiv1/*", authMiddleware);
@@ -266,7 +266,7 @@ function generateRandomId(length: number): string;
 **使用例:**
 
 ```typescript
-import { generateRandomId } from "@/lib/randomId";
+import { generateRandomId } from "@b/lib/randomId";
 
 // 30文字のランダムID生成
 const scoutId = generateRandomId(30);

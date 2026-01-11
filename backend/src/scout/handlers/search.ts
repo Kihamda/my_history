@@ -2,66 +2,147 @@
  * @fileoverview スカウト検索ハンドラー
  *
  * このファイルの責務:
- * - スカウト検索リクエストの処理
- * - Firestoreデータをクライアント向けレスポンス形式に変換
- * - サービス層への処理委譲
- * - 認証・認可チェックはサービス層で実施
- *
- * @module scout/handlers/search
+ * - 検索リクエストのバリデーション(Zodスキーマ)
+ * - 認可チェック(グループ所属確認)
+ * - Firestore検索の実行
+ * - クライアント向けレスポンス形式への変換
  */
 
-import { Context } from "../../apiRotuer";
-import { SearchRequestType, SearchResultType } from "../../types/api/search";
-import { ScoutUnitNameMap } from "../../types/common/scoutGroup";
-import { searchScoutsWithAuth } from "../services/scoutService";
-import { ScoutRecordSchemaType } from "../../lib/firestore/schemas";
+import { HTTPException } from "hono/http-exception";
+import { z } from "zod/v4";
+import type { Context } from "../../apiRotuer";
+import { ScoutUnitNameMap } from "../../lib/scoutGroup";
+import { db } from "../../lib/firestore/firestore";
+import {
+  CurrentUnitId,
+  type ScoutRecordSchemaType,
+} from "../../lib/firestore/schemas";
+
+// ========================================
+// API Schema
+// ========================================
+
 /**
- * スカウトを検索する
- *
- * 処理内容:
- * 1. 検索クエリを受け取る
- * 2. サービス層で検索を実行
- *    - ユーザーの所属グループを自動設定
- *    - グループメンバーシップ確認
- *    - Firestoreで検索実行
- * 3. 検索結果をクライアント向け形式に変換
- *    - 必要なフィールドのみを抽出
- *    - 隊名を日本語に変換
- * 4. 変換後のデータを返却
- *
- * @param query - 検索条件(名前、スカウトID、所属隊、ページ番号)
- * @param c - Honoコンテキスト
- * @returns 検索結果の配列(簡易版スカウト情報)
- * @throws {HTTPException} サービス層でエラーが発生した場合
+ * スカウト検索リクエストスキーマ
+ * - belongGroupId: 省略時はユーザーの所属グループ先頭を使用
+ */
+export const SearchRequest = z.object({
+  name: z.string().default(""),
+  scoutId: z.string().default(""),
+  currentUnit: z.array(CurrentUnitId).default([]),
+  page: z.coerce.number().min(1).default(1),
+  belongGroupId: z.string().default(""),
+});
+
+export type SearchRequestType = z.infer<typeof SearchRequest>;
+
+export const SearchResult = z.object({
+  id: z.string(),
+  name: z.string(),
+  scoutId: z.string(),
+  currentUnitId: CurrentUnitId,
+  currentUnitName: z.string(),
+});
+
+export type SearchResultType = z.infer<typeof SearchResult>;
+
+// ========================================
+// Internal
+// ========================================
+
+type ScoutSearchQuery = {
+  name?: string;
+  scoutId?: string;
+  currentUnit?: z.infer<typeof CurrentUnitId>[];
+  page: number;
+  belongGroupId?: string[];
+};
+
+const DEFAULT_LIMIT = 20;
+
+/**
+ * スカウトデータを検索(認可付き)
+ */
+export const searchScoutsWithAuth = async (
+  c: Context,
+  query: ScoutSearchQuery
+): Promise<Array<{ doc_id: string } & ScoutRecordSchemaType>> => {
+  const authedGroupId = query.belongGroupId?.filter(
+    (id) =>
+      c.var.user.auth.memberships.find((m) => m.id === id) ||
+      c.var.user.auth.shares.find((s) => s.id === id)
+  );
+
+  if (!authedGroupId || authedGroupId.length === 0) {
+    throw new HTTPException(403, {
+      message: "You do not have permission to search scouts in this group",
+    });
+  }
+
+  // operator の型定義はトップレベルキーしか許可しないけど
+  // Firestore 自体はネストパス指定できるので any で渡す
+  const where: any[] = [
+    {
+      field: "belongGroupId",
+      op: "in",
+      value: authedGroupId,
+    },
+  ];
+
+  if (query.name) {
+    where.push({ field: "personal.name", op: ">=", value: query.name });
+    where.push({
+      field: "personal.name",
+      op: "<=",
+      value: `${query.name}\uf8ff`,
+    });
+  }
+
+  if (query.scoutId) {
+    where.push({
+      field: "personal.scoutId",
+      op: "==",
+      value: query.scoutId,
+    });
+  }
+
+  if (query.currentUnit && query.currentUnit.length > 0) {
+    where.push({
+      field: "personal.currentUnitId",
+      op: "in",
+      value: query.currentUnit,
+    });
+  }
+
+  const offset = (query.page - 1) * DEFAULT_LIMIT;
+  return (await db().scouts.lis(where, DEFAULT_LIMIT, offset)) as any;
+};
+
+/**
+ * スカウトを検索する(ハンドラー本体)
  */
 const searchScouts = async (
   query: SearchRequestType,
   c: Context
 ): Promise<SearchResultType[]> => {
-  // サービス層で権限チェックと検索処理を実行
+  const normalizedName = query.name.trim();
+  const normalizedScoutId = query.scoutId.trim();
+
   const results = await searchScoutsWithAuth(c, {
-    name: query.name || undefined,
-    scoutId: query.scoutId || undefined,
+    name: normalizedName.length > 0 ? normalizedName : undefined,
+    scoutId: normalizedScoutId.length > 0 ? normalizedScoutId : undefined,
     currentUnit: query.currentUnit.length > 0 ? query.currentUnit : undefined,
     page: query.page,
+    belongGroupId: [query.belongGroupId], // 暫定的に要素１の配列で渡す
   });
 
-  // Firestoreデータをクライアント向けレスポンス形式に変換
-  return results.map((doc: ScoutRecordSchemaType & { id?: string }) => {
-    const result: SearchResultType = {
-      // FirestoreのドキュメントIDを設定
-      id: doc.id || "",
-
-      // 個人情報から必要なフィールドを抽出
-      name: doc.personal.name,
-      scoutId: doc.personal.scoutId,
-      currentUnitId: doc.personal.currentUnitId,
-
-      // 隊IDを日本語名に変換
-      currentUnitName: ScoutUnitNameMap[doc.personal.currentUnitId],
-    };
-    return result;
-  });
+  return results.map((doc) => ({
+    id: doc.doc_id,
+    name: doc.personal.name,
+    scoutId: doc.personal.scoutId,
+    currentUnitId: doc.personal.currentUnitId,
+    currentUnitName: ScoutUnitNameMap[doc.personal.currentUnitId],
+  }));
 };
 
 export default searchScouts;

@@ -1,13 +1,13 @@
 import Profile from "./edit/profile";
 import Units from "./edit/units";
-import FullWidthCardHeader from "@/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@f/style/fullWidthCardHeader";
 import { Link, useNavigate } from "react-router";
 import { Button } from "react-bootstrap";
 import { useState } from "react";
 import GinoshoList from "./edit/ginosho";
 import Events from "./edit/events";
-import type { ScoutData } from "@/lib/api/apiTypes";
-import { hc } from "@/lib/api/api";
+import type { ScoutData, ScoutUpdate } from "@f/lib/api/apiTypes";
+import { hc } from "@f/lib/api/api";
 
 const ScoutDetailEditor = ({
   scoutData,
@@ -40,21 +40,30 @@ const ScoutDetailEditor = ({
 
   //　保存時にプロファイルの変更をローカルで反映させるための関数
   const handleProfileChange = async () => {
-    const updatedData: ScoutData = {
-      authedIds: scoutData.authedIds,
-      personal: scoutDataPersonal,
-      unit: scoutDataUnit,
-      ginosho: scoutDataGinosho,
-      event: scoutDataEvents,
+    const updatedData: ScoutUpdate = {
+      json: {
+        data: {
+          personal: scoutDataPersonal,
+          unit: scoutDataUnit,
+          ginosho: scoutDataGinosho,
+          event: scoutDataEvents,
+          last_Edited: new Date().toISOString().split("T")[0],
+        },
+      },
+      param: { id: scoutID },
     };
 
-    const result = await hc.apiv1.scout[":id"].$put({
-      param: { id: scoutID },
-      json: { data: updatedData },
-    });
+    const result = await hc.apiv1.scout[":id"].$put(updatedData);
 
     if (result.status === 200) {
-      setScoutData(() => updatedData);
+      setScoutData({
+        belongGroupId: scoutData.belongGroupId,
+        personal: scoutDataPersonal,
+        unit: scoutDataUnit,
+        ginosho: scoutDataGinosho,
+        event: scoutDataEvents,
+        last_Edited: new Date().toISOString().split("T")[0],
+      });
       nav(`/app/scouts/${scoutID}/view`);
     }
   };

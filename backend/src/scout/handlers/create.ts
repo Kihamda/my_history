@@ -10,11 +10,11 @@
  * @module scout/handlers/create
  */
 
-import z from "zod";
-import { Context } from "../../apiRotuer";
-import { ScoutRecordSchemaType } from "../../lib/firestore/schemas";
+import { z } from "zod/v4";
+import type { Context } from "../../apiRotuer";
+import type { ScoutRecordSchemaType } from "../../lib/firestore/schemas";
 import { generateRandomId } from "../../lib/randomId";
-import { createScoutWithAuth } from "../services/scoutService";
+import { db } from "../../lib/firestore/firestore";
 /**
  * スカウト作成リクエストのバリデーションスキーマ
  *
@@ -56,8 +56,16 @@ export const createScout = async (
   data: ScoutCreateSchemaType,
   c: Context
 ): Promise<{ id: string; message: string }> => {
-  // 初期スカウトデータを構築
+  const role = c.var.user.fn.isInRoleOnGroup(data.belongGroupId, [
+    "ADMIN",
+    "EDIT",
+  ]);
 
+  if (role) {
+    throw new Error("You do not have permission to create scout in this group");
+  }
+
+  // 初期スカウトデータを構築
   // 学年計算用の基準生年月日を設定(4月1日基準)
   const birthDate =
     new Date(data.birthDate).getMonth() < 4
@@ -72,16 +80,13 @@ export const createScout = async (
   const age = birthDate - new Date().getFullYear();
 
   const newScout: ScoutRecordSchemaType = {
-    // 作成者をアクセス許可ユーザーに追加
-    authedIds: [],
-
     // 個人情報
+    belongGroupId: data.belongGroupId,
     personal: {
       name: data.name,
       scoutId: data.scoutId,
       birthDate: data.birthDate,
       joinedDate: ageMap[10],
-      belongGroupId: data.belongGroupId,
       currentUnitId: (() => {
         if (age < 8) {
           return "bvs";
@@ -142,8 +147,8 @@ export const createScout = async (
   // ランダムなスカウトIDを生成(30文字)
   const id = generateRandomId(30);
 
-  // サービス層で権限チェックとFirestore操作を実行
-  await createScoutWithAuth(c, id, newScout);
+  // データベースに保存(サービス層で権限チェックとFirestore操作を実行)
+  await db().scouts.set(id, newScout);
 
   // 成功レスポンスを返却
   return {

@@ -197,7 +197,7 @@ async function getScoutById(db, scoutId) {
 #### Firestore スキーマから型を生成
 
 ```typescript
-import { ScoutRecordSchema, ScoutRecordSchemaType } from '@/lib/firestore/schemas';
+import { ScoutRecordSchema, ScoutRecordSchemaType } from '@b/lib/firestore/schemas';
 
 // 型を使用
 const scout: ScoutRecordSchemaType = { ... };

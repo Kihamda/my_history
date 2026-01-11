@@ -1,7 +1,7 @@
 import { type FC, type FormEvent, useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
 import FormGroup from "../formGroup";
-import { resetPassword } from "@/authContext";
+import { resetPassword } from "@f/authContext";
 
 const Reset: FC = () => {
   const [email, setEmail] = useState("");

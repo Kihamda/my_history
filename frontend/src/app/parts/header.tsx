@@ -1,9 +1,59 @@
-import { NavLink } from "react-router";
+import { Link, NavLink } from "react-router";
 
-import { logout } from "@/authContext";
+import { logout } from "@f/authContext";
 import type { FC } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
+
+const UserDropdown: FC<{ name: string; showTop?: boolean }> = ({
+  name,
+  showTop = false,
+}) => {
+  const handleLogout = () => {
+    logout();
+  };
+
+  return (
+    <div className="dropdown">
+      <button
+        type="button"
+        className="btn btn-outline-secondary dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <FontAwesomeIcon icon={faUser} /> {name + "さん"}
+      </button>
+      <ul
+        className="dropdown-menu"
+        style={showTop ? { top: "auto", bottom: "110%" } : {}}
+      >
+        <li>
+          <Link className="dropdown-item" to="/app/setting">
+            設定
+          </Link>
+        </li>
+        <li>
+          <a
+            className="dropdown-item"
+            href="/help"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ヘルプページ
+          </a>
+        </li>
+        <li>
+          <hr className="dropdown-divider" />
+        </li>
+        <li>
+          <a className="dropdown-item" onClick={handleLogout}>
+            ログアウト
+          </a>
+        </li>
+      </ul>
+    </div>
+  );
+};
 
 const Header: FC<{ name: string; isLeader: boolean; isAdmin: boolean }> = ({
   name,
@@ -11,10 +61,6 @@ const Header: FC<{ name: string; isLeader: boolean; isAdmin: boolean }> = ({
   isAdmin,
 }) => {
   // ログアウト処理
-  const handleLogout = () => {
-    logout();
-  };
-
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom border-bottom-dark fixed-top">
       <div className="container">
@@ -76,58 +122,26 @@ const Header: FC<{ name: string; isLeader: boolean; isAdmin: boolean }> = ({
                   </NavLink>
                 </li>
               )}
-              <li className="nav-item" data-bs-dismiss="offcanvas">
-                <NavLink className="nav-link" to="/app/setting">
-                  設定
-                </NavLink>
-              </li>
-              <li className="nav-item" data-bs-dismiss="offcanvas">
-                <a
-                  className="nav-link"
-                  href="https://kihamdanet.notion.site/13cfca102538805c9daac48b39574ef7"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  ヘルプページ
-                </a>
-              </li>
             </ul>
-            <ul className="navbar-nav ms-auto d-none d-lg-flex dropdown">
-              <button
-                type="button"
-                className="btn btn-outline-secondary dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <FontAwesomeIcon icon={faUser} /> {name + "さん"}
-              </button>
-              <ul className="dropdown-menu me-3">
-                <li>
-                  <a className="dropdown-item" onClick={handleLogout}>
-                    ログアウト
-                  </a>
-                </li>
-              </ul>
+            <ul className="navbar-nav ms-auto d-none d-lg-flex">
+              <UserDropdown name={name} />
             </ul>
           </div>
           <div className="offcanvas-footer d-lg-none text-center">
             <div className="d-grid align-content-center justify-content-center mb-3">
-              <span>{name + "さん"}</span>
-              <button className="btn btn-primary" onClick={handleLogout}>
-                ログアウト
-              </button>
+              <UserDropdown name={name} showTop />
             </div>
             <div className="row">
               <div className="col-12">
                 <p>
-                  Copyright © 2024
+                  Copyright © 2024-2025
                   <a
                     className="noAtag ms-3"
                     href="https://kihamda.net/"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Dai.M
+                    Made with ❤ by Kihamda.NET
                   </a>
                 </p>
               </div>

@@ -1,9 +1,9 @@
-import InputGroupUI from "@/style/imputGroupUI";
-import type { ScoutData } from "@/lib/api/apiTypes";
-import { ScoutUnitNameMap, UnitIdList } from "@/lib/clientCommons/scout";
+import InputGroupUI from "@f/style/imputGroupUI";
+import type { ScoutData } from "@f/lib/api/apiTypes";
+import { ScoutUnitNameMap, UnitIdList } from "@f/lib/clientCommons/scout";
 
 import { Button, InputGroup } from "react-bootstrap";
-import { gradeMap } from "@/lib/master/grades";
+import { gradeMap } from "@f/lib/master/grades";
 
 const Units = ({
   scoutDataUnit,
@@ -15,13 +15,15 @@ const Units = ({
   return (
     <div className="row">
       {UnitIdList.map((unit, index) => {
+        const master = gradeMap[unit];
         const data = scoutDataUnit[unit];
+        const name = ScoutUnitNameMap[unit];
 
         return (
           <div key={index} className="mt-3 col-12">
             <div className="card">
               <div className="card-header">
-                <h5 className="mb-0">{ScoutUnitNameMap[unit]}</h5>
+                <h5 className="mb-0">{name}</h5>
               </div>
               <div className="card-body">
                 <div className="row">
@@ -51,52 +53,91 @@ const Units = ({
                         }}
                       />
                     </div>
-                    {data.experienced && data.grade.length > 0 && (
+                    {data.experienced && (
                       <div className="mb-3">
                         <h5>進級章</h5>
 
-                        {data.grade.map((grade, index) => (
-                          <InputGroupUI
-                            key={index}
-                            label={
-                              gradeMap[unit][grade.uniqueId] +
-                              (grade.completed ? " (修了)" : " (未修了)")
-                            }
-                            chkbox={grade.completed}
-                            setChkboxFunc={(completed) => {
-                              setScoutDataUnit((prev) => {
-                                return {
-                                  ...prev,
-                                  [unit]: {
-                                    ...data,
-                                    grade: data.grade.map((g) =>
-                                      g.uniqueId === grade.uniqueId
-                                        ? { ...g, completed }
-                                        : g
-                                    ),
-                                  },
-                                };
-                              });
-                            }}
-                            value={grade.completedDate}
-                            setValueFunc={(date) => {
-                              setScoutDataUnit((prev) => {
-                                return {
-                                  ...prev,
-                                  [unit]: {
-                                    ...data,
-                                    grade: data.grade.map((g) =>
-                                      g.uniqueId === grade.uniqueId
-                                        ? { ...g, completedDate: date }
-                                        : g
-                                    ),
-                                  },
-                                };
-                              });
-                            }}
-                            type="date"
-                          />
-                        ))}
+                        {Object.entries(master).map(([key, value]) => {
+                          const grade = data.grade.find(
+                            (g) => g.uniqueId === key
+                          ) || {
+                            uniqueId: key,
+                            completed: false,
+                            completedDate: "",
+                            details: value.details.map(() => ({
+                              done: false,
+                              achievedDate: "",
+                            })),
+                          };
+
+                          return (
+                            <InputGroupUI
+                              key={index + "_" + key}
+                              label={
+                                value.name +
+                                (grade.completed ? " (修了)" : " (未修了)")
+                              }
+                              chkbox={grade.completed}
+                              setChkboxFunc={(completed) => {
+                                setScoutDataUnit((prev) => {
+                                  if (
+                                    data.grade.findIndex(
+                                      (g) => g.uniqueId === key
+                                    ) === -1
+                                  ) {
+                                    // 新規追加
+                                    return {
+                                      ...prev,
+                                      [unit]: {
+                                        ...data,
+                                        grade: [
+                                          ...data.grade,
+                                          {
+                                            ...grade,
+                                            completed: completed ? true : false,
+                                          },
+                                        ],
+                                      },
+                                    };
+                                  }
+                                  return {
+                                    ...prev,
+                                    [unit]: {
+                                      ...data,
+                                      grade: data.grade.map((g) =>
+                                        g.uniqueId === grade.uniqueId
+                                          ? {
+                                              ...g,
+                                              completed: completed
+                                                ? true
+                                                : false,
+                                            }
+                                          : g
+                                      ),
+                                    },
+                                  };
+                                });
+                              }}
+                              value={grade.completedDate}
+                              setValueFunc={(date) => {
+                                setScoutDataUnit((prev) => {
+                                  return {
+                                    ...prev,
+                                    [unit]: {
+                                      ...data,
+                                      grade: data.grade.map((g) =>
+                                        g.uniqueId === grade.uniqueId
+                                          ? { ...g, completedDate: date }
+                                          : g
+                                      ),
+                                    },
+                                  };
+                                });
+                              }}
+                              type="date"
+                            />
+                          );
+                        })}
                       </div>
                     )}
                   </div>

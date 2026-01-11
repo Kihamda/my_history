@@ -1,5 +1,5 @@
-import type { ScoutData } from "@/lib/api/apiTypes";
-import { ScoutEventTypeMap, type ScoutEventType } from "@/lib/master/events";
+import type { ScoutData } from "@f/lib/api/apiTypes";
+import { ScoutEventTypeMap, type ScoutEventType } from "@f/lib/master/events";
 import { useState } from "react";
 import { Button, InputGroup } from "react-bootstrap";
 
@@ -20,8 +20,8 @@ const Events = ({
     // 新規作成処理
     const newData: ScoutData["event"][number] = {
       name: "",
-      startDate: new Date().toUTCString().split("T")[0],
-      endDate: new Date().toUTCString().split("T")[0],
+      startDate: new Date().toISOString().split("T")[0],
+      endDate: new Date().toISOString().split("T")[0],
       description: "",
       type: eventFilter || "camp",
     };

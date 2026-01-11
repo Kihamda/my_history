@@ -13,14 +13,22 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  type User,
 } from "firebase/auth";
 import { auth } from "./firebase";
-import LoadingSplash from "@/style/loadingSplash";
-import { setHcClient, hc } from "@/lib/api/api";
+import LoadingSplash from "@f/style/loadingSplash";
+import { setHcClient, hc } from "@f/lib/api/api";
 import type { UserProfile } from "./lib/api/apiTypes";
+import { raiseError } from "./errorHandler";
+import { getBrowserSettings } from "./lib/localCache";
+
+interface UserProfileContext extends UserProfile {
+  currentGroup: UserProfile["auth"]["memberships"][number] | null;
+}
 
 interface AuthContextValue {
-  user: UserProfile | null;
+  user: UserProfileContext | null;
+  token: User | null;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -29,30 +37,58 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<UserProfileContext | null>(null);
+  const [token, setToken] = useState<User | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  //　認証状態の変化を監視
+  // token:null : ログアウト
+  // token:email_Verified=false : メール未認証
+  // token:email_Verified=true : 通常ログイン済み
+  // user:null : ユーザーデータ未取得または存在しない
+  // user:UserProfile : ユーザーデータ取得済み
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (!fbUser) {
         setUser(null);
+        setToken(null);
         setHcClient();
         setIsLoaded(true);
         return;
       }
       try {
         setHcClient(await getIdToken(fbUser));
+        setToken(fbUser);
 
-        const user = await hc.apiv1.user.$get(); // APIからユーザーデータを取得
+        // APIからユーザーデータを取得
+        const user = await hc.apiv1.user.me.$get();
 
         if (user.status === 404) {
           setUser(null);
+          raiseError("ユーザーデータが見つかりませんでした。");
         } else {
+          //　ユーザーデータを状態に保存
           const userData: UserProfile = await user.json();
-          setUser(userData);
+          const currentGroupSlotId = getBrowserSettings().currentGroupSlotId;
+          if (currentGroupSlotId) {
+            const currentGroup = userData.auth.memberships.find(
+              (membership) => membership.id === currentGroupSlotId
+            );
+            setUser({
+              ...userData,
+              currentGroup: currentGroup || null,
+            });
+          } else {
+            setUser({
+              ...userData,
+              currentGroup: null,
+            });
+          }
         }
       } catch (e) {
         console.error("Failed to init auth context:", e);
         setUser(null);
+        raiseError("ユーザーデータの取得に失敗しました。");
       } finally {
         setIsLoaded(true);
       }
@@ -74,7 +110,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return <LoadingSplash message="ユーザー情報を読み込み中..." />;
   } else {
     return (
-      <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
+      <AuthContext.Provider value={{ user, token }}>
+        {children}
+      </AuthContext.Provider>
     );
   }
 };

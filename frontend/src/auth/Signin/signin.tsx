@@ -1,7 +1,7 @@
 import { type FC, type FormEvent, useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
 import FormGroup from "../formGroup";
-import { login } from "@/authContext";
+import { login } from "@f/authContext";
 
 /**
  * @fileoverview

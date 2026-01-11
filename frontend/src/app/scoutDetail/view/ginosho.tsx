@@ -1,7 +1,7 @@
-import ShowData from "@/style/showData";
-import { usePopup } from "@/style/fullscreanPopup";
-import type { ScoutData } from "@/lib/api/apiTypes";
-import ginoshoMap from "@/lib/master/ginoshos";
+import ShowData from "@f/style/showData";
+import { usePopup } from "@f/style/fullscreanPopup";
+import type { ScoutData } from "@f/lib/api/apiTypes";
+import ginoshoMap from "@f/lib/master/ginoshos";
 
 type Ginosho = ScoutData["ginosho"][number];
 

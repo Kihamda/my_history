@@ -1,4 +1,4 @@
-import type { ScoutSearchResponse } from "@/lib/api/apiTypes";
+import type { ScoutSearchResponse } from "@f/lib/api/apiTypes";
 
 const SearchResultCard = ({
   result,

@@ -1,9 +1,8 @@
 import type { FirebaseIdToken } from "firebase-auth-cloudflare-workers";
 import { Auth, WorkersKVStoreSingle } from "firebase-auth-cloudflare-workers";
 import type { KVNamespace } from "@cloudflare/workers-types";
-import { Context } from "../apiRotuer";
+import type { Context } from "../apiRotuer";
 
-// eslint-disable-next-line consistent-return
 export const authorize = async (c: Context, next: () => Promise<void>) => {
   const header = c.req.header("Authorization");
   if (header == undefined) {
@@ -18,8 +17,7 @@ export const authorize = async (c: Context, next: () => Promise<void>) => {
     return c.json("EMAIL_VERIFY_MISSING", 403);
   }
 
-  // Optionally attach token to context for downstream handlers
-  c.set("authToken", token);
+  c.set("token", token);
   await next();
 };
 

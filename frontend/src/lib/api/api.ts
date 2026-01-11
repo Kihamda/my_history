@@ -2,11 +2,11 @@ import {
   createClient,
   type ClientType,
   type InferResponseType,
-} from "../../../../backend/src/client";
+} from "@b/client";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
   ? import.meta.env.VITE_API_BASE_URL
-  : "http://localhost:8787";
+  : import.meta.env.VITE_API_URL;
 
 export let hc: ClientType = createClient(BASE_URL); // APIクライアントを格納する変数
 export const setHcClient = (token?: string) => {

@@ -4,19 +4,19 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
+    "typecheck": "tsc --noEmit",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
-    "@hono/zod-validator": "^0.7.4",
+    "@hono/zod-validator": "^0.7.6",
     "firebase-auth-cloudflare-workers": "^2.0.6",
     "firebase-rest-firestore": "^1.5.0",
-    "hono": "^4.10.0",
-    "typescript": "^5.9.2",
-    "zod": "^3.23.8"
+    "hono": "^4.11.3",
+    "zod": "^4.3.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20251001.0",
-    "tsc": "^2.0.4",
-    "wrangler": "^4.46.0"
+    "@cloudflare/workers-types": "^4.20260103.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.54.0"
   }
 }

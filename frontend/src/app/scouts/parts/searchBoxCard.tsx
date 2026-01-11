@@ -1,6 +1,6 @@
-import type { ScoutSearchRequest } from "@/lib/api/apiTypes";
-import { ScoutUnitNameMap } from "@/lib/clientCommons/scout";
-import UnitSelector from "@/lib/components/unitSelector";
+import type { ScoutSearchRequest } from "@f/lib/api/apiTypes";
+import { ScoutUnitNameMap } from "@f/lib/clientCommons/scout";
+import UnitSelector from "@f/lib/components/unitSelector";
 import { useState } from "react";
 import { Card, FormControl, InputGroup } from "react-bootstrap";
 

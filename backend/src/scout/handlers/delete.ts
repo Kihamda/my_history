@@ -1,16 +1,5 @@
-/**
- * @fileoverview スカウト削除ハンドラー
- *
- * このファイルの責務:
- * - スカウト削除リクエストの処理
- * - サービス層への処理委譲
- * - 認証・認可チェック(ADMIN権限必須)はサービス層で実施
- *
- * @module scout/handlers/delete
- */
-
-import { Context } from "../../apiRotuer";
-import { deleteScoutWithAuth } from "../services/scoutService";
+import type { Context } from "../../apiRotuer";
+import { db } from "../../lib/firestore/firestore";
 /**
  * スカウトデータを削除する
  *
@@ -34,8 +23,24 @@ export const deleteScout = async (
   id: string,
   c: Context
 ): Promise<{ message: string }> => {
-  // サービス層で権限チェック(ADMIN必須)と削除処理を実行
-  await deleteScoutWithAuth(c, id);
+  // 権限チェック(ADMIN必須)と削除処理を実行
+  const target = await db().scouts.get(id);
+
+  if (!target) {
+    throw new Error("Scout not found");
+  }
+
+  const group = c.var.user.auth.memberships;
+
+  const isAdmin = group.find(
+    (m) => m.id === target.belongGroupId && m.role === "ADMIN"
+  );
+
+  if (!isAdmin) {
+    throw new Error("You do not have permission to delete this scout");
+  }
+
+  await db().scouts.del(id);
 
   // 成功レスポンスを返却
   return {

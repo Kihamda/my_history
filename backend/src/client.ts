@@ -1,13 +1,17 @@
 import { hc, type InferResponseType } from "hono/client";
-import type { AppType } from "./index";
+import app from "./index";
+
+type Client = ReturnType<typeof hc<typeof app>>;
+const hcWithType = (...args: Parameters<typeof hc>): Client =>
+  hc<typeof app>(...args);
 
 export type ClientType = ReturnType<typeof createClient>;
 // 認証なしでバックエンドにアクセスするための最小クライアント生成。
 export const createClient = (baseUrl: string, token?: string) => {
   if (!token) {
-    return hc<AppType>(baseUrl);
+    return hcWithType(baseUrl);
   }
-  return hc<AppType>(baseUrl, {
+  return hcWithType(baseUrl, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -16,4 +20,4 @@ export const createClient = (baseUrl: string, token?: string) => {
 };
 
 export type { InferResponseType };
-export type { AppType } from "./index";
+export type { Client };
