@@ -1,5 +1,5 @@
 import SidebarUI from "@f/lib/components/sidebar";
-import FullWidthCardHeader from "@f/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import MainPage from "./page/main";
 
 const Setting = () => {

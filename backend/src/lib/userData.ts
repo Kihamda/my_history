@@ -78,6 +78,7 @@ export const loadUserData = async (c: Context, next: () => Promise<void>) => {
     },
   };
 
+  console.log("Loaded user data:", newUserData);
   c.set("user", newUserData);
   await next();
 };

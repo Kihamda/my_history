@@ -4,24 +4,35 @@ import SearchboxCard from "./parts/searchBoxCard";
 import queryParser from "./queryParser";
 import SearchResultCard from "./parts/result";
 import { getSearchQueryCache, setSearchQueryCache } from "@f/lib/localCache";
-import FullWidthCardHeader from "@f/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import { getResultsCache, setResultsCache } from "./cache";
 import { raiseError } from "@f/errorHandler";
-import LoadingSplash from "@f/style/loadingSplash";
+import LoadingSplash from "@f/lib/style/loadingSplash";
 import type {
   ScoutSearchRequest,
   ScoutSearchResponse,
 } from "@f/lib/api/apiTypes";
 import { hc } from "@f/lib/api/api";
+import { useAuthContext } from "@f/authContext";
 const Scouts: React.FC = () => {
   // 遷移元からの検索名を取得
   const searchBox = (useLocation().state?.searchName || "") as string;
+  const belongGroupId = useAuthContext().user.currentGroup?.id;
+
+  if (!belongGroupId) {
+    return (
+      <div className="text-center mt-3">
+        所属グループが設定されていないため、スカウトの検索はできません。
+      </div>
+    );
+  }
 
   // 検索クエリの初期化
   let initialSearchQuery: ScoutSearchRequest = getSearchQueryCache() || {
     scoutId: "",
     name: "",
     currentUnit: [],
+    belongGroupId,
   };
 
   // 検索窓から来た人用
@@ -32,6 +43,7 @@ const Scouts: React.FC = () => {
       scoutId: scoutId,
       name: name,
       currentUnit: currentUnit,
+      belongGroupId,
     };
   }
 
@@ -44,7 +56,11 @@ const Scouts: React.FC = () => {
 
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  const handleSearch = async (query: ScoutSearchRequest) => {
+  const handleSearch = async (queryBefore: ScoutSearchRequest) => {
+    const query = {
+      ...queryBefore,
+      belongGroupId,
+    };
     setIsPending(true);
     setSearchQuery(query);
     setSearchQueryCache(query);

@@ -57,6 +57,7 @@ export const getUserHandler = async (c: Context): Promise<UserProfileType> => {
         // グループ名を含む共有情報を構築
         shares: user.auth.shares,
         emailVerified: token.email_verified || false,
+        isGod: user.auth.isGod || false,
       },
     };
     return data;
@@ -98,6 +99,7 @@ export const getUserHandler = async (c: Context): Promise<UserProfileType> => {
       // グループ名を含む共有情報を構築
       shares: user.auth.shares,
       emailVerified: token.email_verified || false,
+      isGod: user.auth.isGod || false,
     },
   };
 

@@ -1,13 +1,12 @@
 import { Link, NavLink } from "react-router";
 
-import { logout, useAuthContext } from "@f/authContext";
+import { logout } from "@f/authContext";
 import type { FC } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 
-const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
+const UserDropdown: FC<{ name: string; showTop?: boolean }> = ({
   name,
-  isGod,
   showTop = false,
 }) => {
   const handleLogout = () => {
@@ -29,27 +28,10 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
         style={showTop ? { top: "auto", bottom: "110%" } : {}}
       >
         <li>
-          <Link className="dropdown-item" to="/app/setting">
-            設定
+          <Link className="dropdown-item" to="/app/home">
+            一般モード
           </Link>
         </li>
-        <li>
-          <a
-            className="dropdown-item"
-            href="/help"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            ヘルプページ
-          </a>
-        </li>
-        {isGod && (
-          <li>
-            <Link className="dropdown-item" to="/god">
-              God Mode
-            </Link>
-          </li>
-        )}
         <li>
           <hr className="dropdown-divider" />
         </li>
@@ -63,20 +45,14 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
   );
 };
 
-const Header: FC = () => {
-  const user = useAuthContext().user;
-
-  const isLeader = user.currentGroup != undefined || false; // リーダーかどうかのフラグ。
-  const isAdmin = user.currentGroup?.role == "ADMIN" || false;
-  const isGod = user.auth.isGod || false;
-  const name = user.profile.displayName || "名称未設定";
+const HeaderGod: FC<{ name: string }> = ({ name }) => {
   // ログアウト処理
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom border-bottom-dark fixed-top">
       <div className="container">
         <NavLink
           className="navbar-brand fw-bold d-flex align-items-center"
-          to="/app/home"
+          to="/god/home"
         >
           <img
             src="/logos/nohaikei.svg"
@@ -84,6 +60,7 @@ const Header: FC = () => {
             className="d-inline-block align-text-top"
             style={{ height: "1.9rem" }}
           />
+          <span className="ms-2 d-none d-md-inline text-danger">God Mode</span>
         </NavLink>
 
         <button
@@ -114,47 +91,28 @@ const Header: FC = () => {
           <div className="offcanvas-body">
             <ul className="navbar-nav">
               <li className="nav-item" data-bs-dismiss="offcanvas">
-                <NavLink className="nav-link" to="/app/home">
+                <NavLink className="nav-link" to="/god/home">
                   ホーム
                 </NavLink>
               </li>
-              {isLeader && (
-                <li className="nav-item" data-bs-dismiss="offcanvas">
-                  <NavLink className="nav-link" to="/app/scouts">
-                    スカウト検索
-                  </NavLink>
-                </li>
-              )}
-              {isAdmin && (
-                <li className="nav-item" data-bs-dismiss="offcanvas">
-                  <NavLink className="nav-link" to="/app/group">
-                    グループ管理
-                  </NavLink>
-                </li>
-              )}
+              <li className="nav-item" data-bs-dismiss="offcanvas">
+                <NavLink className="nav-link" to="/god/scouts">
+                  スカウト検索
+                </NavLink>
+              </li>
+              <li className="nav-item" data-bs-dismiss="offcanvas">
+                <NavLink className="nav-link" to="/god/group">
+                  グループ管理
+                </NavLink>
+              </li>
             </ul>
             <ul className="navbar-nav ms-auto d-none d-lg-flex">
-              <UserDropdown name={name} isGod={isGod} />
+              <UserDropdown name={name} />
             </ul>
           </div>
           <div className="offcanvas-footer d-lg-none text-center">
             <div className="d-grid align-content-center justify-content-center mb-3">
-              <UserDropdown name={name} isGod={isGod} showTop />
-            </div>
-            <div className="row">
-              <div className="col-12">
-                <p>
-                  Copyright © 2024-2025
-                  <a
-                    className="noAtag ms-3"
-                    href="https://kihamda.net/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Made with ❤ by Kihamda.NET
-                  </a>
-                </p>
-              </div>
+              <UserDropdown name={name} showTop />
             </div>
           </div>
         </div>
@@ -163,4 +121,4 @@ const Header: FC = () => {
   );
 };
 
-export default Header;
+export default HeaderGod;

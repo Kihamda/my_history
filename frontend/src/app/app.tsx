@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from "react-router";
 import Header from "./parts/header";
 
 import { lazy, Suspense } from "react";
-import LoadingSplash from "@f/style/loadingSplash";
+import LoadingSplash from "@f/lib/style/loadingSplash";
 
 // 遅延読み込みするコンポーネント
 const LeaderHome = lazy(() => import("./home/leaderHome"));
@@ -15,19 +15,20 @@ const Setting = lazy(() => import("./setting/setting"));
 
 const App = () => {
   // ログアウト状態なのに/appにアクセスした人をログインページに送還する
-  const user = useAuthContext()?.user;
+  // これ以降はuseAuthContext()は(引数がfalseでなくても)必ず値を返すから安心して使ってよい
+  const { user, token } = useAuthContext(false) || {};
+  if (!token) {
+    return <Navigate to="/auth/login" replace />;
+  }
   if (!user) {
-    return <Navigate to="/auth/login" />;
+    return <Navigate to="/auth/setup" replace />;
   }
 
-  const userName = user.profile.displayName || "名称未設定";
-  const isAdmin = user.currentGroup?.role == "ADMIN" || false; // 管理者かどうかのフラグ。userオブジェクトのisAdminプロパティを使用して判定
   const isLeader = user.currentGroup != undefined || false; // リーダーかどうかのフラグ。
-  // const isEditable = user.currentGroup?.isEditable || false; // スカウトを編集可能かどうかのフラグ。userオブジェクトのisEditableプロパティを使用して判定
 
   return (
     <>
-      <Header name={userName} isLeader={isLeader} isAdmin={isAdmin} />
+      <Header />
       <div className="container mb-3" style={{ marginTop: "4.5rem" }}>
         <Suspense fallback={<LoadingSplash message="読み込み中" />}>
           <Routes>

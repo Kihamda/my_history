@@ -30,7 +30,6 @@ import {
   getGroupMembers,
 } from "./handler";
 import { genIdSchema } from "@b/lib/randomId";
-import { loadUserData } from "@b/lib/userData";
 
 const CreateGroupInviteSchema = z.object({
   targetUid: genIdSchema,
@@ -38,7 +37,6 @@ const CreateGroupInviteSchema = z.object({
 });
 
 const groupRouter = new Hono<AppContext>()
-  .use("*", loadUserData)
   /**
    * GET /:id - グループ取得
    *

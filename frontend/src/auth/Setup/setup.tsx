@@ -37,9 +37,8 @@ const Setup: React.FC = () => {
           statusMessage: statusMessage,
         },
       });
-      alert(
-        "ユーザーが成功裏に作成されました。メールアドレス認証のためのメールを送信したので、URLをクリックして続行してください。"
-      );
+      alert("ユーザープロフィールが作成されました。");
+      window.location.reload();
     } catch (error) {
       alert("ユーザーの作成中にエラーが発生しました。");
       console.error(error);
@@ -73,7 +72,6 @@ const Setup: React.FC = () => {
             placeholder="ステータスメッセージを入力してください"
             value={statusMessage}
             onChange={(e) => setStatusMessage(e.target.value)}
-            required
           />
         </FormGroup>
         <div className="w-100 text-center">

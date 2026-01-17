@@ -1,6 +1,6 @@
 import type { ScoutData } from "@f/lib/api/apiTypes";
 import { ScoutUnitNameMap } from "@f/lib/clientCommons/scout";
-import InputGroupUI from "@f/style/imputGroupUI";
+import InputGroupUI from "@f/lib/style/imputGroupUI";
 import { InputGroup } from "react-bootstrap";
 
 const Profile = ({

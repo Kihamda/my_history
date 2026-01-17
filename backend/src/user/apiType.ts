@@ -55,6 +55,7 @@ export const UserProfile = z.object({
         role: ShareRoleSchema,
       })
     ),
+    isGod: z.boolean(),
   }),
   profile: z.object({
     displayName: z.string().min(2).max(100),

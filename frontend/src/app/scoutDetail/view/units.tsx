@@ -1,7 +1,7 @@
 import type { ScoutData } from "@f/lib/api/apiTypes";
 import { ScoutUnitNameMap, UnitIdList } from "@f/lib/clientCommons/scout";
 import { gradeMap } from "@f/lib/master/grades";
-import ShowData from "@f/style/showData";
+import ShowData from "@f/lib/style/showData";
 
 const Units = ({
   scoutDataUnit,

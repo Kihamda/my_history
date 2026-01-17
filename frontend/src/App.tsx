@@ -9,12 +9,13 @@ import { ErrorProvider } from "./errorHandler";
  * 各コンポーネントはパフォーマンス向上のため遅延読み込みする
  */
 import { lazy, Suspense, useEffect } from "react";
-import LoadingSplash from "@f/style/loadingSplash";
+import LoadingSplash from "@f/lib/style/loadingSplash";
 
 const Auth = lazy(() => import("@f/auth/auth"));
 const AppPage = lazy(() => import("@f/app/app"));
 const AuthProvider = lazy(() => import("@f/authContext"));
-const PopupProvider = lazy(() => import("@f/style/fullscreanPopup"));
+const PopupProvider = lazy(() => import("@f/lib/style/fullscreanPopup"));
+const GodMode = lazy(() => import("@f/god/god"));
 
 // ここで/〇〇/の変更が生じるときはfirebase.jsonのrewritesも変更すること
 
@@ -30,6 +31,7 @@ function MainApp() {
               <Route path="*" element={<NotFound />} />
               <Route path="/auth/*" element={<Auth />} />
               <Route path="/app/*" element={<AppPage />} />
+              <Route path="/god/*" element={<GodMode />} />
             </Routes>
           </AuthProvider>
         </PopupProvider>

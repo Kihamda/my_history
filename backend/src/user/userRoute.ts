@@ -15,15 +15,27 @@ import { genIdSchema } from "@b/lib/randomId";
 import { loadUserData } from "@b/lib/userData";
 
 const userRouter = new Hono<AppContext>()
+  // ユーザー新規作成 (初回登録時)
+  .post(
+    "/createUser",
+    zValidator("json", UserRecordSchema.shape.profile),
+    async (c) => {
+      const data = c.req.valid("json");
+      const result = await createUserHandler(c, data);
+      return c.json(result, 201);
+    }
+  )
+  // これだけはユーザーレコードによる認証不要(ないから)
+  // これからは必要
+  .use("*", loadUserData)
+
   // ルート (GET /user) は認証済みユーザーの情報を返す
-  .use("/me", loadUserData)
   .get("/me", async (c) => {
     const userData = await getUserHandler(c);
     return c.json(userData);
   })
 
   // メールアドレスから検索
-  .use("/lookupByEmail", loadUserData)
   .post(
     "/lookupByEmail",
     zValidator("json", z.object({ email: z.email() })),
@@ -35,7 +47,6 @@ const userRouter = new Hono<AppContext>()
   )
 
   // グループ招待受諾
-  .use("/acceptInvite", loadUserData)
   .post(
     "/acceptInvite",
     zValidator("json", z.object({ groupCode: genIdSchema })),
@@ -46,19 +57,7 @@ const userRouter = new Hono<AppContext>()
     }
   )
 
-  // ユーザー新規作成 (初回登録時)
-  .post(
-    "/createUser",
-    zValidator("json", UserRecordSchema.shape.profile),
-    async (c) => {
-      const data = c.req.valid("json");
-      const result = await createUserHandler(c, data);
-      return c.json(result, 201);
-    }
-  )
-
   // ユーザー情報更新
-  .use("/updateProfile", loadUserData)
   .post(
     "/updateProfile",
     zValidator("json", UserRecordSchema.shape.profile),
@@ -70,7 +69,6 @@ const userRouter = new Hono<AppContext>()
   )
 
   // ユーザー削除
-  .use("/delete", loadUserData)
   .delete("/delete", async (c) => {
     const result = await deleteUserHandler(c);
     return c.json(result);

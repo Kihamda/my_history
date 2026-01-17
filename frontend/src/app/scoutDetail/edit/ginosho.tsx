@@ -1,9 +1,9 @@
-import { usePopup } from "@f/style/fullscreanPopup";
+import { usePopup } from "@f/lib/style/fullscreanPopup";
 import { Button, InputGroup } from "react-bootstrap";
 import { Suspense, useState } from "react";
-import LoadingSplash from "@f/style/loadingSplash";
-import InputGroupUI from "@f/style/imputGroupUI";
-import ShowData from "@f/style/showData";
+import LoadingSplash from "@f/lib/style/loadingSplash";
+import InputGroupUI from "@f/lib/style/imputGroupUI";
+import ShowData from "@f/lib/style/showData";
 import type { ScoutData } from "@f/lib/api/apiTypes";
 import ginoshoMap from "@f/lib/master/ginoshos";
 

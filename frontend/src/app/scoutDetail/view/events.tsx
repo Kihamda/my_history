@@ -1,6 +1,6 @@
 import type { ScoutData } from "@f/lib/api/apiTypes";
 import { ScoutEventTypeMap, type ScoutEventType } from "@f/lib/master/events";
-import ShowData from "@f/style/showData";
+import ShowData from "@f/lib/style/showData";
 
 import { useState } from "react";
 

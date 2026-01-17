@@ -5,7 +5,8 @@ import userRouter from "./user/userRoute";
 import scoutRouter from "./scout/scoutRoute";
 import groupRouter from "./group/groupRoute";
 import type { FirebaseIdToken } from "firebase-auth-cloudflare-workers";
-import type { UserDataContext } from "./lib/userData";
+import { loadUserData, type UserDataContext } from "./lib/userData";
+import godRouter from "./god/godRoute";
 
 export interface AppContext {
   Bindings: FirebaseAuthBindings;
@@ -30,10 +31,14 @@ const apiRouter = new Hono<AppContext>()
   // ユーザー情報
   .route("/user", userRouter)
 
+  .use("*", loadUserData)
   // スカウト情報
   .route("/scout", scoutRouter)
 
   // グループ情報
-  .route("/group", groupRouter);
+  .route("/group", groupRouter)
+
+  // ゴッドモード
+  .route("/god", godRouter);
 
 export default apiRouter;

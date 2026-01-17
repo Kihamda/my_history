@@ -9,6 +9,7 @@ export const authorize = async (c: Context, next: () => Promise<void>) => {
     return c.json("UNAUTHORIZED", 401);
   }
   const token = await verifyJWT(header, c.env);
+  console.log("Authorization Token:", token);
   if (token == null) {
     return c.json("UNAUTHORIZED", 401);
   }

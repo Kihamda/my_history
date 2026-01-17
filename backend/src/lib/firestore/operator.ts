@@ -2,6 +2,9 @@ import { FirestoreClient } from "firebase-rest-firestore";
 import { z, ZodType } from "zod/v4";
 import { generateRandomId } from "../randomId";
 
+// Firestoreクエリのデフォルト上限値
+const DEFAULT_LIMIT = 20;
+
 // ファッキン黒魔術: FirestoreのCRUD操作を型安全に行うための汎用型定義
 type WhereOp =
   | "=="
@@ -144,7 +147,7 @@ type Operator<T extends Record<string, unknown>> = {
   get: (id: string) => Promise<T | null>;
   lis: (
     query: QueryFilter<T>[],
-    limit: number,
+    limit?: number,
     offset?: number
   ) => Promise<FirestoreDoc<T>[]>;
 };
@@ -178,7 +181,7 @@ const createSingleSchemeOperator = <T extends Record<string, unknown>>(
     if (!snap.exists) return null;
     return schema.parse(snap.data());
   },
-  lis: async (query, limit, offset = 0) => {
+  lis: async (query, limit = DEFAULT_LIMIT, offset = 0) => {
     const results = (await db.query(collection, {
       where: query.map((q) => ({
         field: q.field as string,

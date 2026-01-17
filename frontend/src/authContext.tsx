@@ -16,7 +16,7 @@ import {
   type User,
 } from "firebase/auth";
 import { auth } from "./firebase";
-import LoadingSplash from "@f/style/loadingSplash";
+import LoadingSplash from "@f/lib/style/loadingSplash";
 import { setHcClient, hc } from "@f/lib/api/api";
 import type { UserProfile } from "./lib/api/apiTypes";
 import { raiseError } from "./errorHandler";
@@ -29,6 +29,11 @@ interface UserProfileContext extends UserProfile {
 interface AuthContextValue {
   user: UserProfileContext | null;
   token: User | null;
+}
+
+interface SafeAuthContextValue {
+  user: UserProfileContext;
+  token: User;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -57,7 +62,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
       try {
-        setHcClient(await getIdToken(fbUser));
+        setHcClient(await getIdToken(fbUser, true));
         setToken(fbUser);
 
         // APIからユーザーデータを取得
@@ -69,19 +74,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         } else {
           //　ユーザーデータを状態に保存
           const userData: UserProfile = await user.json();
-          const currentGroupSlotId = getBrowserSettings().currentGroupSlotId;
-          if (currentGroupSlotId) {
-            const currentGroup = userData.auth.memberships.find(
-              (membership) => membership.id === currentGroupSlotId
-            );
-            setUser({
-              ...userData,
-              currentGroup: currentGroup || null,
-            });
-          } else {
+          if (userData.auth.memberships.length < 0) {
             setUser({
               ...userData,
               currentGroup: null,
+            });
+          } else {
+            const setedCurrentGroupIndex = userData.auth.memberships.findIndex(
+              (membership) =>
+                membership.id === getBrowserSettings().currentGroupSlotId
+            );
+            const currentGroupIndex =
+              setedCurrentGroupIndex !== -1 ? setedCurrentGroupIndex : 0;
+            const currentGroup = userData.auth.memberships[currentGroupIndex];
+            setUser({
+              ...userData,
+              currentGroup: currentGroup,
             });
           }
         }
@@ -96,11 +104,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return () => unsubscribe();
   }, []);
 
-  /// token更新
+  /// 自動token更新
   useEffect(() => {
     const interval = setInterval(async () => {
       if (auth.currentUser) {
-        setHcClient(await getIdToken(auth.currentUser, true));
+        const newToken = await getIdToken(auth.currentUser);
+        setHcClient(newToken);
       }
     }, 10 * 60 * 1000); // 10分ごとに更新
     return () => clearInterval(interval);
@@ -116,11 +125,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     );
   }
 };
-
-export const useAuthContext = (): AuthContextValue | null => {
+export function useAuthContext(safe?: true): SafeAuthContextValue;
+export function useAuthContext(safe: false): AuthContextValue;
+export function useAuthContext(
+  safe = true
+): AuthContextValue | SafeAuthContextValue {
   const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuthContext must be used within an AuthProvider");
+  }
+
+  if (safe) {
+    if (!context.user || !context.token) {
+      window.location.href = "/auth/login";
+      throw new Error("AuthContext user or token is null");
+    }
+  }
   return context;
-};
+}
 
 export const login = async (email: string, password: string) => {
   try {

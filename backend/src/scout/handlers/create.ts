@@ -61,7 +61,7 @@ export const createScout = async (
     "EDIT",
   ]);
 
-  if (role) {
+  if (!role) {
     throw new Error("You do not have permission to create scout in this group");
   }
 

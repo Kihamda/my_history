@@ -61,6 +61,10 @@ const app = new Hono()
     "/auth/*",
     serveStatic({ manifest: { relative: true }, path: "spa.html" })
   )
+  .get(
+    "/god/*",
+    serveStatic({ manifest: { relative: true }, path: "spa.html" })
+  )
   .get("/*", serveStatic({ manifest: { relative: true } }))
   //
 

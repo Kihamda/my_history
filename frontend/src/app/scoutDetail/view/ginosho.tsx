@@ -1,5 +1,5 @@
-import ShowData from "@f/style/showData";
-import { usePopup } from "@f/style/fullscreanPopup";
+import ShowData from "@f/lib/style/showData";
+import { usePopup } from "@f/lib/style/fullscreanPopup";
 import type { ScoutData } from "@f/lib/api/apiTypes";
 import ginoshoMap from "@f/lib/master/ginoshos";
 

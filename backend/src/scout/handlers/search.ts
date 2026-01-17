@@ -31,7 +31,7 @@ export const SearchRequest = z.object({
   scoutId: z.string().default(""),
   currentUnit: z.array(CurrentUnitId).default([]),
   page: z.coerce.number().min(1).default(1),
-  belongGroupId: z.string().default(""),
+  belongGroupId: z.string(),
 });
 
 export type SearchRequestType = z.infer<typeof SearchRequest>;
@@ -50,14 +50,6 @@ export type SearchResultType = z.infer<typeof SearchResult>;
 // Internal
 // ========================================
 
-type ScoutSearchQuery = {
-  name?: string;
-  scoutId?: string;
-  currentUnit?: z.infer<typeof CurrentUnitId>[];
-  page: number;
-  belongGroupId?: string[];
-};
-
 const DEFAULT_LIMIT = 20;
 
 /**
@@ -65,15 +57,13 @@ const DEFAULT_LIMIT = 20;
  */
 export const searchScoutsWithAuth = async (
   c: Context,
-  query: ScoutSearchQuery
+  query: SearchRequestType
 ): Promise<Array<{ doc_id: string } & ScoutRecordSchemaType>> => {
-  const authedGroupId = query.belongGroupId?.filter(
-    (id) =>
-      c.var.user.auth.memberships.find((m) => m.id === id) ||
-      c.var.user.auth.shares.find((s) => s.id === id)
+  const authedGroupId = c.var.user.auth.memberships.find(
+    (m) => m.id === query.belongGroupId
   );
 
-  if (!authedGroupId || authedGroupId.length === 0) {
+  if (!authedGroupId) {
     throw new HTTPException(403, {
       message: "You do not have permission to search scouts in this group",
     });
@@ -84,12 +74,12 @@ export const searchScoutsWithAuth = async (
   const where: any[] = [
     {
       field: "belongGroupId",
-      op: "in",
-      value: authedGroupId,
+      op: "==",
+      value: authedGroupId.id,
     },
   ];
 
-  if (query.name) {
+  if (query.name.length > 0) {
     where.push({ field: "personal.name", op: ">=", value: query.name });
     where.push({
       field: "personal.name",
@@ -98,7 +88,7 @@ export const searchScoutsWithAuth = async (
     });
   }
 
-  if (query.scoutId) {
+  if (query.scoutId.length > 0) {
     where.push({
       field: "personal.scoutId",
       op: "==",
@@ -106,7 +96,7 @@ export const searchScoutsWithAuth = async (
     });
   }
 
-  if (query.currentUnit && query.currentUnit.length > 0) {
+  if (query.currentUnit.length > 0) {
     where.push({
       field: "personal.currentUnitId",
       op: "in",
@@ -115,7 +105,7 @@ export const searchScoutsWithAuth = async (
   }
 
   const offset = (query.page - 1) * DEFAULT_LIMIT;
-  return (await db().scouts.lis(where, DEFAULT_LIMIT, offset)) as any;
+  return await db().scouts.lis(where, DEFAULT_LIMIT, offset);
 };
 
 /**
@@ -129,11 +119,11 @@ const searchScouts = async (
   const normalizedScoutId = query.scoutId.trim();
 
   const results = await searchScoutsWithAuth(c, {
-    name: normalizedName.length > 0 ? normalizedName : undefined,
-    scoutId: normalizedScoutId.length > 0 ? normalizedScoutId : undefined,
-    currentUnit: query.currentUnit.length > 0 ? query.currentUnit : undefined,
+    name: normalizedName,
+    scoutId: normalizedScoutId,
+    currentUnit: query.currentUnit,
     page: query.page,
-    belongGroupId: [query.belongGroupId], // 暫定的に要素１の配列で渡す
+    belongGroupId: query.belongGroupId,
   });
 
   return results.map((doc) => ({

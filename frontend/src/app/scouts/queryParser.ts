@@ -1,7 +1,9 @@
 import type { ScoutSearchRequest } from "@f/lib/api/apiTypes";
 import { ScoutUnitNameMap, UnitIdList } from "@f/lib/clientCommons/scout";
 
-const queryParser = (searchName: string): ScoutSearchRequest => {
+const queryParser = (
+  searchName: string
+): Omit<ScoutSearchRequest, "belongGroupId"> => {
   type ScoutUnit = (typeof UnitIdList)[number] | "ob";
 
   // 送られてきた文字列が何かを判定する［名前・登録番号・所属隊］

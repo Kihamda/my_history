@@ -28,10 +28,8 @@ import { deleteScout } from "./handlers/delete";
 import { z } from "zod/v4";
 import { transferScout } from "./handlers/transfer";
 import { genIdSchema } from "@b/lib/randomId";
-import { loadUserData } from "@b/lib/userData";
 
 const scoutRouter = new Hono<AppContext>()
-  .use("*", loadUserData)
   /**
    * GET /search - スカウト検索
    *

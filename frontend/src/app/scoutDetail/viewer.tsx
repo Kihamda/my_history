@@ -1,6 +1,6 @@
 import Profile from "./view/profile";
 import Units from "./view/units";
-import FullWidthCardHeader from "@f/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import { Link } from "react-router";
 import GinoshoList from "./view/ginosho";
 import Events from "./view/events";

@@ -60,8 +60,8 @@ export const updateScout = async (
   const hasAccess =
     group.find(
       (m) =>
-        m.id ===
-        (existingScout.belongGroupId && (m.role == "ADMIN" || m.role == "EDIT"))
+        m.id === existingScout.belongGroupId &&
+        (m.role == "ADMIN" || m.role == "EDIT")
     ) ||
     shares.find(
       (s) => s.id === existingScout.belongGroupId && s.role == "EDIT"

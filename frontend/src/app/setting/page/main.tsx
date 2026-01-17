@@ -1,25 +1,13 @@
 import { useAuthContext } from "@f/authContext";
-import { useState } from "react";
-import { Card } from "react-bootstrap";
 
 const MainPage = () => {
-  const currentUserData = useAuthContext()?.user;
+  const currentUserData = useAuthContext().user;
   if (!currentUserData) {
     return <div>ユーザーデータの取得に失敗しました。</div>;
   }
 
-  const [userData, setUserData] = useState(currentUserData);
-
-  const handleSave = () => {};
-
   return (
     <>
-      <Card>
-        <Card.Body>
-          <Card.Title>設定ページ</Card.Title>
-          <p>ここではアカウント設定を管理できます。</p>
-        </Card.Body>
-      </Card>
       <div className="card mb-3">
         <div className="card-body">
           <h2 className="card-title">基本設定</h2>

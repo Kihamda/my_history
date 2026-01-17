@@ -2,7 +2,7 @@ import { Navigate, useLocation } from "react-router";
 import ScoutDetailViewer from "./viewer";
 import { useEffect, useState } from "react";
 import ScoutDetailEditor from "./editor";
-import LoadingSplash from "@f/style/loadingSplash";
+import LoadingSplash from "@f/lib/style/loadingSplash";
 import { raiseError } from "@f/errorHandler";
 import { useAuthContext } from "@f/authContext";
 import type { ScoutData } from "@f/lib/api/apiTypes";
@@ -18,8 +18,8 @@ const ScoutDetail = (): React.ReactElement => {
   );
 
   const isEditable =
-    useAuthContext()?.user?.joinedGroup?.role == "ADMIN" ||
-    useAuthContext()?.user?.joinedGroup?.role == "EDIT";
+    useAuthContext().user.currentGroup?.role == "ADMIN" ||
+    useAuthContext().user.currentGroup?.role == "EDIT";
 
   useEffect(() => {
     hc.apiv1.scout[":id"].$get({ param: { id } }).then(async (data) => {

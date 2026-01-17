@@ -2,8 +2,8 @@ import { Link, Navigate, Route, Routes, useLocation } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 
-import BlurCard from "@f/style/cardDesign";
-import FillBackgroundDesign from "@f/style/fillBackgroundDesign";
+import BlurCard from "@f/lib/style/cardDesign";
+import FillBackgroundDesign from "@f/lib/style/fillBackgroundDesign";
 import { useAuthContext } from "@f/authContext";
 
 import Register from "./Register/register";
@@ -28,7 +28,7 @@ import Setup from "./Setup/setup";
  */
 const Auth = () => {
   // ユーザーの認証状態を取得
-  const context = useAuthContext();
+  const context = useAuthContext(false);
   const location = useLocation();
 
   // ログイン済みユーザーのリダイレクト制御

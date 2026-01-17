@@ -1,6 +1,6 @@
 import Profile from "./edit/profile";
 import Units from "./edit/units";
-import FullWidthCardHeader from "@f/style/fullWidthCardHeader";
+import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import { Link, useNavigate } from "react-router";
 import { Button } from "react-bootstrap";
 import { useState } from "react";

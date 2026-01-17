@@ -21,15 +21,10 @@ import { Navigate } from "react-router";
  */
 
 const VerifyEmail: FC = () => {
-  const user = useAuthContext()?.user;
+  const token = useAuthContext()?.token;
 
-  if (!user) {
+  if (!token) {
     return <Navigate to="/auth/login" />;
-  }
-
-  if (user.token.emailVerified) {
-    // メールアドレスが既に確認済みの場合、アプリケーションのホームにリダイレクト
-    return <Navigate to="/app" />;
   }
 
   return (
@@ -39,7 +34,7 @@ const VerifyEmail: FC = () => {
       </Card.Title>
       <div className="text-center">
         <p>
-          メールアドレスの認証が必要です。登録されたメールアドレス({user.email}
+          メールアドレスの認証が必要です。登録されたメールアドレス({token.email}
           )に認証リンクを送信しました。
         </p>
         <p>メールを確認してください。</p>
@@ -57,7 +52,7 @@ const VerifyEmail: FC = () => {
           <div className="mt-3 d-flex flex-column align-items-center col-12 col-md-6">
             <Button
               variant="secondary"
-              onClick={() => {
+              onClick={async () => {
                 window.location.reload();
               }}
             >
