@@ -19,7 +19,7 @@ const normalize = (value: string) => {
 const isActivePath = (
   targetPath: string,
   currentPath: string,
-  pathBase: string
+  pathBase: string,
 ) => {
   const current = normalize(currentPath);
   const target = normalize(pathBase + targetPath);
@@ -31,9 +31,13 @@ const isActivePath = (
 const SidebarUI = ({
   data,
   pathBase,
+  customTopElement,
+  hideIndex = false,
 }: {
   data: SidebarData[];
   pathBase: string;
+  customTopElement?: React.ReactElement;
+  hideIndex?: boolean;
 }) => {
   const { pathname } = useLocation();
 
@@ -41,7 +45,8 @@ const SidebarUI = ({
   return (
     <div className="row mt-3">
       <div className="col-12 col-md-4 col-lg-3">
-        {current && (
+        {customTopElement}
+        {current && !hideIndex && (
           <div className="card mb-3">
             <div className="card-header">
               <h5 className="mb-0">{current.title}</h5>
@@ -60,21 +65,8 @@ const SidebarUI = ({
           </div>
         )}
 
-        <div className="card mb-3 d-none d-md-block">
-          <div className="card-header">
-            <h5 className="mb-0">ページ一覧</h5>
-          </div>
-          <div className="list-group list-group-flush">
-            {data.map((item) => (
-              <Link
-                key={item.title}
-                to={normalize(pathBase + item.path)}
-                className="list-group-item list-group-item-action"
-              >
-                {item.title}
-              </Link>
-            ))}
-          </div>
+        <div className="mb-3 d-none d-md-block">
+          <SidebarPageList data={data} pathBase={pathBase} />
         </div>
       </div>
       <div className="col-12 col-md-8 col-lg-9">
@@ -88,23 +80,44 @@ const SidebarUI = ({
           ))}
         </Routes>
       </div>
-      <div className="col-12 d-block d-md-none">
-        <div className="card mt-3">
-          <div className="card-header">
-            <h5 className="mb-0">ページ一覧</h5>
-          </div>
-          <div className="list-group list-group-flush">
-            {data.map((item) => (
-              <Link
-                key={item.title}
-                to={normalize(pathBase + item.path)}
-                className="list-group-item list-group-item-action"
-              >
-                {item.title}
-              </Link>
-            ))}
-          </div>
-        </div>
+      <div className="col-12 d-block d-md-none mt-3">
+        <SidebarPageList data={data} pathBase={pathBase} />
+      </div>
+    </div>
+  );
+};
+
+const SidebarPageList = ({
+  data,
+  pathBase,
+  title,
+}: {
+  data: SidebarData[];
+  pathBase: string;
+  title?: string;
+}) => {
+  const { pathname } = useLocation();
+  return (
+    <div className="card">
+      <div className="card-header">
+        <h5 className="mb-0">{title ?? "ページ一覧"}</h5>
+      </div>
+      <div className="list-group list-group-flush">
+        {data.map((item) => (
+          <Link
+            key={item.title}
+            to={normalize(pathBase + item.path)}
+            className={
+              "list-group-item list-group-item-action " +
+              (isActivePath(item.path, pathname, pathBase)
+                ? "list-group-item-light"
+                : "")
+            }
+          >
+            {isActivePath(item.path, pathname, pathBase) && "▶ "}
+            {item.title}
+          </Link>
+        ))}
       </div>
     </div>
   );

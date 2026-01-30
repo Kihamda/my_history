@@ -1,4 +1,3 @@
-import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import GodScoutSearchBox, { type ScoutSearchParams } from "./scoutSearchBox";
 import { hc, type ResType } from "@f/lib/api/api";
 import { useState } from "react";
@@ -21,6 +20,12 @@ const GodScoutPage = () => {
       query: {
         id: query.id.length > 0 ? query.id : undefined,
         scoutId: query.scoutId.length > 0 ? query.scoutId : undefined,
+        belongCurrentIds:
+          query.belongCurrentIds.length > 0
+            ? query.belongCurrentIds
+            : undefined,
+        belongGroupId:
+          query.belongGroupId.length > 0 ? query.belongGroupId : undefined,
       },
     });
 
@@ -34,7 +39,8 @@ const GodScoutPage = () => {
 
   const handleSave = async () => {
     if (!editorSlot) return;
-    const result = await hc.apiv1.god.scout.setScoutData.$post({
+    const result = await hc.apiv1.god.scout[":id"].setScoutData.$post({
+      param: { id: editorSlot.doc_id },
       json: editorSlot,
     });
     if (result.status == 200) {
@@ -48,15 +54,26 @@ const GodScoutPage = () => {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    const result = await hc.apiv1.god.scout[":id"].deleteScoutData.$delete({
+      param: { id },
+    });
+    if (result.status == 200) {
+      raiseError("スカウトデータの削除に成功しました。", "success");
+      setEditorSlot(null);
+      setResults(results.filter((e) => e.doc_id !== id));
+    } else {
+      raiseError(
+        "スカウトデータの削除に失敗しました。",
+        "error",
+        await result.text()
+      );
+    }
+  };
+
   return (
     <>
-      <FullWidthCardHeader
-        title="スカウト管理"
-        memo="スカウトの情報を管理します。"
-      />
-      <div className="mt-3">
-        <GodScoutSearchBox handleSearchFunc={handleSearch} />
-      </div>
+      <GodScoutSearchBox handleSearchFunc={handleSearch} />
       <div className="mt-3">
         <div className="card">
           <div className="card-body">
@@ -122,6 +139,13 @@ const GodScoutPage = () => {
                       }}
                     >
                       保存せず戻る
+                    </Button>
+                    <Button
+                      className="ms-2"
+                      variant="danger"
+                      onClick={() => handleDelete(editorSlot.doc_id)}
+                    >
+                      削除
                     </Button>
                     <Button
                       className="ms-2"

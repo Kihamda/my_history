@@ -14,6 +14,7 @@ import { z } from "zod/v4";
 import type { Context } from "../../apiRotuer";
 import { ScoutRecordSchema } from "../../lib/firestore/schemas";
 import { db } from "../../lib/firestore/firestore";
+import { HTTPException } from "hono/http-exception";
 /**
  * スカウト更新リクエストのバリデーションスキーマ
  *
@@ -44,36 +45,36 @@ export const updateScoutSchema = z.object({
 export const updateScout = async (
   id: string,
   scout: z.infer<typeof updateScoutSchema>,
-  c: Context
+  c: Context,
 ): Promise<{ message: string }> => {
   // 過去のデータを参照
   const existingScout = await db().scouts.get(id);
 
   if (!existingScout) {
-    throw new Error("Scout not found");
+    throw new HTTPException(404, { message: `Scout not found` });
   }
 
   // 認可処理
-  const group = c.var.user.auth.memberships;
   const shares = c.var.user.auth.shares;
 
   const hasAccess =
-    group.find(
-      (m) =>
-        m.id === existingScout.belongGroupId &&
-        (m.role == "ADMIN" || m.role == "EDIT")
-    ) ||
+    c.var.user.fn.isInRoleOnGroup(existingScout.belongGroupId, [
+      "ADMIN",
+      "EDIT",
+    ]) ||
     shares.find(
-      (s) => s.id === existingScout.belongGroupId && s.role == "EDIT"
+      (s) => s.id === existingScout.belongGroupId && s.role == "EDIT",
     );
 
   if (!hasAccess) {
-    throw new Error("You do not have permission to update this scout");
+    throw new HTTPException(403, {
+      message: "You do not have permission to update this scout",
+    });
   }
 
   // 実処理
   await db().scouts.set(id, {
-    belongGroupId: existingScout.belongGroupId,
+    belongGroupId: existingScout.belongGroupId, // 変更不可項目はそのまま保持
     ...scout.data,
     last_Edited: new Date().toISOString().split("T")[0],
   });

@@ -34,26 +34,18 @@ const godGroupRouter = new Hono<AppContext>()
     }
   )
 
-  // グループを作成
-  .post(
-    "/createGroupData",
+  .get(
+    "/getAllGroups",
     zValidator(
-      "json",
-      z.object({
-        id: genIdSchema,
-        data: GroupRecordSchema,
-      })
+      "query",
+      z.object({ page: z.string().optional().default("1").transform(Number) })
     ),
     async (c) => {
-      const { id, data } = c.req.valid("json");
-      const existing = await db().groups.get(id);
-      if (existing) {
-        throw new HTTPException(400, {
-          message: "指定されたIDのグループは既に存在します",
-        });
-      }
-      await db().groups.set(id, data);
-      return c.json({ message: "グループを作成しました" });
+      const page = c.req.valid("query").page || 1;
+      const pageSize = 50;
+      const offset = (page - 1) * pageSize;
+      const groups = await db().groups.lis([], pageSize, offset);
+      return c.json(groups);
     }
   )
 

@@ -8,8 +8,12 @@ import type { FirebaseIdToken } from "firebase-auth-cloudflare-workers";
 import { loadUserData, type UserDataContext } from "./lib/userData";
 import godRouter from "./god/godRoute";
 
+interface Envs {
+  IS_DEV?: string;
+}
+
 export interface AppContext {
-  Bindings: FirebaseAuthBindings;
+  Bindings: FirebaseAuthBindings & Envs;
   Variables: {
     user: UserDataContext;
     token: FirebaseIdToken;
@@ -25,7 +29,7 @@ const apiRouter = new Hono<AppContext>()
   .get("/", async (c) =>
     c.json({
       message: "Let's work together -> https://kihamda.net/form",
-    })
+    }),
   )
 
   // ユーザー情報

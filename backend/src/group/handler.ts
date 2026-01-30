@@ -24,7 +24,7 @@ import { type GroupRoleSchemaType } from "../lib/scoutGroup";
  */
 export const getGroupMembers = async (
   c: Context,
-  id: string
+  id: string,
 ): Promise<
   {
     uid: string;
@@ -48,14 +48,14 @@ export const getGroupMembers = async (
         value: [`ADMII;${id}`],
       },
     ],
-    100
+    100,
   );
 
   return members.map((user) => {
     return {
       uid: user.doc_id,
       role: IdWithGroupRoleParser(
-        user.auth.memberships.find((m) => m.endsWith(`;${id}`))!
+        user.auth.memberships.find((m) => m.endsWith(`;${id}`))!,
       ).role,
       email: user.email,
       displayName: user.profile.displayName,
@@ -71,10 +71,10 @@ export const getGroupMembers = async (
 export const addGroupInvite = async (
   c: Context,
   groupId: string,
-  invite: { targetUid: string; role: GroupRoleSchemaType }
+  invite: { targetUid: string; role: GroupRoleSchemaType },
 ): Promise<void> => {
   // 権限チェック(ADMIN必須)
-  if (c.var.user.fn.isInRoleOnGroup(groupId, ["ADMIN"])) {
+  if (!c.var.user.fn.isInRoleOnGroup(groupId, ["ADMIN"])) {
     throw new HTTPException(403, {
       message: "You do not have permission to invite members to this group",
     });
@@ -124,7 +124,7 @@ export const addGroupInvite = async (
 export const removeGroupMember = async (
   c: Context,
   groupId: string,
-  targetUid: string
+  targetUid: string,
 ): Promise<void> => {
   // 認可
   if (!c.var.user.fn.isInRoleOnGroup(groupId, ["ADMIN"])) {
@@ -145,7 +145,7 @@ export const removeGroupMember = async (
   }
 
   const newMemberships = user.auth.memberships.filter(
-    (m) => !m.endsWith(`;${groupId}`)
+    (m) => !m.endsWith(`;${groupId}`),
   );
 
   await db().users.set(targetUid, {
@@ -166,7 +166,7 @@ export const updateMemberRole = async (
   c: Context,
   groupId: string,
   targetUid: string,
-  role: GroupRoleSchemaType
+  role: GroupRoleSchemaType,
 ): Promise<void> => {
   // 認可
   if (!c.var.user.fn.isInRoleOnGroup(groupId, ["ADMIN"])) {
@@ -184,7 +184,7 @@ export const updateMemberRole = async (
 
   const user = await db().users.get(targetUid);
   const idx = user?.auth.memberships.findIndex((m) =>
-    m.endsWith(`;${groupId}`)
+    m.endsWith(`;${groupId}`),
   );
   if (!user) {
     throw new HTTPException(404, { message: "User not found" });

@@ -1,11 +1,5 @@
 import { z } from "zod/v4";
-import { GroupRoleSchema, ShareRoleSchema, UnitId } from "../scoutGroup";
-
-// ========================================
-// 共通型定義
-// ========================================
-
-export const CurrentUnitId = z.enum([...UnitId.options, "ob"]);
+import { GroupRoleSchema, ShareRoleSchema, UnitIdWithOb } from "../scoutGroup";
 
 // ========================================
 // GroupRole付きID型定義
@@ -130,7 +124,7 @@ const ScoutPersonalSchema = z.object({
   scoutId: z.string(),
   birthDate: ymdSchema,
   joinedDate: ymdSchema,
-  currentUnitId: CurrentUnitId,
+  currentUnitId: UnitIdWithOb,
   memo: z.string(),
   declare: z.object({
     date: ymdSchema,
@@ -285,7 +279,7 @@ export type UserRecordSchemaType = z.infer<typeof UserRecordSchema>;
 
 export const GroupRecordSchema = z.object({
   name: z.string(),
-  status: z.enum(["active", "inactive", "archived"]),
+  description: z.string(),
 });
 
 export type GroupRecordSchemaType = z.infer<typeof GroupRecordSchema>;

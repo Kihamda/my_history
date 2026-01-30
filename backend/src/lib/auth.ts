@@ -6,16 +6,15 @@ import type { Context } from "../apiRotuer";
 export const authorize = async (c: Context, next: () => Promise<void>) => {
   const header = c.req.header("Authorization");
   if (header == undefined) {
-    return c.json("UNAUTHORIZED", 401);
+    return c.json({ message: "UNAUTHORIZED" }, 401);
   }
   const token = await verifyJWT(header, c.env);
-  console.log("Authorization Token:", token);
   if (token == null) {
-    return c.json("UNAUTHORIZED", 401);
+    return c.json({ message: "UNAUTHORIZED" }, 401);
   }
 
   if (!token.email_verified) {
-    return c.json("EMAIL_VERIFY_MISSING", 403);
+    return c.json({ message: "EMAIL_VERIFY_MISSING" }, 403);
   }
 
   c.set("token", token);
@@ -34,7 +33,7 @@ export interface FirebaseAuthBindings {
 
 const verifyJWT = async (
   authorizationHeader: string,
-  env: FirebaseAuthBindings
+  env: FirebaseAuthBindings,
 ): Promise<FirebaseIdToken | null> => {
   const jwt = authorizationHeader.replace(/Bearer\s+/i, "").trim();
   if (!jwt) {
@@ -45,8 +44,8 @@ const verifyJWT = async (
       env.PROJECT_ID,
       WorkersKVStoreSingle.getOrInitialize(
         env.PUBLIC_JWK_CACHE_KEY,
-        env.MY_HISTORY_KV_CACHE
-      )
+        env.MY_HISTORY_KV_CACHE,
+      ),
     );
     const firebaseToken = await auth.verifyIdToken(jwt, false, env);
     return firebaseToken;

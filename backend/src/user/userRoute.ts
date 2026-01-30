@@ -8,11 +8,10 @@ import {
   deleteUserHandler,
   updateUserProfileHandler,
   searchUserHandler,
-  acceptUserInviteHandler,
 } from "./handlers";
 import { z } from "zod/v4";
-import { genIdSchema } from "@b/lib/randomId";
 import { loadUserData } from "@b/lib/userData";
+import userSettingsRouter from "./userSettingsRoute";
 
 const userRouter = new Hono<AppContext>()
   // ユーザー新規作成 (初回登録時)
@@ -23,7 +22,7 @@ const userRouter = new Hono<AppContext>()
       const data = c.req.valid("json");
       const result = await createUserHandler(c, data);
       return c.json(result, 201);
-    }
+    },
   )
   // これだけはユーザーレコードによる認証不要(ないから)
   // これからは必要
@@ -43,18 +42,7 @@ const userRouter = new Hono<AppContext>()
       const { email } = c.req.valid("json");
       const userData = await searchUserHandler(email);
       return c.json(userData);
-    }
-  )
-
-  // グループ招待受諾
-  .post(
-    "/acceptInvite",
-    zValidator("json", z.object({ groupCode: genIdSchema })),
-    async (c) => {
-      const { groupCode } = c.req.valid("json");
-      const result = await acceptUserInviteHandler(c, groupCode);
-      return c.json(result);
-    }
+    },
   )
 
   // ユーザー情報更新
@@ -65,13 +53,15 @@ const userRouter = new Hono<AppContext>()
       const data = c.req.valid("json");
       const result = await updateUserProfileHandler(c, data);
       return c.json(result);
-    }
+    },
   )
 
   // ユーザー削除
   .delete("/delete", async (c) => {
     const result = await deleteUserHandler(c);
     return c.json(result);
-  });
+  })
 
+  // ユーザーauthの設定をする
+  .route("/auth", userSettingsRouter);
 export default userRouter;

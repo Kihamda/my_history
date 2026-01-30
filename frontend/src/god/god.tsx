@@ -5,6 +5,8 @@ import { Route } from "react-router";
 import GodHome from "./home";
 import GodScoutPage from "./scout/scout";
 import GodGroupPage from "./group/group";
+import CreateScoutBatPage from "./scout/createScoutBat";
+import GodUserPage from "./user/user";
 
 const GodMode = () => {
   const context = useAuthContext(false);
@@ -22,8 +24,10 @@ const GodMode = () => {
         <Routes>
           <Route path="/home" element={<GodHome />} />
           <Route path="/scouts" element={<GodScoutPage />} />
+          <Route path="/scouts-batch" element={<CreateScoutBatPage />} />
           <Route path="/group" element={<GodGroupPage />} />
           <Route path="*" element={<Navigate to="/god/home" />} />
+          <Route path="/user" element={<GodUserPage />} />
         </Routes>
       </div>
     </div>

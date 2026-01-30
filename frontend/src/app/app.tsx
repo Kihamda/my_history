@@ -12,6 +12,7 @@ const Scouts = lazy(() => import("./scouts/scouts"));
 const ScoutDetail = lazy(() => import("./scoutDetail/scoutDetail"));
 const NewScoutWizard = lazy(() => import("./scoutDetail/newScoutWizard"));
 const Setting = lazy(() => import("./setting/setting"));
+const GroupPage = lazy(() => import("./group/group"));
 
 const App = () => {
   // ログアウト状態なのに/appにアクセスした人をログインページに送還する
@@ -40,9 +41,8 @@ const App = () => {
             <Route path="/scouts" element={<Scouts />} />
             <Route path="/scouts/new" element={<NewScoutWizard />} />
             <Route path="/scouts/*" element={<ScoutDetail />} />
-            <Route path="/group" element={<>group</>} />
+            <Route path="/group/*" element={<GroupPage />} />
             <Route path="/setting/*" element={<Setting />} />
-            <Route path="/setup" element={<>setup</>} />
             <Route path="*" element={<Navigate to="/app/home" />} />
           </Routes>
         </Suspense>

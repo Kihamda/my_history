@@ -2,6 +2,7 @@ import type { AppContext } from "@b/apiRotuer";
 import { Hono } from "hono";
 import godGroupRouter from "./groupRoute";
 import godScoutRouter from "./scoutRoute";
+import godUserRouter from "./userRoute";
 
 const godRouter = new Hono<AppContext>()
   // ゴッドモード専用ミドルウェア
@@ -14,10 +15,23 @@ const godRouter = new Hono<AppContext>()
     await next();
   })
 
+  .get("/", async (c) =>
+    c.json({
+      isDev: c.env.IS_DEV === "TRUE",
+      message:
+        c.env.IS_DEV === "TRUE"
+          ? "開発環境で良かったね。"
+          : "本番環境だよ！気をつけて！",
+    }),
+  )
+
   // スカウトのデータを管理
   .route("/scout", godScoutRouter)
 
+  // グループのデータを管理
+  .route("/group", godGroupRouter)
+
   // ユーザーのデータを管理
-  .route("/group", godGroupRouter);
+  .route("/user", godUserRouter);
 
 export default godRouter;

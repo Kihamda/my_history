@@ -23,9 +23,9 @@ const app = new Hono()
     console.error("Unhandled error", error);
     return c.json(
       {
-        error: "INTERNAL_SERVER_ERROR",
+        message: "INTERNAL_SERVER_ERROR",
       },
-      toStatus(500)
+      toStatus(500),
     );
   })
 
@@ -33,10 +33,10 @@ const app = new Hono()
   .notFound((c) =>
     c.json(
       {
-        error: "NOT_FOUND",
+        message: "NOT_FOUND",
       },
-      toStatus(404)
-    )
+      toStatus(404),
+    ),
   )
   .use(
     "*",
@@ -48,22 +48,22 @@ const app = new Hono()
       ],
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowHeaders: ["Content-Type", "Authorization"],
-    })
+    }),
   )
 
   // ルートパスはbuildTmpの中身をいい感じに返す
   .get("/", serveStatic({ manifest: { relative: true }, path: "index.html" }))
   .get(
     "/app/*",
-    serveStatic({ manifest: { relative: true }, path: "spa.html" })
+    serveStatic({ manifest: { relative: true }, path: "spa.html" }),
   )
   .get(
     "/auth/*",
-    serveStatic({ manifest: { relative: true }, path: "spa.html" })
+    serveStatic({ manifest: { relative: true }, path: "spa.html" }),
   )
   .get(
     "/god/*",
-    serveStatic({ manifest: { relative: true }, path: "spa.html" })
+    serveStatic({ manifest: { relative: true }, path: "spa.html" }),
   )
   .get("/*", serveStatic({ manifest: { relative: true } }))
   //

@@ -5,16 +5,14 @@
  * - グループ関連のHTTPエンドポイントの定義
  * - リクエストのルーティング
  * - バリデーションミドルウェアの適用
- * - サービス層への処理委譲
+ * - ハンドラへの処理委譲
  *
  * エンドポイント一覧:
- * - GET    /:id                    - グループ取得
- * - POST   /                       - グループ作成
- * - PUT    /:id                    - グループ更新
- * - DELETE /:id                    - グループ削除
- * - POST   /:id/members            - メンバー追加
- * - DELETE /:id/members/:email     - メンバー削除
- * - PUT    /:id/members/:email/role - メンバーロール更新
+ * - GET    /:id                   - グループ取得
+ * - POST   /:id/invites/create    - メンバー招待追加
+ * - GET    /:id/members           - メンバー一覧取得
+ * - DELETE /:id/members/:uid      - メンバー削除
+ * - PUT    /:id/members/:uid/role - メンバーロール更新
  *
  * @module group/routes
  */
@@ -68,12 +66,13 @@ const groupRouter = new Hono<AppContext>()
   .post(
     "/:id/invites/create",
     zValidator("json", CreateGroupInviteSchema),
+    zValidator("param", z.object({ id: z.string() })),
     async (c) => {
-      const id = c.req.param("id");
+      const id = c.req.valid("param").id;
       const invite = c.req.valid("json");
       await addGroupInvite(c, id, invite);
       return c.json({ message: "Member added successfully" });
-    }
+    },
   )
 
   /**
@@ -89,13 +88,13 @@ const groupRouter = new Hono<AppContext>()
       "query",
       z.object({
         page: z.number().int().min(1).optional(),
-      })
+      }),
     ),
     async (c) => {
       const id = c.req.param("id");
       const group = await getGroupMembers(c, id);
       return c.json({ members: group });
-    }
+    },
   )
 
   /**
@@ -139,7 +138,7 @@ const groupRouter = new Hono<AppContext>()
       const { role } = c.req.valid("json");
       await updateMemberRole(c, id, uid, role);
       return c.json({ message: "Member role updated successfully" });
-    }
+    },
   );
 
 export default groupRouter;

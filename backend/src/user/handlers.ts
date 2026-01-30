@@ -65,7 +65,7 @@ export const getUserHandler = async (c: Context): Promise<UserProfileType> => {
   // グループデータを取得
   const group = await db().groups.lis(
     [{ field: "doc_id", op: "in", value: groups }],
-    10
+    10,
   );
 
   const data: UserProfileType = {
@@ -108,7 +108,7 @@ export const getUserHandler = async (c: Context): Promise<UserProfileType> => {
 
 export const createUserHandler = async (
   c: Context,
-  data: UserRecordSchemaType["profile"]
+  data: UserRecordSchemaType["profile"],
 ): Promise<{ message: string }> => {
   const token = c.var.token;
 
@@ -142,7 +142,7 @@ export const createUserHandler = async (
 
 export const updateUserProfileHandler = async (
   c: Context,
-  data: UserRecordSchemaType["profile"]
+  data: UserRecordSchemaType["profile"],
 ): Promise<{ message: string }> => {
   const token = c.var.token;
 
@@ -165,7 +165,7 @@ export const updateUserProfileHandler = async (
 
 // 自分のユーザーデータを削除
 export const deleteUserHandler = async (
-  c: Context
+  c: Context,
 ): Promise<{ message: string }> => {
   const token = c.var.token;
 
@@ -180,7 +180,7 @@ export const searchUserHandler = async (email: string) => {
   // 認可処理：なし => 誰でも実行可能
   const users = await db().users.lis(
     [{ field: "email", op: "==", value: email }],
-    10
+    10,
   );
 
   if (users.length === 0) {
@@ -196,12 +196,12 @@ export const searchUserHandler = async (email: string) => {
 // ユーザー招待を受諾
 export const acceptUserInviteHandler = async (
   c: Context,
-  groupId: string
+  groupId: string,
 ): Promise<{ message: string }> => {
   const user = c.var.user;
   // 招待の存在確認
   const inviteIndex = user.auth.invites.findIndex(
-    (invite) => invite.id === groupId
+    (invite) => invite.id === groupId,
   );
   if (inviteIndex === -1) {
     throw new HTTPException(404, { message: "Invite not found" });
@@ -228,4 +228,106 @@ export const acceptUserInviteHandler = async (
     },
   });
   return { message: "Invite accepted successfully" };
+};
+
+// ユーザー招待を拒否
+export const rejectUserInviteHandler = async (
+  c: Context,
+  groupId: string,
+): Promise<{ message: string }> => {
+  const user = c.var.user;
+  // 招待の存在確認
+  const inviteIndex = user.auth.invites.findIndex(
+    (invite) => invite.id === groupId,
+  );
+  if (inviteIndex === -1) {
+    throw new HTTPException(404, { message: "Invite not found" });
+  }
+  // 招待を削除
+  user.auth.invites.splice(inviteIndex, 1);
+  // Firestoreのユーザーデータを更新
+  await db().users.set(c.var.token.uid, {
+    ...user,
+    auth: {
+      ...user.auth,
+      invites: user.auth.invites.map((inv) => {
+        return IdWithGroupRoleStringifier(inv);
+      }),
+      memberships: user.auth.memberships.map((mem) => {
+        return IdWithGroupRoleStringifier(mem);
+      }),
+      shares: user.auth.shares.map((sh) => {
+        return IdWithShareRoleStringifier(sh);
+      }),
+    },
+  });
+  return { message: "Invite rejected successfully" };
+};
+
+export const leaveGroupHandler = async (
+  c: Context,
+  groupId: string,
+): Promise<{ message: string }> => {
+  const user = c.var.user;
+  // メンバーシップの存在確認
+  const membershipIndex = user.auth.memberships.findIndex(
+    (membership) => membership.id === groupId,
+  );
+  if (membershipIndex === -1) {
+    throw new HTTPException(404, { message: "Membership not found" });
+  }
+  // メンバーシップを削除
+  user.auth.memberships.splice(membershipIndex, 1);
+  // Firestoreのユーザーデータを更新
+  await db().users.set(c.var.token.uid, {
+    ...user,
+    auth: {
+      ...user.auth,
+      invites: user.auth.invites.map((inv) => {
+        return IdWithGroupRoleStringifier(inv);
+      }),
+      memberships: user.auth.memberships.map((mem) => {
+        return IdWithGroupRoleStringifier(mem);
+      }),
+      shares: user.auth.shares.map((sh) => {
+        return IdWithShareRoleStringifier(sh);
+      }),
+    },
+  });
+  return { message: "Left group successfully" };
+};
+
+// グループからの共有を解除
+export const leaveSharedByHandler = async (
+  c: Context,
+  groupId: string,
+): Promise<{ message: string }> => {
+  const user = c.var.user;
+  // 共有の存在確認
+  const shareIndex = user.auth.shares.findIndex(
+    (share) => share.id === groupId,
+  );
+  if (shareIndex === -1) {
+    throw new HTTPException(404, { message: "Share not found" });
+  }
+
+  // 共有を削除
+  user.auth.shares.splice(shareIndex, 1);
+  // Firestoreのユーザーデータを更新
+  await db().users.set(c.var.token.uid, {
+    ...user,
+    auth: {
+      ...user.auth,
+      invites: user.auth.invites.map((inv) => {
+        return IdWithGroupRoleStringifier(inv);
+      }),
+      memberships: user.auth.memberships.map((mem) => {
+        return IdWithGroupRoleStringifier(mem);
+      }),
+      shares: user.auth.shares.map((sh) => {
+        return IdWithShareRoleStringifier(sh);
+      }),
+    },
+  });
+  return { message: "Left shared by group successfully" };
 };

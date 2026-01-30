@@ -10,6 +10,7 @@
  * @module scout/handlers/update
  */
 
+import { HTTPException } from "hono/http-exception";
 import type { Context } from "../../apiRotuer";
 import { db } from "../../lib/firestore/firestore";
 /**
@@ -39,17 +40,19 @@ import { db } from "../../lib/firestore/firestore";
 export const transferScout = async (
   id: string,
   targetGroupId: string,
-  c: Context
+  c: Context,
 ): Promise<{ message: string }> => {
   // 過去のデータを参照
   const existingScout = await db().scouts.get(id);
   if (!existingScout) {
-    throw new Error("Scout not found");
+    throw new HTTPException(404, { message: "Scout not found" });
   }
 
   // 認可処理
   if (!c.var.user.fn.isInRoleOnGroup(existingScout.belongGroupId, ["ADMIN"])) {
-    throw new Error("You do not have permission to update this scout");
+    throw new HTTPException(403, {
+      message: "You do not have permission to update this scout",
+    });
   }
 
   // 実処理

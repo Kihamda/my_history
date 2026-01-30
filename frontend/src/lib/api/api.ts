@@ -4,9 +4,9 @@ import {
   type InferResponseType,
 } from "@b/client";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL
-  ? import.meta.env.VITE_API_BASE_URL
-  : import.meta.env.VITE_API_URL;
+const BASE_URL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL
+  : "/";
 
 export let hc: ClientType = createClient(BASE_URL); // APIクライアントを格納する変数
 export const setHcClient = (token?: string) => {

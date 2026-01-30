@@ -11,12 +11,9 @@
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod/v4";
 import type { Context } from "../../apiRotuer";
-import { ScoutUnitNameMap } from "../../lib/scoutGroup";
+import { ScoutUnitNameMap, UnitIdWithOb } from "../../lib/scoutGroup";
 import { db } from "../../lib/firestore/firestore";
-import {
-  CurrentUnitId,
-  type ScoutRecordSchemaType,
-} from "../../lib/firestore/schemas";
+import { type ScoutRecordSchemaType } from "../../lib/firestore/schemas";
 
 // ========================================
 // API Schema
@@ -29,7 +26,7 @@ import {
 export const SearchRequest = z.object({
   name: z.string().default(""),
   scoutId: z.string().default(""),
-  currentUnit: z.array(CurrentUnitId).default([]),
+  currentUnit: z.array(UnitIdWithOb).default([]),
   page: z.coerce.number().min(1).default(1),
   belongGroupId: z.string(),
 });
@@ -40,7 +37,7 @@ export const SearchResult = z.object({
   id: z.string(),
   name: z.string(),
   scoutId: z.string(),
-  currentUnitId: CurrentUnitId,
+  currentUnitId: UnitIdWithOb,
   currentUnitName: z.string(),
 });
 

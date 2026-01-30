@@ -30,7 +30,7 @@ export interface UserDataContext {
   fn: {
     isInRoleOnGroup: (
       groupId: string,
-      role?: Array<"ADMIN" | "EDIT" | "VIEW">
+      role?: Array<"ADMIN" | "EDIT" | "VIEW">,
     ) => "ADMIN" | "EDIT" | "VIEW" | false;
   };
 }
@@ -68,17 +68,16 @@ export const loadUserData = async (c: Context, next: () => Promise<void>) => {
     fn: {
       isInRoleOnGroup: (
         groupId: string,
-        role: Array<"ADMIN" | "EDIT" | "VIEW"> = ["ADMIN", "EDIT", "VIEW"]
+        role: Array<"ADMIN" | "EDIT" | "VIEW"> = ["ADMIN", "EDIT", "VIEW"],
       ) => {
         const membership = groups.find(
-          (m) => m.id === groupId && role.includes(m.role)
+          (m) => m.id === groupId && role.includes(m.role),
         )?.role;
         return membership ? membership : false;
       },
     },
   };
 
-  console.log("Loaded user data:", newUserData);
   c.set("user", newUserData);
   await next();
 };

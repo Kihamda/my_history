@@ -1,6 +1,5 @@
 import { z } from "zod/v4";
 
-export type ScoutUnit = keyof typeof ScoutUnitNameMap;
 export const ScoutUnitNameMap = {
   bvs: "ビーバー隊",
   cs: "カブ隊",
@@ -8,7 +7,11 @@ export const ScoutUnitNameMap = {
   vs: "ベンチャー隊",
   rs: "ローバー隊",
   ob: "既卒者",
-};
+} as const;
+export const UnitId = z.enum(["bvs", "cs", "bs", "vs", "rs"]);
+export const UnitIdWithOb = z.enum(["bvs", "cs", "bs", "vs", "rs", "ob"]);
+export type UnitIdWithObType = z.infer<typeof UnitIdWithOb>;
+export type UnitIdType = z.infer<typeof UnitId>;
 
 // グループによるrole管理
 export const groupRoles = ["ADMIN", "EDIT", "VIEW"] as const;
@@ -19,6 +22,3 @@ export type GroupRoleSchemaType = z.infer<typeof GroupRoleSchema>;
 export const shareRoles = ["EDIT", "VIEW"] as const;
 export const ShareRoleSchema = z.enum(shareRoles);
 export type ShareRoleSchemaType = z.infer<typeof ShareRoleSchema>;
-
-export const UnitId = z.enum(["bvs", "cs", "bs", "vs", "rs"]);
-export type UnitIdType = z.infer<typeof UnitId>;

@@ -29,11 +29,13 @@ interface UserProfileContext extends UserProfile {
 interface AuthContextValue {
   user: UserProfileContext | null;
   token: User | null;
+  setCurrentGroup?: (id: string) => Promise<void>;
 }
 
 interface SafeAuthContextValue {
   user: UserProfileContext;
   token: User;
+  setCurrentGroup: (id: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -82,7 +84,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           } else {
             const setedCurrentGroupIndex = userData.auth.memberships.findIndex(
               (membership) =>
-                membership.id === getBrowserSettings().currentGroupSlotId
+                membership.id === getBrowserSettings().currentGroupSlotId,
             );
             const currentGroupIndex =
               setedCurrentGroupIndex !== -1 ? setedCurrentGroupIndex : 0;
@@ -106,20 +108,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   /// 自動token更新
   useEffect(() => {
-    const interval = setInterval(async () => {
-      if (auth.currentUser) {
-        const newToken = await getIdToken(auth.currentUser);
-        setHcClient(newToken);
-      }
-    }, 10 * 60 * 1000); // 10分ごとに更新
+    const interval = setInterval(
+      async () => {
+        if (auth.currentUser) {
+          const newToken = await getIdToken(auth.currentUser);
+          setHcClient(newToken);
+        }
+      },
+      10 * 60 * 1000,
+    ); // 10分ごとに更新
     return () => clearInterval(interval);
   }, []);
+
+  // 現在のユーザー情報を再取得して更新する関数
+  const setCurrentGroup = async (id: string) => {
+    if (!token) return;
+    try {
+      setUser((prevUser) => {
+        if (!prevUser) return prevUser;
+        const newCurrentGroup =
+          prevUser.auth.memberships.find(
+            (membership) => membership.id === id,
+          ) || null;
+        return {
+          ...prevUser,
+          currentGroup: newCurrentGroup,
+        };
+      });
+    } catch (e) {
+      console.error("Failed to set current group:", e);
+    }
+  };
 
   if (!isLoaded) {
     return <LoadingSplash message="ユーザー情報を読み込み中..." />;
   } else {
     return (
-      <AuthContext.Provider value={{ user, token }}>
+      <AuthContext.Provider value={{ user, token, setCurrentGroup }}>
         {children}
       </AuthContext.Provider>
     );
@@ -128,7 +153,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 export function useAuthContext(safe?: true): SafeAuthContextValue;
 export function useAuthContext(safe: false): AuthContextValue;
 export function useAuthContext(
-  safe = true
+  safe = true,
 ): AuthContextValue | SafeAuthContextValue {
   const context = useContext(AuthContext);
   if (!context) {

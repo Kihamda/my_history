@@ -4,6 +4,7 @@ import { logout, useAuthContext } from "@f/authContext";
 import type { FC } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { usePopup } from "@f/lib/style/fullscreanPopup";
 
 const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
   name,
@@ -12,6 +13,44 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
 }) => {
   const handleLogout = () => {
     logout();
+  };
+
+  const { showPopup, hidePopup } = usePopup();
+  const { user, setCurrentGroup } = useAuthContext();
+
+  const handleChangeGroup = () => {
+    showPopup({
+      title: "グループを選択",
+      content: (
+        <>
+          <select
+            className="form-select"
+            defaultValue={user.currentGroup?.id}
+            onChange={(e) => {
+              setCurrentGroup(e.target.value);
+            }}
+          >
+            {user.auth.memberships.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </>
+      ),
+      footer: (
+        <div className="text-end">
+          <button
+            className="btn btn-secondary"
+            onClick={() => {
+              hidePopup();
+            }}
+          >
+            閉じる
+          </button>
+        </div>
+      ),
+    });
   };
 
   return (
@@ -28,6 +67,11 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
         className="dropdown-menu"
         style={showTop ? { top: "auto", bottom: "110%" } : {}}
       >
+        <li>
+          <span className="dropdown-item" onClick={handleChangeGroup}>
+            グループを選択
+          </span>
+        </li>
         <li>
           <Link className="dropdown-item" to="/app/setting">
             設定
@@ -133,7 +177,12 @@ const Header: FC = () => {
                 </li>
               )}
             </ul>
-            <ul className="navbar-nav ms-auto d-none d-lg-flex">
+            <ul className="navbar-nav ms-auto d-none d-lg-flex align-items-center">
+              <span className="me-2">
+                {user.currentGroup
+                  ? "所属:" + user.currentGroup.name
+                  : "グループ未選択"}
+              </span>
               <UserDropdown name={name} isGod={isGod} />
             </ul>
           </div>

@@ -96,13 +96,23 @@ const HeaderGod: FC<{ name: string }> = ({ name }) => {
                 </NavLink>
               </li>
               <li className="nav-item" data-bs-dismiss="offcanvas">
-                <NavLink className="nav-link" to="/god/scouts">
-                  スカウト検索
+                <NavLink className="nav-link" to="/god/user">
+                  ユーザー管理
                 </NavLink>
               </li>
               <li className="nav-item" data-bs-dismiss="offcanvas">
                 <NavLink className="nav-link" to="/god/group">
                   グループ管理
+                </NavLink>
+              </li>
+              <li className="nav-item" data-bs-dismiss="offcanvas">
+                <NavLink className="nav-link" to="/god/scouts">
+                  スカウト検索
+                </NavLink>
+              </li>
+              <li className="nav-item" data-bs-dismiss="offcanvas">
+                <NavLink className="nav-link" to="/god/scouts-batch">
+                  スカウト一括登録
                 </NavLink>
               </li>
             </ul>

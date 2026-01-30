@@ -12,9 +12,9 @@
 
 import { z } from "zod/v4";
 import type { Context } from "../../apiRotuer";
-import type { ScoutRecordSchemaType } from "../../lib/firestore/schemas";
 import { generateRandomId } from "../../lib/randomId";
 import { db } from "../../lib/firestore/firestore";
+import getDefaultScoutData from "@b/lib/scoutDefaultData";
 /**
  * スカウト作成リクエストのバリデーションスキーマ
  *
@@ -66,83 +66,7 @@ export const createScout = async (
   }
 
   // 初期スカウトデータを構築
-  // 学年計算用の基準生年月日を設定(4月1日基準)
-  const birthDate =
-    new Date(data.birthDate).getMonth() < 4
-      ? new Date(data.birthDate).getFullYear() - 1
-      : new Date(data.birthDate).getFullYear();
-
-  const ageMap: string[] = [];
-  for (let i = 0; i < 30; i++) {
-    ageMap.push(`${birthDate + i}-04-01`);
-  }
-
-  const age = birthDate - new Date().getFullYear();
-
-  const newScout: ScoutRecordSchemaType = {
-    // 個人情報
-    belongGroupId: data.belongGroupId,
-    personal: {
-      name: data.name,
-      scoutId: data.scoutId,
-      birthDate: data.birthDate,
-      joinedDate: ageMap[10],
-      currentUnitId: (() => {
-        if (age < 8) {
-          return "bvs";
-        } else if (age < 11) {
-          return "cs";
-        } else if (age < 14) {
-          return "bs";
-        } else if (age < 17) {
-          return "vs";
-        } else if (age < 20) {
-          return "rs";
-        } else {
-          return "ob";
-        }
-      })(),
-      memo: "",
-
-      // ちかい・やくそく(未実施)
-      declare: {
-        date: ageMap[10],
-        place: "",
-        done: false,
-      },
-
-      // 信仰奨励章(未実施)
-      religion: {
-        date: ageMap[10],
-        type: "",
-        done: false,
-      },
-
-      // 富士スカウト章/菊スカウト章(未実施)
-      faith: {
-        date: ageMap[10],
-        done: false,
-      },
-    },
-
-    // 各隊の活動履歴(全て未経験で初期化)
-    unit: {
-      bvs: { experienced: false, joinedDate: ageMap[10], work: [], grade: [] },
-      cs: { experienced: false, joinedDate: ageMap[10], work: [], grade: [] },
-      bs: { experienced: false, joinedDate: ageMap[10], work: [], grade: [] },
-      vs: { experienced: false, joinedDate: ageMap[10], work: [], grade: [] },
-      rs: { experienced: false, joinedDate: ageMap[10], work: [], grade: [] },
-    },
-
-    // 技能章リスト(空)
-    ginosho: [],
-
-    // 行事章リスト(空)
-    event: [],
-
-    // 最終編集日時
-    last_Edited: new Date().toISOString().split("T")[0],
-  };
+  const newScout = getDefaultScoutData(data);
 
   // ランダムなスカウトIDを生成(30文字)
   const id = generateRandomId(30);
