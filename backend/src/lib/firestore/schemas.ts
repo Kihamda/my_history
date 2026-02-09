@@ -30,7 +30,7 @@ export const IdWithGroupRoleString = z.string().refine(
   {
     message:
       "Invalid membership format. Expected 'ROLE;groupId' (e.g. 'ADMIN;abc')",
-  }
+  },
 );
 export const IdWithShareRoleString = z.string().refine(
   (val) => {
@@ -57,7 +57,7 @@ export const IdWithShareRoleString = z.string().refine(
   {
     message:
       "Invalid membership format. Expected 'ROLE;groupId' (e.g. 'ADMIN;abc')",
-  }
+  },
 );
 
 export const IdWithGroupRole = z.object({
@@ -81,14 +81,14 @@ export const IdWithShareRoleParser = (val: string) => {
 };
 
 export const IdWithGroupRoleStringifier = (
-  obj: z.infer<typeof IdWithGroupRole>
+  obj: z.infer<typeof IdWithGroupRole>,
 ) => {
   const role = GroupRoleSchema.parse(obj.role);
   return `${role};${obj.id}`;
 };
 
 export const IdWithShareRoleStringifier = (
-  obj: z.infer<typeof IdWithShareRole>
+  obj: z.infer<typeof IdWithShareRole>,
 ) => {
   const role = ShareRoleSchema.parse(obj.role);
   return `${role};${obj.id}`;
@@ -110,7 +110,7 @@ const ymdSchema = z.string().refine(
       date.getUTCDate() === d
     );
   },
-  { message: "Invalid format: expected YYYY-MM-DD or empty string" }
+  { message: "Invalid format: expected YYYY-MM-DD or empty string" },
 );
 export type YMDType = z.infer<typeof ymdSchema>;
 
@@ -277,9 +277,19 @@ export type UserRecordSchemaType = z.infer<typeof UserRecordSchema>;
 // Group Firestore Schema
 // ========================================
 
-export const GroupRecordSchema = z.object({
+const GroupUserSettingsSchema = z.object({
+  allowInvite: z.boolean().default(true),
+  allowShare: z.boolean().default(true),
   name: z.string(),
+});
+
+const GroupAdminTagsSchema = z.object({
   description: z.string(),
+});
+
+export const GroupRecordSchema = z.object({
+  userSettings: GroupUserSettingsSchema,
+  adminTags: GroupAdminTagsSchema,
 });
 
 export type GroupRecordSchemaType = z.infer<typeof GroupRecordSchema>;

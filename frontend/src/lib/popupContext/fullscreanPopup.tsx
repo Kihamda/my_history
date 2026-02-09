@@ -1,5 +1,3 @@
-import { faClose } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, {
   createContext,
   useContext,
@@ -9,9 +7,6 @@ import React, {
 
 interface PopupData {
   content: ReactNode;
-  title?: ReactNode;
-  footer?: ReactNode;
-  showCloseButton?: boolean;
   onClose?: () => void;
 }
 
@@ -69,12 +64,7 @@ export const PopupProvider: React.FC<PopupProviderProps> = ({ children }) => {
     >
       {children}
       {popupState.isVisible && popupState.data && (
-        <FullscreenPopupCard
-          onClose={hidePopup}
-          showCloseButton={popupState.data.showCloseButton}
-          title={popupState.data.title}
-          footer={popupState.data.footer}
-        >
+        <FullscreenPopupCard close={hidePopup}>
           {popupState.data.content}
         </FullscreenPopupCard>
       )}
@@ -84,20 +74,14 @@ export const PopupProvider: React.FC<PopupProviderProps> = ({ children }) => {
 
 const FullscreenPopupCard = ({
   children,
-  onClose,
-  title,
-  footer,
-  showCloseButton = true,
+  close,
 }: {
   children: React.ReactNode;
-  onClose?: () => void;
-  title?: React.ReactNode;
-  footer?: React.ReactNode;
-  showCloseButton?: boolean;
+  close: () => void;
 }): React.ReactElement => {
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget && onClose) {
-      onClose();
+    if (e.target === e.currentTarget) {
+      close();
     }
   };
 
@@ -125,35 +109,7 @@ const FullscreenPopupCard = ({
     <div style={overlayStyle} onClick={handleBackdropClick}>
       <div className="row justify-content-center w-100">
         <div className="col-12 col-md-8 col-lg-6 col-xxl-4">
-          <div style={cardStyle} className="card">
-            {showCloseButton && onClose && (
-              <div className="card-header d-flex">
-                <h5 className="flex-grow-1 d-flex align-items-center mb-0">
-                  {title}
-                </h5>
-                <div className="flex-grow-0">
-                  <button
-                    className="btn btn-light"
-                    onClick={onClose}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor =
-                        "rgba(255, 255, 255, 0.3)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor =
-                        "rgba(255, 255, 255, 0.2)";
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faClose} />
-                  </button>
-                </div>
-              </div>
-            )}
-            <div className="card-body" style={{ overflow: "auto" }}>
-              {children}
-            </div>
-            {footer && <div className="card-footer">{footer}</div>}
-          </div>
+          <div style={{ overflowX: "scroll", ...cardStyle }}>{children}</div>
         </div>
       </div>
     </div>

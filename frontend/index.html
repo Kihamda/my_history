@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
@@ -19,14 +19,20 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap"
       media="print"
-      onload='this.media="all"'
+      onload="this.media = 'all'"
     />
     <style>
       body {
-        font-family: "Noto Sans JP", "Yu Gothic", "Hiragino Sans", sans-serif !important;
+        font-family:
+          "Noto Sans JP", "Yu Gothic", "Hiragino Sans", sans-serif !important;
         font-optical-sizing: auto;
         font-weight: 400;
         font-style: normal;
+      }
+
+      .hover-shadow:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease-in-out;
       }
     </style>
   </head>

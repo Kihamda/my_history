@@ -1,3 +1,4 @@
+import { useAuthContext } from "@f/authContext";
 import SidebarUI from "@f/lib/components/sidebar";
 import LoadingSplash from "@f/lib/style/loadingSplash";
 import { lazy, Suspense } from "react";
@@ -6,11 +7,17 @@ const MembersPage = lazy(() => import("./pages/members"));
 const InvitesPage = lazy(() => import("./pages/invites"));
 
 const GroupPage = () => {
+  if (useAuthContext().currentGroup == null) {
+    return (
+      <div className="text-center mt-3">
+        所属グループが設定されていないため、グループ設定ページは表示できません。
+      </div>
+    );
+  }
   return (
     <>
       <SidebarUI
         pathBase="/app/group"
-        hideIndex={true}
         data={[
           {
             title: "グループ設定トップ",
@@ -20,7 +27,6 @@ const GroupPage = () => {
                 <GroupTopPage />
               </Suspense>
             ),
-            index: [],
           },
           {
             title: "メンバー管理",
@@ -30,7 +36,6 @@ const GroupPage = () => {
                 <MembersPage />
               </Suspense>
             ),
-            index: [],
           },
           {
             title: "招待管理",
@@ -40,7 +45,6 @@ const GroupPage = () => {
                 <InvitesPage />
               </Suspense>
             ),
-            index: [],
           },
         ]}
       />

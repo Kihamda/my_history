@@ -1,7 +1,5 @@
 import { Route, Routes } from "react-router";
 
-import { ErrorProvider } from "./errorHandler";
-
 /*
  * このアプリケーションのルートファイル
  * Routes以下でランディングページ、認証ページ、アプリ画面を振り分ける
@@ -11,10 +9,11 @@ import { ErrorProvider } from "./errorHandler";
 import { lazy, Suspense, useEffect } from "react";
 import LoadingSplash from "@f/lib/style/loadingSplash";
 
+const ErrorProvider = lazy(() => import("@f/errorHandler"));
 const Auth = lazy(() => import("@f/auth/auth"));
 const AppPage = lazy(() => import("@f/app/app"));
 const AuthProvider = lazy(() => import("@f/authContext"));
-const PopupProvider = lazy(() => import("@f/lib/style/fullscreanPopup"));
+const PopupProvider = lazy(() => import("@f/lib/popupContext/fullscreanPopup"));
 const GodMode = lazy(() => import("@f/god/god"));
 
 // ここで/〇〇/の変更が生じるときはfirebase.jsonのrewritesも変更すること
@@ -22,10 +21,10 @@ const GodMode = lazy(() => import("@f/god/god"));
 // メインアプリケーションコンポーネント
 function MainApp() {
   return (
-    <ErrorProvider>
-      <Suspense fallback={<LoadingSplash />}>
-        <PopupProvider>
-          <AuthProvider>
+    <Suspense fallback={<LoadingSplash />}>
+      <ErrorProvider>
+        <AuthProvider>
+          <PopupProvider>
             <Routes>
               <Route path="/" element={<Reload />} />
               <Route path="*" element={<NotFound />} />
@@ -33,10 +32,10 @@ function MainApp() {
               <Route path="/app/*" element={<AppPage />} />
               <Route path="/god/*" element={<GodMode />} />
             </Routes>
-          </AuthProvider>
-        </PopupProvider>
-      </Suspense>
-    </ErrorProvider>
+          </PopupProvider>
+        </AuthProvider>
+      </ErrorProvider>
+    </Suspense>
   );
 }
 

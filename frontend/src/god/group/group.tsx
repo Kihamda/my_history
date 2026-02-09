@@ -32,7 +32,7 @@ const GodGroupPage = () => {
       setResults(
         (await data.json()).map((item) => ({
           id: item.doc_id,
-          data: { name: item.name, description: item.description },
+          data: item,
         })),
       );
       return;
@@ -59,8 +59,12 @@ const GodGroupPage = () => {
         id: data.id,
       },
       json: {
-        name: data.data.name,
-        description: data.data.description,
+        userSettings: {
+          name: data.data.userSettings.name,
+        },
+        adminTags: {
+          description: data.data.adminTags.description,
+        },
       },
     });
     if (result.status == 200) {
@@ -107,7 +111,7 @@ const GodGroupPage = () => {
                 <h3>
                   {editorSlot.id !== openedTemp
                     ? "新規作成"
-                    : editorSlot.data.name + "の編集"}
+                    : editorSlot.data.userSettings.name + "の編集"}
                 </h3>
                 <InputGroupUI
                   label="ID"
@@ -116,11 +120,17 @@ const GodGroupPage = () => {
                 />
                 <InputGroupUI
                   label="名前"
-                  value={editorSlot.data.name}
+                  value={editorSlot.data.userSettings.name}
                   setValueFunc={(e) =>
                     setEditorSlot({
                       ...editorSlot,
-                      data: { ...editorSlot.data, name: e },
+                      data: {
+                        ...editorSlot.data,
+                        userSettings: {
+                          ...editorSlot.data.userSettings,
+                          name: e,
+                        },
+                      },
                     })
                   }
                 />
@@ -128,13 +138,16 @@ const GodGroupPage = () => {
                   <label className="form-label">memo</label>
                   <textarea
                     className="form-control"
-                    value={editorSlot.data.description}
+                    value={editorSlot.data.adminTags.description}
                     onChange={(e) =>
                       setEditorSlot({
                         ...editorSlot,
                         data: {
                           ...editorSlot.data,
-                          description: e.target.value,
+                          adminTags: {
+                            ...editorSlot.data.adminTags,
+                            description: e.target.value,
+                          },
                         },
                       })
                     }
@@ -181,7 +194,7 @@ const GodGroupPage = () => {
                   {results.map((group) => (
                     <tr key={group.id}>
                       <td>{group.id}</td>
-                      <td>{group.data.name}</td>
+                      <td>{group.data.userSettings.name}</td>
                       <td>
                         <Button
                           onClick={() => {

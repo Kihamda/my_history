@@ -1,7 +1,8 @@
 import ShowData from "@f/lib/style/showData";
-import { usePopup } from "@f/lib/style/fullscreanPopup";
+import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import type { ScoutData } from "@f/lib/api/apiTypes";
 import ginoshoMap from "@f/lib/master/ginoshos";
+import { PopupCard } from "@f/lib/popupContext/popupCard";
 
 type Ginosho = ScoutData["ginosho"][number];
 
@@ -47,16 +48,6 @@ const GinoshoList = ({
                 detailAction={() => {
                   popup.showPopup({
                     content: <DetailPopup data={doc} />,
-                    title: "技能章詳細",
-                    footer: (
-                      <a
-                        href={ms.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        日本連盟のページへ
-                      </a>
-                    ),
                   });
                 }}
               />
@@ -83,7 +74,14 @@ const DetailPopup = ({
   const dt = data.data;
   const ms = data.master;
   return (
-    <>
+    <PopupCard
+      title={ms.name + (ms.cert ? " (考査員認定)" : " (隊長認定)")}
+      footer={
+        <a href={ms.url} target="_blank" rel="noopener noreferrer">
+          日本連盟のページへ
+        </a>
+      }
+    >
       <h4 className="pb-1" style={{ borderBottom: "1px solid #000000ff" }}>
         {ms.name + (ms.cert ? " (考査員認定)" : " (隊長認定)")}
       </h4>
@@ -120,6 +118,6 @@ const DetailPopup = ({
           <p>細目はありません</p>
         )}
       </div>
-    </>
+    </PopupCard>
   );
 };

@@ -46,7 +46,7 @@ const Register: React.FC = () => {
       await register(email, password);
       await sendVerificationEmail();
       alert(
-        "ユーザーが成功裏に作成されました。メールアドレス認証のためのメールを送信したので、URLをクリックして続行してください。"
+        "ユーザーが成功裏に作成されました。メールアドレス認証のためのメールを送信したので、URLをクリックして続行してください。",
       );
     } catch (error) {
       alert("ユーザーの作成中にエラーが発生しました。");
@@ -64,6 +64,7 @@ const Register: React.FC = () => {
           <Form.Control
             type="email"
             placeholder="abc@example.com"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -74,6 +75,7 @@ const Register: React.FC = () => {
           <Form.Control
             type="password"
             placeholder="パスワードを入力してください"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -84,6 +86,7 @@ const Register: React.FC = () => {
           <Form.Control
             type="password"
             placeholder="パスワードをもう一度入力してください"
+            autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required

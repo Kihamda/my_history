@@ -17,7 +17,7 @@ const GroupPage = lazy(() => import("./group/group"));
 const App = () => {
   // ログアウト状態なのに/appにアクセスした人をログインページに送還する
   // これ以降はuseAuthContext()は(引数がfalseでなくても)必ず値を返すから安心して使ってよい
-  const { user, token } = useAuthContext(false) || {};
+  const { user, currentGroup, token } = useAuthContext(false) || {};
   if (!token) {
     return <Navigate to="/auth/login" replace />;
   }
@@ -25,7 +25,7 @@ const App = () => {
     return <Navigate to="/auth/setup" replace />;
   }
 
-  const isLeader = user.currentGroup != undefined || false; // リーダーかどうかのフラグ。
+  const isLeader = currentGroup != undefined || false; // リーダーかどうかのフラグ。
 
   return (
     <>

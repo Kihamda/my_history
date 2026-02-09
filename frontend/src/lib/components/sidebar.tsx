@@ -6,7 +6,7 @@ export interface SidebarData {
   path: string;
   routeElement: React.ReactElement;
   icon?: FontAwesomeIconProps["icon"];
-  index: {
+  index?: {
     key: string;
     label: string;
   }[];
@@ -32,12 +32,10 @@ const SidebarUI = ({
   data,
   pathBase,
   customTopElement,
-  hideIndex = false,
 }: {
   data: SidebarData[];
   pathBase: string;
   customTopElement?: React.ReactElement;
-  hideIndex?: boolean;
 }) => {
   const { pathname } = useLocation();
 
@@ -46,7 +44,10 @@ const SidebarUI = ({
     <div className="row mt-3">
       <div className="col-12 col-md-4 col-lg-3">
         {customTopElement}
-        {current && !hideIndex && (
+        <div className="mb-3 d-none d-md-block">
+          <SidebarPageList data={data} pathBase={pathBase} />
+        </div>
+        {current?.index && (
           <div className="card mb-3">
             <div className="card-header">
               <h5 className="mb-0">{current.title}</h5>
@@ -64,10 +65,6 @@ const SidebarUI = ({
             </div>
           </div>
         )}
-
-        <div className="mb-3 d-none d-md-block">
-          <SidebarPageList data={data} pathBase={pathBase} />
-        </div>
       </div>
       <div className="col-12 col-md-8 col-lg-9">
         <Routes>

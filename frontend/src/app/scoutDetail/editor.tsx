@@ -15,7 +15,7 @@ const ScoutDetailEditor = ({
   scoutID,
 }: {
   scoutData: ScoutData;
-  setScoutData: React.Dispatch<React.SetStateAction<ScoutData>>;
+  setScoutData: (param: ScoutData) => void;
   scoutID: string;
 }): React.ReactElement => {
   // TMP置き場
@@ -24,7 +24,7 @@ const ScoutDetailEditor = ({
   >(scoutData.personal);
 
   const [scoutDataUnit, setScoutDataUnit] = useState<ScoutData["unit"]>(
-    scoutData.unit
+    scoutData.unit,
   );
 
   const [scoutDataGinosho, setScoutDataGinosho] = useState<
@@ -32,7 +32,7 @@ const ScoutDetailEditor = ({
   >(scoutData.ginosho);
 
   const [scoutDataEvents, setScoutDataEvents] = useState<ScoutData["event"]>(
-    scoutData.event
+    scoutData.event,
   );
 
   // 保存時遷移用

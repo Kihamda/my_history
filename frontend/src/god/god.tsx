@@ -20,7 +20,7 @@ const GodMode = () => {
   return (
     <div>
       <HeaderGod name={context.user.profile.displayName} />
-      <div className="container" style={{ marginTop: "4.5rem" }}>
+      <div className="container mb-3" style={{ marginTop: "4.5rem" }}>
         <Routes>
           <Route path="/home" element={<GodHome />} />
           <Route path="/scouts" element={<GodScoutPage />} />

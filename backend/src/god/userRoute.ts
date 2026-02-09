@@ -78,7 +78,6 @@ const godUserRouter = new Hono<AppContext>()
           value: isGod === "true" ? true : false,
         });
       }
-
       // 両方指定された場合は両方で検索して結果を結合して返す
       const result = await db().users.lis(query);
       return c.json(result);
@@ -89,11 +88,7 @@ const godUserRouter = new Hono<AppContext>()
   .post(
     "/:id/setUserData",
     zValidator("param", z.object({ id: genIdSchema })),
-    zValidator(
-      "json",
-
-      UserRecordSchemaString,
-    ),
+    zValidator("json", UserRecordSchemaString),
     async (c) => {
       const id = c.req.valid("param").id;
       const data = c.req.valid("json");

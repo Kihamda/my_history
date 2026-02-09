@@ -13,37 +13,29 @@ const ScoutDetail = (): React.ReactElement => {
   const id = useLocation().pathname.split("/")[3]; // /app/scouts/:id newになることはない。
   const mode = useLocation().pathname.split("/")[4];
 
-  const [scoutData, setScoutData] = useState<ScoutData>(
-    null as unknown as ScoutData
-  );
+  const [scoutData, setScoutData] = useState<ScoutData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { currentGroup, user } = useAuthContext();
 
-  const isEditable =
-    useAuthContext().user.currentGroup?.role == "ADMIN" ||
-    useAuthContext().user.currentGroup?.role == "EDIT";
+  const handleFetchScouts = async (scoutId: string) => {
+    setIsLoading(true);
+    const data = await hc.apiv1.scout[":id"].$get({ param: { id: scoutId } });
+    if (data.ok) {
+      const jsonData = await data.json();
+      setScoutData(jsonData);
+    } else {
+      raiseError("スカウトの情報の取得に失敗しました。");
+      setScoutData(null);
+    }
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    hc.apiv1.scout[":id"].$get({ param: { id } }).then(async (data) => {
-      try {
-        const jsonData = await data.json();
-        if (!jsonData) {
-          raiseError("スカウトの情報が見つかりませんでした。");
-        } else {
-          setScoutData(jsonData);
-        }
-      } catch (error) {
-        raiseError("スカウトの情報の取得に失敗しました。");
-      }
-    });
+    handleFetchScouts(id);
   }, [id]);
 
-  // モードのチェック
-  if (mode !== "view" && mode !== "edit") {
-    // modeがviewかeditでない場合は、viewモードにリダイレクト
-    return <Navigate to={`/app/scouts/${id}/view`} replace />;
-  }
-
   // データがロード中の場合はローディング表示を返す
-  if (!scoutData) {
+  if (isLoading) {
     return (
       <LoadingSplash
         message="スカウトの情報を読み込み中..."
@@ -52,29 +44,37 @@ const ScoutDetail = (): React.ReactElement => {
     );
   }
 
-  if (mode === "view") {
-    // ビューモードの処理
-    return (
-      <ScoutDetailViewer
-        scoutID={id}
-        isEditable={isEditable}
-        scoutData={scoutData}
-      />
-    );
-  } else if (mode === "edit") {
-    // 編集モードの処理
-    if (!isEditable) {
+  if (scoutData) {
+    const isEditable = currentGroup
+      ? currentGroup.role == "ADMIN" || currentGroup.role == "EDIT"
+      : user.auth.shares.find((s) => s.id == id)?.role == "EDIT";
+
+    if (mode === "view") {
+      // ビューモードの処理
+      return (
+        <ScoutDetailViewer
+          scoutID={id}
+          isEditable={isEditable}
+          scoutData={scoutData}
+        />
+      );
+    } else if (mode === "edit") {
+      // 編集モードの処理
+      if (!isEditable) {
+        return <Navigate to={`/app/scouts/${id}/view`} />;
+      }
+      return (
+        <ScoutDetailEditor
+          scoutID={id}
+          scoutData={scoutData}
+          setScoutData={setScoutData}
+        />
+      );
+    } else {
       return <Navigate to={`/app/scouts/${id}/view`} />;
     }
-    return (
-      <ScoutDetailEditor
-        scoutID={id}
-        scoutData={scoutData}
-        setScoutData={setScoutData}
-      />
-    );
   } else {
-    return <Navigate to={`/app/scouts/${id}/view`} />;
+    return <Navigate to="/app/scouts" />;
   }
 };
 

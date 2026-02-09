@@ -1,6 +1,8 @@
 import SidebarUI from "@f/lib/components/sidebar";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import MainPage from "./page/main";
+import UserGroupsSettingsPage from "./page/groups";
+import UserInvitesSettingsPage from "./page/invites";
 
 const Setting = () => {
   return (
@@ -28,10 +30,14 @@ const Setting = () => {
             ],
           },
           {
-            title: "通知設定",
-            path: "/notifications",
-            routeElement: <div>通知設定ページ</div>,
-            index: [],
+            title: "所属中の組織",
+            path: "/groups",
+            routeElement: <UserGroupsSettingsPage />,
+          },
+          {
+            title: "受けている招待",
+            path: "/invites",
+            routeElement: <UserInvitesSettingsPage />,
           },
         ]}
       />

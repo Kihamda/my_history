@@ -3,7 +3,6 @@ import type { AppContext } from "../apiRotuer";
 import { zValidator } from "@hono/zod-validator";
 import { UserRecordSchema } from "../lib/firestore/schemas";
 import {
-  getUserHandler,
   createUserHandler,
   deleteUserHandler,
   updateUserProfileHandler,
@@ -12,6 +11,7 @@ import {
 import { z } from "zod/v4";
 import { loadUserData } from "@b/lib/userData";
 import userSettingsRouter from "./userSettingsRoute";
+import { getSharedScoutsHandler, getUserHandler } from "./getHandlers";
 
 const userRouter = new Hono<AppContext>()
   // ユーザー新規作成 (初回登録時)
@@ -42,6 +42,18 @@ const userRouter = new Hono<AppContext>()
       const { email } = c.req.valid("json");
       const userData = await searchUserHandler(email);
       return c.json(userData);
+    },
+  )
+
+  .get(
+    "/sharedScouts",
+    zValidator(
+      "query",
+      z.object({ offset: z.string().optional().transform(Number) }),
+    ),
+    async (c) => {
+      const offset = c.req.valid("query").offset ?? 0;
+      return c.json(await getSharedScoutsHandler(c, offset));
     },
   )
 

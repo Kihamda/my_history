@@ -4,32 +4,27 @@ import { logout, useAuthContext } from "@f/authContext";
 import type { FC } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { usePopup } from "@f/lib/style/fullscreanPopup";
+import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
+import { PopupCard } from "@f/lib/popupContext/popupCard";
 
-const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
-  name,
-  isGod,
-  showTop = false,
-}) => {
-  const handleLogout = () => {
-    logout();
-  };
-
-  const { showPopup, hidePopup } = usePopup();
-  const { user, setCurrentGroup } = useAuthContext();
-
-  const handleChangeGroup = () => {
-    showPopup({
-      title: "グループを選択",
-      content: (
+const HandleChangePopup = () => {
+  const { hidePopup } = usePopup();
+  const { user, currentGroup, setCurrentGroup } = useAuthContext();
+  return (
+    <PopupCard
+      title="グループを選択"
+      children={
         <>
           <select
             className="form-select"
-            defaultValue={user.currentGroup?.id}
+            defaultValue={currentGroup?.id || ""}
             onChange={(e) => {
-              setCurrentGroup(e.target.value);
+              setCurrentGroup(
+                e.target.value.length === 0 ? null : e.target.value,
+              );
             }}
           >
+            <option value="">グループ未選択</option>
             {user.auth.memberships.map((group) => (
               <option key={group.id} value={group.id}>
                 {group.name}
@@ -37,8 +32,8 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
             ))}
           </select>
         </>
-      ),
-      footer: (
+      }
+      footer={
         <div className="text-end">
           <button
             className="btn btn-secondary"
@@ -49,9 +44,21 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
             閉じる
           </button>
         </div>
-      ),
-    });
+      }
+    />
+  );
+};
+
+const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
+  name,
+  isGod,
+  showTop = false,
+}) => {
+  const handleLogout = () => {
+    logout();
   };
+
+  const { showPopup } = usePopup();
 
   return (
     <div className="dropdown">
@@ -67,8 +74,11 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
         className="dropdown-menu"
         style={showTop ? { top: "auto", bottom: "110%" } : {}}
       >
-        <li>
-          <span className="dropdown-item" onClick={handleChangeGroup}>
+        <li style={{ cursor: "pointer" }}>
+          <span
+            className="dropdown-item"
+            onClick={() => showPopup({ content: <HandleChangePopup /> })}
+          >
             グループを選択
           </span>
         </li>
@@ -108,10 +118,11 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
 };
 
 const Header: FC = () => {
-  const user = useAuthContext().user;
+  const { user, currentGroup } = useAuthContext();
+  const { showPopup } = usePopup();
 
-  const isLeader = user.currentGroup != undefined || false; // リーダーかどうかのフラグ。
-  const isAdmin = user.currentGroup?.role == "ADMIN" || false;
+  const isLeader = currentGroup != undefined || false; // リーダーかどうかのフラグ。
+  const isAdmin = currentGroup?.role == "ADMIN" || false;
   const isGod = user.auth.isGod || false;
   const name = user.profile.displayName || "名称未設定";
   // ログアウト処理
@@ -178,10 +189,12 @@ const Header: FC = () => {
               )}
             </ul>
             <ul className="navbar-nav ms-auto d-none d-lg-flex align-items-center">
-              <span className="me-2">
-                {user.currentGroup
-                  ? "所属:" + user.currentGroup.name
-                  : "グループ未選択"}
+              <span
+                className="me-2"
+                style={{ cursor: "pointer" }}
+                onClick={() => showPopup({ content: <HandleChangePopup /> })}
+              >
+                {currentGroup ? "所属:" + currentGroup.name : "グループ未選択"}
               </span>
               <UserDropdown name={name} isGod={isGod} />
             </ul>

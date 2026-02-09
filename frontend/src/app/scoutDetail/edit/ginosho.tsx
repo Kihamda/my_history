@@ -1,11 +1,11 @@
-import { usePopup } from "@f/lib/style/fullscreanPopup";
+import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import { Button, InputGroup } from "react-bootstrap";
-import { Suspense, useState } from "react";
-import LoadingSplash from "@f/lib/style/loadingSplash";
+import { useState } from "react";
 import InputGroupUI from "@f/lib/style/imputGroupUI";
 import ShowData from "@f/lib/style/showData";
 import type { ScoutData } from "@f/lib/api/apiTypes";
 import ginoshoMap from "@f/lib/master/ginoshos";
+import { PopupCard } from "@f/lib/popupContext/popupCard";
 
 type Ginosho = ScoutData["ginosho"][number];
 
@@ -26,28 +26,26 @@ const GinoshoList = ({
   const showPopup = (data: Ginosho) => {
     popup.showPopup({
       content: (
-        <Suspense fallback={<LoadingSplash />}>
-          <DetailPopup
-            data={data}
-            setDataFunc={(newData) => {
-              const newList = [...ginosho];
-              const index = newList.findIndex(
-                (item) => item.uniqueId === data.uniqueId
-              );
-              if (newData === null) {
-                // 削除
-                newList.splice(index, 1);
-                setGinoshoFunc(newList);
-              } else if (index !== -1) {
-                newList[index] = newData;
-                setGinoshoFunc(newList);
-              } else {
-                // 新規追加
-                setGinoshoFunc([...newList, newData]);
-              }
-            }}
-          />
-        </Suspense>
+        <DetailPopup
+          data={data}
+          setDataFunc={(newData) => {
+            const newList = [...ginosho];
+            const index = newList.findIndex(
+              (item) => item.uniqueId === data.uniqueId,
+            );
+            if (newData === null) {
+              // 削除
+              newList.splice(index, 1);
+              setGinoshoFunc(newList);
+            } else if (index !== -1) {
+              newList[index] = newData;
+              setGinoshoFunc(newList);
+            } else {
+              // 新規追加
+              setGinoshoFunc([...newList, newData]);
+            }
+          }}
+        />
       ),
     });
   };
@@ -126,7 +124,14 @@ const DetailPopup = ({
   const popup = usePopup();
 
   return (
-    <>
+    <PopupCard
+      title={
+        dataTmp.master
+          ? dataTmp.master.name +
+            (dataTmp.master.cert ? " (考査員認定)" : " (隊長認定)")
+          : "技能章詳細"
+      }
+    >
       <div
         style={{ borderBottom: "1px solid #000000ff" }}
         className="d-flex mb-3"
@@ -278,6 +283,6 @@ const DetailPopup = ({
           </p>
         )}
       </div>
-    </>
+    </PopupCard>
   );
 };

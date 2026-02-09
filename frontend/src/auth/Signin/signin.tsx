@@ -39,6 +39,7 @@ const Signin: FC = () => {
           <Form.Control
             type="email"
             placeholder="abc@example.com"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -49,6 +50,7 @@ const Signin: FC = () => {
           <Form.Control
             type="password"
             placeholder="パスワードを入力してください"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

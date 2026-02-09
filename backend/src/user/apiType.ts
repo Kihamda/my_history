@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { GroupRoleSchema, ShareRoleSchema } from "../lib/scoutGroup";
+import { GroupRoleSchema } from "../lib/scoutGroup";
 import { genIdSchema } from "@b/lib/randomId";
 
 /**
@@ -40,20 +40,20 @@ export const UserProfile = z.object({
         id: genIdSchema,
         name: z.string().min(1).max(100),
         role: GroupRoleSchema,
-      })
+      }),
     ),
     invites: z.array(
       z.object({
         id: genIdSchema,
         name: z.string().min(1).max(100),
         role: GroupRoleSchema,
-      })
+      }),
     ),
     shares: z.array(
       z.object({
         id: genIdSchema,
-        role: ShareRoleSchema,
-      })
+        role: z.string(),
+      }),
     ),
     isGod: z.boolean(),
   }),

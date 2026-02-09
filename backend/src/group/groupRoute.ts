@@ -26,6 +26,8 @@ import {
   removeGroupMember,
   updateMemberRole,
   getGroupMembers,
+  getGroupInvitees,
+  getGroupProfileData,
 } from "./handler";
 import { genIdSchema } from "@b/lib/randomId";
 
@@ -44,14 +46,18 @@ const groupRouter = new Hono<AppContext>()
    * レスポンス: GroupRecordSchemaType
    * 権限: グループメンバー(ロール問わず)
    */
-  .get("/:id", zValidator("param", z.object({ id: z.string() })), async (c) => {
-    const id = c.req.param("id");
-    const group = await getGroupMembers(c, id);
-    return c.json(group);
-  })
+  .get(
+    "/:id/profile",
+    zValidator("param", z.object({ id: z.string() })),
+    async (c) => {
+      const id = c.req.param("id");
+      const group = await getGroupProfileData(id);
+      return c.json(group);
+    },
+  )
 
   /**
-   * POST /:id/members - メンバー招待追加
+   * POST /:id/invites/create - メンバー招待追加
    *
    * パスパラメータ:
    * - id: グループID
@@ -75,6 +81,23 @@ const groupRouter = new Hono<AppContext>()
     },
   )
 
+  .get(
+    "/:id/invites",
+    zValidator(
+      "query",
+      z.object({
+        offset: z.string().optional().default("0").transform(Number),
+      }),
+    ),
+    zValidator("param", z.object({ id: z.string() })),
+    async (c) => {
+      const id = c.req.valid("param").id;
+      const offset = c.req.valid("query").offset;
+      const invitees = await getGroupInvitees(c, offset, id);
+      return c.json({ invitees });
+    },
+  )
+
   /**
    * GET /:id/members - メンバー一覧取得
    *
@@ -87,12 +110,13 @@ const groupRouter = new Hono<AppContext>()
     zValidator(
       "query",
       z.object({
-        page: z.number().int().min(1).optional(),
+        offset: z.string().optional().default("0").transform(Number),
       }),
     ),
     async (c) => {
       const id = c.req.param("id");
-      const group = await getGroupMembers(c, id);
+      const offset = c.req.valid("query").offset || 0;
+      const group = await getGroupMembers(c, offset, id);
       return c.json({ members: group });
     },
   )

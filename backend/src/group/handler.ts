@@ -17,6 +17,22 @@ import {
 import { type GroupRoleSchemaType } from "../lib/scoutGroup";
 
 /**
+ *
+ * グループのプロフィールを取得
+ * @param offset
+ * @param id
+ * @returns
+ */
+
+export const getGroupProfileData = async (id: string) => {
+  const group = await db().groups.get(id);
+  if (!group) {
+    throw new HTTPException(404, { message: "Group not found" });
+  }
+  return group.userSettings;
+};
+
+/**
  * グループ取得(認可付き)
  * - グループ自体の存在確認
  * - 呼び出しユーザーが memberships を持つか確認
@@ -24,6 +40,7 @@ import { type GroupRoleSchemaType } from "../lib/scoutGroup";
  */
 export const getGroupMembers = async (
   c: Context,
+  offset: number,
   id: string,
 ): Promise<
   {
@@ -45,10 +62,11 @@ export const getGroupMembers = async (
       {
         field: "auth.memberships",
         op: "array-contains-any",
-        value: [`ADMII;${id}`],
+        value: [`ADMIN;${id}`, `EDIT;${id}`, `VIEW;${id}`],
       },
     ],
-    100,
+    20,
+    offset,
   );
 
   return members.map((user) => {
@@ -56,6 +74,53 @@ export const getGroupMembers = async (
       uid: user.doc_id,
       role: IdWithGroupRoleParser(
         user.auth.memberships.find((m) => m.endsWith(`;${id}`))!,
+      ).role,
+      email: user.email,
+      displayName: user.profile.displayName,
+      statusMessage: user.profile.statusMessage,
+    };
+  });
+};
+
+/** 招待取得(認可付き)
+ * - グループ自体の存在確認
+ * - 呼び出しユーザーが memberships を持つか確認
+ * - invites 一覧を user コレクションから導出
+ */
+export const getGroupInvitees = async (
+  c: Context,
+  offset: number,
+  id: string,
+): Promise<
+  {
+    uid: string;
+    role: GroupRoleSchemaType;
+    email: string;
+    displayName: string;
+    statusMessage: string;
+  }[]
+> => {
+  if (!c.var.user.fn.isInRoleOnGroup(id, ["ADMIN"])) {
+    throw new HTTPException(403, {
+      message: "You do not have permission to access this group",
+    });
+  }
+  const invites = await db().users.lis(
+    [
+      {
+        field: "auth.invites",
+        op: "array-contains-any",
+        value: [`ADMIN;${id}`, `EDIT;${id}`, `VIEW;${id}`],
+      },
+    ],
+    20,
+    offset,
+  );
+  return invites.map((user) => {
+    return {
+      uid: user.doc_id,
+      role: IdWithGroupRoleParser(
+        user.auth.invites.find((m) => m.endsWith(`;${id}`))!,
       ).role,
       email: user.email,
       displayName: user.profile.displayName,

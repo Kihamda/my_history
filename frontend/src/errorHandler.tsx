@@ -46,7 +46,7 @@ const createId = () =>
 export const raiseError = (
   message: string,
   level: AlertLevel = "error",
-  trace?: string
+  trace?: string,
 ) => {
   const detail: RaisedError = {
     id: createId(),
@@ -57,7 +57,7 @@ export const raiseError = (
 
   // カスタムイベントを発行してエラーメッセージを伝える
   errorEventEmitter.dispatchEvent(
-    new CustomEvent<RaisedError>(ERROR_EVENT_NAME, { detail })
+    new CustomEvent<RaisedError>(ERROR_EVENT_NAME, { detail }),
   );
 };
 
@@ -65,7 +65,7 @@ export const raiseError = (
  * エラーアラートを表示するためのUIコンポーネント。
  * アプリケーションのルートで子要素をラップして使用する。
  */
-export const ErrorProvider: FC<{ children: ReactNode }> = ({ children }) => {
+const ErrorProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [error, setError] = useState<RaisedError[]>([]);
 
   useEffect(() => {
@@ -134,3 +134,5 @@ export const ErrorProvider: FC<{ children: ReactNode }> = ({ children }) => {
     </>
   );
 };
+
+export default ErrorProvider;

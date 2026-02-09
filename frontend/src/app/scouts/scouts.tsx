@@ -17,7 +17,7 @@ import { useAuthContext } from "@f/authContext";
 const Scouts: React.FC = () => {
   // 遷移元からの検索名を取得
   const searchBox = (useLocation().state?.searchName || "") as string;
-  const belongGroupId = useAuthContext().user.currentGroup?.id;
+  const belongGroupId = useAuthContext().currentGroup?.id;
 
   if (!belongGroupId) {
     return (
@@ -51,7 +51,7 @@ const Scouts: React.FC = () => {
     useState<ScoutSearchRequest>(initialSearchQuery);
 
   const [result, setResult] = useState<ScoutSearchResponse>(
-    getResultsCache() || []
+    getResultsCache() || [],
   ); // 初期値としてローカルストレージから取得したスカウトデータを使用
 
   const [isPending, setIsPending] = useState<boolean>(false);
@@ -90,7 +90,7 @@ const Scouts: React.FC = () => {
   return (
     <div>
       <SearchboxCard SearchRequest={searchQuery} SearchFunc={handleSearch} />
-      <div className="mt-5">
+      <div className="mt-3">
         <FullWidthCardHeader
           title="検索結果"
           memo="各カードをクリックすると詳細が表示されます。"
@@ -108,8 +108,11 @@ const Scouts: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  {result.map((item, index) => (
-                    <div className="col-12 col-md-6 col-lg-4 mt-3" key={index}>
+                  {result.map((item) => (
+                    <div
+                      className="col-12 col-md-6 col-lg-4 mt-3"
+                      key={item.id}
+                    >
                       <Link
                         to={`/app/scouts/${item.id}`}
                         className="text-decoration-none text-dark"

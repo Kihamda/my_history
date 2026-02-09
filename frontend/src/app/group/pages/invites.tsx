@@ -1,10 +1,10 @@
 import { useAuthContext } from "@f/authContext";
 import { raiseError } from "@f/errorHandler";
 import { hc, type ReqType } from "@f/lib/api/api";
-import SearchUserWithMail from "@f/lib/components/searchUserWithMail";
-import { usePopup } from "@f/lib/style/fullscreanPopup";
+import SearchUserWithMail from "@f/lib/popupContext/searchUserWithMailPopup";
+import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
 
 type InviteData = ReqType<
@@ -12,8 +12,8 @@ type InviteData = ReqType<
 >["json"];
 
 type NewInviteData = {
-  targetUid: InviteData["targetUid"];
-  name: string;
+  uid: InviteData["targetUid"];
+  displayName: string;
   statusMessage: string;
   email: string;
   role: InviteData["role"];
@@ -22,8 +22,9 @@ type NewInviteData = {
 const InvitesPage = () => {
   const [newData, setNewData] = useState<NewInviteData | null>(null);
   const { showPopup, hidePopup } = usePopup();
+  const [results, setResults] = useState<NewInviteData[]>([]);
 
-  const groupId = useAuthContext().user.currentGroup?.id;
+  const groupId = useAuthContext().currentGroup?.id;
 
   const handleCreateInvite = async () => {
     if (!newData) return;
@@ -35,7 +36,7 @@ const InvitesPage = () => {
 
     const result = await hc.apiv1.group[":id"].invites.create.$post({
       json: {
-        targetUid: newData.targetUid,
+        targetUid: newData.uid,
         role: newData.role,
       },
       param: { id: groupId },
@@ -51,6 +52,41 @@ const InvitesPage = () => {
     }
   };
 
+  const handleGetInvites = async (offset?: number) => {
+    if (!groupId) {
+      raiseError("グループが選択されていません。");
+      return;
+    }
+    const result = await hc.apiv1.group[":id"].invites.$get({
+      param: { id: groupId },
+      query: {
+        offset: String(offset ?? 0),
+      },
+    });
+    if (result.status === 200) {
+      const data = await result.json();
+      if (offset === undefined) {
+        setResults(data.invitees);
+      } else {
+        if (data.invitees.length === 0) {
+          raiseError("これ以上招待はありません。", "info");
+          return;
+        }
+        setResults((prev) => [...prev, ...data.invitees]);
+      }
+    } else {
+      raiseError(
+        "招待一覧の取得に失敗しました。",
+        "error",
+        await result.text(),
+      );
+    }
+  };
+
+  useEffect(() => {
+    handleGetInvites();
+  }, [groupId]);
+
   return (
     <>
       <FullWidthCardHeader
@@ -60,8 +96,8 @@ const InvitesPage = () => {
             <Button
               onClick={() =>
                 setNewData({
-                  targetUid: "",
-                  name: "",
+                  uid: "",
+                  displayName: "",
                   statusMessage: "",
                   email: "",
                   role: "EDIT",
@@ -80,18 +116,17 @@ const InvitesPage = () => {
             <h5 className="card-title">新しい招待を作成</h5>
             <Row className="mt-3">
               <Col>
-                {newData.targetUid.length === 0 ? (
+                {newData.uid.length === 0 ? (
                   <Button
                     onClick={() =>
                       showPopup({
-                        title: "ユーザーを検索",
                         content: (
                           <SearchUserWithMail
                             onSelect={(e) => {
                               setNewData({
                                 ...newData,
-                                targetUid: e.uid,
-                                name: e.profile.displayName,
+                                uid: e.uid,
+                                displayName: e.profile.displayName,
                                 statusMessage: e.profile.statusMessage,
                                 email: e.email,
                               });
@@ -106,7 +141,7 @@ const InvitesPage = () => {
                   </Button>
                 ) : (
                   <>
-                    <h3 className="mb-0">{newData.name}</h3>
+                    <h3 className="mb-0">{newData.displayName}</h3>
 
                     {newData.email}
                     <p className="mt-3">{newData.statusMessage}</p>
@@ -137,7 +172,7 @@ const InvitesPage = () => {
             </Button>
             <Button
               className="ms-2"
-              disabled={newData.targetUid.length === 0}
+              disabled={newData.uid.length === 0}
               onClick={() => {
                 handleCreateInvite();
               }}
@@ -150,7 +185,36 @@ const InvitesPage = () => {
 
       <div className="card mt-3">
         <div className="card-body">
-          <p>招待一覧の内容をここに表示します。</p>
+          <h3>招待一覧</h3>
+          {results.length === 0 ? (
+            <p>招待が存在しません。</p>
+          ) : (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>表示名</th>
+                  <th>メールアドレス</th>
+                  <th>ステータスメッセージ</th>
+                  <th>役割</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((invite, index) => (
+                  <tr key={index}>
+                    <td>{invite.displayName}</td>
+                    <td>{invite.email}</td>
+                    <td>{invite.statusMessage}</td>
+                    <td>{invite.role}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        <div className="card-footer text-end">
+          <Button onClick={() => handleGetInvites(results.length)}>
+            招待をもっと読み込む
+          </Button>
         </div>
       </div>
     </>

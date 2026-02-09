@@ -8,9 +8,9 @@ import type { ScoutCreate } from "@f/lib/api/apiTypes";
 import { useAuthContext } from "@f/authContext";
 const NewScoutWizard = () => {
   const nav = useNavigate();
-  const user = useAuthContext().user;
+  const { currentGroup } = useAuthContext();
 
-  if (!user?.currentGroup) {
+  if (!currentGroup) {
     raiseError("グループに所属していないため、スカウトを作成できません。");
     nav("/app/scouts", { replace: true });
     return <></>;
@@ -20,7 +20,7 @@ const NewScoutWizard = () => {
     name: "",
     scoutId: "",
     birthDate: new Date().toISOString().split("T")[0],
-    belongGroupId: user.currentGroup.id,
+    belongGroupId: currentGroup.id,
   });
 
   const handleSave = async (newScoutData: ScoutCreate) => {

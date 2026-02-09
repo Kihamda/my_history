@@ -22,20 +22,20 @@ import type { UserProfile } from "./lib/api/apiTypes";
 import { raiseError } from "./errorHandler";
 import { getBrowserSettings } from "./lib/localCache";
 
-interface UserProfileContext extends UserProfile {
-  currentGroup: UserProfile["auth"]["memberships"][number] | null;
-}
+interface UserProfileContext extends UserProfile {}
 
 interface AuthContextValue {
   user: UserProfileContext | null;
   token: User | null;
-  setCurrentGroup?: (id: string) => Promise<void>;
+  currentGroup: UserProfile["auth"]["memberships"][number] | null;
+  setCurrentGroup?: (id: string | null) => Promise<void>;
 }
 
 interface SafeAuthContextValue {
   user: UserProfileContext;
   token: User;
-  setCurrentGroup: (id: string) => Promise<void>;
+  currentGroup: UserProfile["auth"]["memberships"][number] | null;
+  setCurrentGroup: (id: string | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -47,6 +47,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [user, setUser] = useState<UserProfileContext | null>(null);
   const [token, setToken] = useState<User | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [currentGroup, setCurrentGroupState] = useState<
+    UserProfile["auth"]["memberships"][number] | null
+  >(null);
 
   //　認証状態の変化を監視
   // token:null : ログアウト
@@ -77,10 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           //　ユーザーデータを状態に保存
           const userData: UserProfile = await user.json();
           if (userData.auth.memberships.length < 0) {
-            setUser({
-              ...userData,
-              currentGroup: null,
-            });
+            setCurrentGroupState(null);
           } else {
             const setedCurrentGroupIndex = userData.auth.memberships.findIndex(
               (membership) =>
@@ -89,16 +89,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
             const currentGroupIndex =
               setedCurrentGroupIndex !== -1 ? setedCurrentGroupIndex : 0;
             const currentGroup = userData.auth.memberships[currentGroupIndex];
-            setUser({
-              ...userData,
-              currentGroup: currentGroup,
-            });
+            setUser(userData);
+            setCurrentGroupState(currentGroup);
           }
         }
       } catch (e) {
-        console.error("Failed to init auth context:", e);
         setUser(null);
-        raiseError("ユーザーデータの取得に失敗しました。");
+        raiseError("ユーザーデータの取得に失敗しました。", "error", String(e));
       } finally {
         setIsLoaded(true);
       }
@@ -121,22 +118,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   // 現在のユーザー情報を再取得して更新する関数
-  const setCurrentGroup = async (id: string) => {
+  const setCurrentGroup = async (id: string | null) => {
     if (!token) return;
+    if (id === null) {
+      setCurrentGroupState(null);
+      raiseError("グループを未選択にしました。", "success");
+      return;
+    }
     try {
-      setUser((prevUser) => {
-        if (!prevUser) return prevUser;
-        const newCurrentGroup =
-          prevUser.auth.memberships.find(
-            (membership) => membership.id === id,
-          ) || null;
-        return {
-          ...prevUser,
-          currentGroup: newCurrentGroup,
-        };
+      setCurrentGroupState(() => {
+        if (!user) return null;
+        return (
+          user.auth.memberships.find(
+            (membership: UserProfile["auth"]["memberships"][number]) =>
+              membership.id === id,
+          ) || null
+        );
       });
+      raiseError(
+        "グループを切り替えました。",
+        "success",
+        `Selected Group ID: ${id}`,
+      );
     } catch (e) {
-      console.error("Failed to set current group:", e);
+      raiseError("グループの切り替えに失敗しました。", "error", String(e));
     }
   };
 
@@ -144,7 +149,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return <LoadingSplash message="ユーザー情報を読み込み中..." />;
   } else {
     return (
-      <AuthContext.Provider value={{ user, token, setCurrentGroup }}>
+      <AuthContext.Provider
+        value={{ user, token, currentGroup, setCurrentGroup }}
+      >
         {children}
       </AuthContext.Provider>
     );
@@ -167,6 +174,16 @@ export function useAuthContext(
     }
   }
   return context;
+}
+
+export function useCurrentGroup() {
+  const context = useAuthContext();
+  if (!context.currentGroup) {
+    raiseError("所属グループが設定されていません。");
+    throw new Error("Current group is not set");
+  } else {
+    return context.currentGroup;
+  }
 }
 
 export const login = async (email: string, password: string) => {
