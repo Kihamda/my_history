@@ -114,7 +114,7 @@ const Scouts: React.FC = () => {
                       key={item.id}
                     >
                       <Link
-                        to={`/app/scouts/${item.id}`}
+                        to={`/app/scouts/${item.id}/view`}
                         className="text-decoration-none text-dark"
                       >
                         <SearchResultCard result={item} />

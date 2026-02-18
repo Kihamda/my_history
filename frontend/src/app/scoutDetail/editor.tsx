@@ -91,6 +91,7 @@ const ScoutDetailEditor = ({
           </>
         }
       />
+
       <Profile
         scoutData={scoutDataPersonal}
         setScoutData={setScoutDataPersonal}

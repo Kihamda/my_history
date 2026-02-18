@@ -41,11 +41,7 @@ const app = new Hono()
   .use(
     "*",
     cors({
-      origin: [
-        "https://myhis.kihamda.net",
-        "http://localhost:5173",
-        "http://localhost:5174",
-      ],
+      origin: ["https://myhis.kihamda.net", "http://localhost:5173"],
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowHeaders: ["Content-Type", "Authorization"],
     }),
