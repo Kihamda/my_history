@@ -19,6 +19,7 @@
 - [static-site.md](static-site.md) 静的サイト生成と配信
 - [roadmap.md](roadmap.md) 実装計画と優先度
 - [changelog.md](changelog.md) 変更履歴
+- [help/README.md](help/README.md) 利用者向けヘルプ
 - [firestore.rules](firestore.rules) Firestore ルール草案
 
 ## 主要ディレクトリ

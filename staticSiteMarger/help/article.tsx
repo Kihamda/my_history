@@ -6,8 +6,10 @@ import { marked } from "marked";
 const Article = ({ md }: { md: string }): React.JSX.Element => {
   const content = md ? marked(md) : "No content available";
   return (
-    <div className="container">
-      <h1>Article</h1>
+    <div className="container py-4">
+      <p className="mb-3">
+        <a href="/help/index.html">ヘルプ一覧へ戻る</a>
+      </p>
       <div dangerouslySetInnerHTML={{ __html: content }} />
     </div>
   );

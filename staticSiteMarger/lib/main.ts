@@ -1,85 +1,139 @@
 import * as fs from "fs";
 import * as path from "path";
-import { buildLandingPage } from "./builder";
+import { buildHelpPages, buildLandingPage } from "./builder";
 
-/**
- * Markdownファイルを読み込み、HTMLに変換して保存する関数
- * @param markdownPath 変換するMarkdownファイルのパス
- */
+// このファイルが存在するディレクトリ (staticSiteMarger/) を基点にする
 export const __dirname = path.join(path.resolve());
 
-const getAllMarkdownFiles = (): string[] => {
-  const markdownFiles: string[] = [];
-  const dirPath = path.join(__dirname, "help/pages");
+// ---------------------------------------------------------------------------
+// ユーティリティ
+// ---------------------------------------------------------------------------
 
-  fs.readdirSync(dirPath).forEach((file) => {
-    if (file.endsWith(".md")) {
-      markdownFiles.push(path.join(dirPath, file));
-    }
-  });
-
-  return markdownFiles;
+/** パスがディレクトリとして存在するか確認する */
+const isDir = (targetPath: string): boolean => {
+  try {
+    return fs.statSync(targetPath).isDirectory();
+  } catch {
+    return false;
+  }
 };
 
-const copyToBackend = () => {
-  const sourcePath = path.join(__dirname, "../frontend/dist");
-  const destPath = path.join(__dirname, "../backend/buildTmp");
-
-  fs.cpSync(sourcePath, destPath, { recursive: true });
+/** ディレクトリが無ければ作成する（recursive） */
+const ensureDir = (targetPath: string): void => {
+  if (!isDir(targetPath)) {
+    fs.mkdirSync(targetPath, { recursive: true });
+  }
 };
 
-// build時にviteの方のdistにコピーする。
-const copyToDist = () => {
-  const sourcePath = path.join(__dirname, "dist");
-  const destPath = path.join(__dirname, "../frontend/dist/");
+/** ディレクトリをクリアして再作成する */
+const resetDir = (targetPath: string): void => {
+  if (fs.existsSync(targetPath)) {
+    fs.rmSync(targetPath, { recursive: true, force: true });
+  }
+  fs.mkdirSync(targetPath, { recursive: true });
+};
 
-  if (!fs.existsSync(path.join(destPath, "spa.html"))) {
-    fs.cpSync(
-      path.join(destPath, "index.html"),
-      path.join(destPath, "spa.html"),
-      {
-        recursive: true,
-      }
+// ---------------------------------------------------------------------------
+// パス定義
+// ---------------------------------------------------------------------------
+
+const PATHS = {
+  helpPages: path.join(__dirname, "help/pages"),
+  dist: path.join(__dirname, "dist"),
+  distHelp: path.join(__dirname, "dist/help"),
+  public: path.join(__dirname, "public"),
+  frontendDist: path.join(__dirname, "../frontend/dist"),
+  backendBuildTmp: path.join(__dirname, "../backend/buildTmp"),
+} as const;
+
+// ---------------------------------------------------------------------------
+// ビルドステップ
+// ---------------------------------------------------------------------------
+
+const getMarkdownFiles = (): string[] => {
+  if (!isDir(PATHS.helpPages)) {
+    console.warn(`[staticSiteMarger] Directory not found: ${PATHS.helpPages}`);
+    return [];
+  }
+
+  return fs
+    .readdirSync(PATHS.helpPages)
+    .filter((file) => file.endsWith(".md"))
+    .map((file) => path.join(PATHS.helpPages, file));
+};
+
+/** staticSiteMarger/dist を初期化して help サブディレクトリも作成する */
+const initDistDir = (): void => {
+  resetDir(PATHS.dist);
+  ensureDir(PATHS.distHelp);
+};
+
+/** public/ の静的アセットを dist/ にコピーする */
+const copyPublicAssets = (): void => {
+  if (!isDir(PATHS.public)) {
+    console.warn(
+      `[staticSiteMarger] Public directory not found: ${PATHS.public}`,
     );
+    return;
+  }
+  ensureDir(PATHS.dist);
+  fs.cpSync(PATHS.public, PATHS.dist, { recursive: true });
+};
+
+/**
+ * staticSiteMarger/dist を frontend/dist にマージする。
+ * - frontend/dist の index.html はまだ存在していれば spa.html に退避させる
+ * - その後 dist/ の内容を上書きコピーする（ランディング用 index.html を配置）
+ */
+const copyToDist = (): void => {
+  if (!isDir(PATHS.dist)) {
+    console.warn(`[staticSiteMarger] dist not found. Run build first.`);
+    return;
   }
 
-  fs.rmSync(path.join(destPath, "index.html"), {
-    recursive: true,
-    force: true,
-  });
+  ensureDir(PATHS.frontendDist);
 
-  fs.cpSync(sourcePath, destPath, { recursive: true });
-};
+  const srcIndex = path.join(PATHS.frontendDist, "index.html");
+  const spaHtml = path.join(PATHS.frontendDist, "spa.html");
 
-// distディレクトリを作成する関数
-// 既に存在する場合は削除してから作成
-const createDistDir = () => {
-  const distPath = path.join(__dirname, "dist");
-  if (!fs.existsSync(distPath)) {
-    fs.mkdirSync(distPath);
-  } else {
-    fs.rmSync(distPath, { recursive: true, force: true });
-    fs.mkdirSync(distPath);
+  if (!fs.existsSync(spaHtml) && fs.existsSync(srcIndex)) {
+    fs.cpSync(srcIndex, spaHtml);
   }
-  fs.mkdirSync(path.join(distPath, "help"), { recursive: true });
+
+  if (fs.existsSync(srcIndex)) {
+    fs.rmSync(srcIndex, { force: true });
+  }
+
+  fs.cpSync(PATHS.dist, PATHS.frontendDist, { recursive: true });
 };
 
-const copyPublicAssets = () => {
-  const publicPath = path.join(__dirname, "public");
-  const distPublicPath = path.join(__dirname, "dist");
-
-  fs.cpSync(publicPath, distPublicPath, { recursive: true });
+/** frontend/dist を backend/buildTmp にコピーする */
+const copyToBackend = (): void => {
+  if (!isDir(PATHS.frontendDist)) {
+    console.warn(
+      `[staticSiteMarger] frontend/dist not found: ${PATHS.frontendDist}`,
+    );
+    return;
+  }
+  ensureDir(path.dirname(PATHS.backendBuildTmp));
+  fs.cpSync(PATHS.frontendDist, PATHS.backendBuildTmp, { recursive: true });
 };
 
-export const main = async (test: boolean) => {
+// ---------------------------------------------------------------------------
+// エントリーポイント
+// ---------------------------------------------------------------------------
+
+export const main = async (test: boolean): Promise<void> => {
   console.log("Starting static site generation...");
-  const markdownFiles = getAllMarkdownFiles();
-  console.log(`Found ${markdownFiles} markdown files.`);
-  createDistDir();
-  buildLandingPage();
+
+  const markdownFiles = getMarkdownFiles();
+  console.log(`Found ${markdownFiles.length} markdown files.`);
+
+  initDistDir();
+  await buildLandingPage();
+  await buildHelpPages(markdownFiles);
   copyPublicAssets();
 
-  console.log(test);
   if (!test) {
     copyToDist();
     copyToBackend();
