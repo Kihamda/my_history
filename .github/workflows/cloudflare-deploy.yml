@@ -43,7 +43,7 @@ jobs:
         working-directory: staticSiteMarger
         run: npm run build
 
-      - name: Wrangler dry-run deploy
+      - name: Wrangler deploy
         working-directory: backend
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
