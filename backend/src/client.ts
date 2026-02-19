@@ -1,9 +1,9 @@
 import { hc, type InferResponseType } from "hono/client";
-import app from "./index";
+import type { AppType } from "./index";
 
-type Client = ReturnType<typeof hc<typeof app>>;
-const hcWithType = (...args: Parameters<typeof hc>): Client =>
-  hc<typeof app>(...args);
+type Client = ReturnType<typeof hc<AppType>>;
+const hcWithType = (...args: Parameters<typeof hc<AppType>>): Client =>
+  hc<AppType>(...args);
 
 export type ClientType = ReturnType<typeof createClient>;
 // 認証なしでバックエンドにアクセスするための最小クライアント生成。

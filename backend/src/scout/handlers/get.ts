@@ -18,7 +18,7 @@ import type { ScoutRecordSchemaType } from "../../lib/firestore/schemas";
  */
 export const getScout = async (
   id: string,
-  c: Context
+  c: Context,
 ): Promise<ScoutRecordSchemaType> => {
   // Firestoreからスカウトデータを取得
   const scout = await db().scouts.get(id);
@@ -38,11 +38,6 @@ export const getScout = async (
     throw new HTTPException(403, {
       message: "You do not have permission to access this scout",
     });
-  }
-
-  // データの存在確認
-  if (!scout) {
-    throw new HTTPException(404, { message: "Scout not found" });
   }
 
   return scout;

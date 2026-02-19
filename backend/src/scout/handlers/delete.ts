@@ -1,3 +1,4 @@
+import { HTTPException } from "hono/http-exception";
 import type { Context } from "../../apiRotuer";
 import { db } from "../../lib/firestore/firestore";
 /**
@@ -21,23 +22,25 @@ import { db } from "../../lib/firestore/firestore";
  */
 export const deleteScout = async (
   id: string,
-  c: Context
+  c: Context,
 ): Promise<{ message: string }> => {
   // 権限チェック(ADMIN必須)と削除処理を実行
   const target = await db().scouts.get(id);
 
   if (!target) {
-    throw new Error("Scout not found");
+    throw new HTTPException(404, { message: "Scout not found" });
   }
 
   const group = c.var.user.auth.memberships;
 
   const isAdmin = group.find(
-    (m) => m.id === target.belongGroupId && m.role === "ADMIN"
+    (m) => m.id === target.belongGroupId && m.role === "ADMIN",
   );
 
   if (!isAdmin) {
-    throw new Error("You do not have permission to delete this scout");
+    throw new HTTPException(403, {
+      message: "You do not have permission to delete this scout",
+    });
   }
 
   await db().scouts.del(id);

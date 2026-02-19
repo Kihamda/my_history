@@ -69,3 +69,5 @@ const app = new Hono()
   .route("/apiv1/", apiRouter);
 
 export default app;
+
+export type AppType = typeof app;

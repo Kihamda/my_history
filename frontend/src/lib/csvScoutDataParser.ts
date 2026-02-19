@@ -10,7 +10,7 @@ const csvScoutDataParser = (raw: string) => {
     .split("\n")
     .map((line) => line.trim().split(","))
     .filter((line) => line.length == EXPECTED_COLUMN_COUNT);
-  const drpedLines = raw
+  const droppedLines = raw
     .split("\n")
     .map((line) => line.trim().split(","))
     .filter((line) => line.length != EXPECTED_COLUMN_COUNT);
@@ -20,7 +20,7 @@ const csvScoutDataParser = (raw: string) => {
     id: columns[0],
     scoutId: columns[1],
   }));
-  return { parsedData: result, droppedLines: drpedLines };
+  return { parsedData: result, droppedLines: droppedLines };
 };
 
 export default csvScoutDataParser;

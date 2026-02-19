@@ -22,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: |
             frontend/package-lock.json
@@ -33,21 +33,21 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Build frontend
-        working-directory: frontend
-        run: npm run build
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
 
       - name: Install static site dependencies
         working-directory: staticSiteMarger
         run: npm ci
 
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
       - name: Generate static site content
         working-directory: staticSiteMarger
         run: npm run build
-
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm ci
 
       - name: Wrangler dry-run deploy
         working-directory: backend

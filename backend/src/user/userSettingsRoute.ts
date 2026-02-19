@@ -2,11 +2,12 @@ import type { AppContext } from "@b/apiRotuer";
 import { genIdSchema } from "@b/lib/randomId";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import z from "zod/v4";
+import { z } from "zod/v4";
 import {
   acceptUserInviteHandler,
   leaveGroupHandler,
   leaveSharedByHandler,
+  rejectUserInviteHandler,
 } from "./handlers";
 
 const userSettingsRouter = new Hono<AppContext>()
@@ -28,7 +29,7 @@ const userSettingsRouter = new Hono<AppContext>()
     zValidator("param", z.object({ groupCode: genIdSchema })),
     async (c) => {
       const { groupCode } = c.req.valid("param");
-      const result = await leaveGroupHandler(c, groupCode);
+      const result = await rejectUserInviteHandler(c, groupCode);
       return c.json(result);
     },
   )
@@ -63,7 +64,7 @@ const userSettingsRouter = new Hono<AppContext>()
     },
   )
 
-  .post("setIsAcceptInvite");
+  .post("/setIsAcceptInvite");
 //
 
 export default userSettingsRouter;
