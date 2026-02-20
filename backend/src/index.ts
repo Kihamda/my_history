@@ -48,28 +48,16 @@ const app = new Hono<AppContext>()
   )
 
   // ルートパスはbuildTmpの中身をいい感じに返す
-  .get("/", (c) =>
-    c.env.ASSETS.fetch(
-      c.req.url.split("/").slice(0, 3).join("/") + "/index.html",
-    ),
-  )
+  .get("/", (c) => c.env.ASSETS.fetch("http://assets.local/index.html"))
 
-  .get("/app/*", (c) =>
-    c.env.ASSETS.fetch(
-      c.req.url.split("/").slice(0, 3).join("/") + "/spa.html",
-    ),
-  )
-  .get("/auth/*", (c) => {
-    return c.env.ASSETS.fetch(
-      c.req.url.split("/").slice(0, 3).join("/") + "/spa.html",
-    );
-  })
-  .get("/god/*", (c) =>
-    c.env.ASSETS.fetch(
-      c.req.url.split("/").slice(0, 3).join("/") + "/spa.html",
-    ),
-  )
+  // 静的ファイルの提供。URL パスに対応するファイルが存在しない場合は 404 を返す。
+  .get("/app/*", (c) => c.env.ASSETS.fetch("http://assets.local/spa.html"))
+  .get("/auth/*", (c) => c.env.ASSETS.fetch("http://assets.local/spa.html"))
+  .get("/god/*", (c) => c.env.ASSETS.fetch("http://assets.local/spa.html"))
+
+  // その他の静的ファイル。URL パスに対応するファイルが存在しない場合は 404 を返す。
   .get("/*", (c) => c.env.ASSETS.fetch(c.req.url.split("?")[0]))
+
   // ドメイン毎のルーターを/api 以下にマウントする。
   // v1から増やすとき、v2にしたくないならv1aとかにする。
   .route("/apiv1/", apiRouter);
