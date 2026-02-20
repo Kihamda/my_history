@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import apiRouter from "./apiRotuer";
-import { serveStatic } from "hono/cloudflare-workers";
+import apiRouter, { type AppContext } from "./apiRotuer";
 import { cors } from "hono/cors";
 
 // Hono のレスポンスに利用できる範囲へ HTTP ステータスコードを正規化する。
@@ -12,7 +11,7 @@ const toStatus = (status: number): ContentfulStatusCode => {
 };
 
 // Cloudflare Workers 上で動かす Hono アプリケーションの本体。
-const app = new Hono()
+const app = new Hono<AppContext>()
 
   // 共通のエラーハンドラー。HTTPException を尊重し、それ以外は 500 を返す。
   .onError((error, c) => {
@@ -29,15 +28,6 @@ const app = new Hono()
     );
   })
 
-  // 未定義パスにアクセスされた場合のフォールバック。
-  .notFound((c) =>
-    c.json(
-      {
-        message: "NOT_FOUND",
-      },
-      toStatus(404),
-    ),
-  )
   .use(
     "*",
     cors({
@@ -47,22 +37,26 @@ const app = new Hono()
     }),
   )
 
+  // 未定義パスにアクセスされた場合のフォールバック。
+  .notFound((c) =>
+    c.json(
+      {
+        message: "NOT_FOUND",
+      },
+      toStatus(404),
+    ),
+  )
+
   // ルートパスはbuildTmpの中身をいい感じに返す
-  .get("/", serveStatic({ manifest: { relative: true }, path: "index.html" }))
-  .get(
-    "/app/*",
-    serveStatic({ manifest: { relative: true }, path: "spa.html" }),
-  )
-  .get(
-    "/auth/*",
-    serveStatic({ manifest: { relative: true }, path: "spa.html" }),
-  )
-  .get(
-    "/god/*",
-    serveStatic({ manifest: { relative: true }, path: "spa.html" }),
-  )
-  .get("/*", serveStatic({ manifest: { relative: true } }))
-  //
+  .get("/", (c) => c.env.ASSETS.fetch("http://assets.local/index.html"))
+
+  // 静的ファイルの提供。URL パスに対応するファイルが存在しない場合は 404 を返す。
+  .get("/app/*", (c) => c.env.ASSETS.fetch("http://assets.local/spa.html"))
+  .get("/auth/*", (c) => c.env.ASSETS.fetch("http://assets.local/spa.html"))
+  .get("/god/*", (c) => c.env.ASSETS.fetch("http://assets.local/spa.html"))
+
+  // その他の静的ファイル。URL パスに対応するファイルが存在しない場合は 404 を返す。
+  .get("/*", (c) => c.env.ASSETS.fetch(c.req.url.split("?")[0]))
 
   // ドメイン毎のルーターを/api 以下にマウントする。
   // v1から増やすとき、v2にしたくないならv1aとかにする。

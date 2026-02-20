@@ -10,6 +10,9 @@ import godRouter from "./god/godRoute";
 
 interface Envs {
   IS_DEV?: string;
+  ASSETS: {
+    fetch(path: string): Promise<Response>;
+  };
 }
 
 export interface AppContext {

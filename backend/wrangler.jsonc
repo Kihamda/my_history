@@ -5,17 +5,19 @@
   "compatibility_date": "2025-09-25",
   "vars": {
     "PROJECT_ID": "my-history-v2",
-    "PUBLIC_JWK_CACHE_KEY": "my-history-public-jwk"
+    "PUBLIC_JWK_CACHE_KEY": "my-history-public-jwk",
   },
-  "site": {
-    "bucket": "./buildTmp"
+  "assets": {
+    "directory": "./buildTmp",
+    "binding": "ASSETS",
+    "run_worker_first": true,
   },
   "kv_namespaces": [
     {
       "binding": "MY_HISTORY_KV_CACHE",
-      "id": "3de538a7c1cf4b929e5f241625c5649e"
-    }
-  ]
+      "id": "3de538a7c1cf4b929e5f241625c5649e",
+    },
+  ],
   // "compatibility_flags": [
   //   "nodejs_compat"
   // ],
