@@ -34,7 +34,7 @@ npm run dev
 
 ### 環境変数
 
-- `VITE_API_BASE_URL` または `VITE_API_URL`
+- `VITE_API_URL`
 
 ### ローカル開発
 
