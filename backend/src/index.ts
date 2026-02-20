@@ -49,27 +49,22 @@ const app = new Hono<AppContext>()
 
   // ルートパスはbuildTmpの中身をいい感じに返す
   .get("/", (c) =>
-    c.env.ASSETS.fetch(
-      c.req.url.split("/").slice(0, 3).join("/") + "/index.html",
-    ),
+    c.env.ASSETS.fetch(new URL("/index.html", c.req.url).toString()),
   )
 
   .get("/app/*", (c) =>
-    c.env.ASSETS.fetch(
-      c.req.url.split("/").slice(0, 3).join("/") + "/spa.html",
-    ),
+    c.env.ASSETS.fetch(new URL("/spa.html", c.req.url).toString()),
   )
-  .get("/auth/*", (c) => {
-    return c.env.ASSETS.fetch(
-      c.req.url.split("/").slice(0, 3).join("/") + "/spa.html",
-    );
-  })
+  .get("/auth/*", (c) =>
+    c.env.ASSETS.fetch(new URL("/spa.html", c.req.url).toString()),
+  )
   .get("/god/*", (c) =>
-    c.env.ASSETS.fetch(
-      c.req.url.split("/").slice(0, 3).join("/") + "/spa.html",
-    ),
+    c.env.ASSETS.fetch(new URL("/spa.html", c.req.url).toString()),
   )
-  .get("/*", (c) => c.env.ASSETS.fetch(c.req.url.split("?")[0]))
+  .get("/*", (c) => {
+    const url = new URL(c.req.url);
+    return c.env.ASSETS.fetch(new URL(url.pathname, url.origin).toString());
+  })
   // ドメイン毎のルーターを/api 以下にマウントする。
   // v1から増やすとき、v2にしたくないならv1aとかにする。
   .route("/apiv1/", apiRouter);
