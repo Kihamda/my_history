@@ -10,7 +10,7 @@
   "assets": {
     "directory": "./buildTmp",
     "binding": "ASSETS",
-    "run_worker_first": true,
+    "html_handling": "auto-trailing-slash",
   },
   "kv_namespaces": [
     {
