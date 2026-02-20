@@ -28,15 +28,6 @@ const app = new Hono<AppContext>()
     );
   })
 
-  .use(
-    "*",
-    cors({
-      origin: ["https://myhis.kihamda.net", "http://localhost:5173"],
-      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowHeaders: ["Content-Type", "Authorization"],
-    }),
-  )
-
   // 未定義パスにアクセスされた場合のフォールバック。
   .notFound((c) =>
     c.json(
@@ -47,6 +38,15 @@ const app = new Hono<AppContext>()
     ),
   )
 
+  .use(
+    "*",
+    cors({
+      origin: ["https://myhis.kihamda.net", "http://localhost:5173"],
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowHeaders: ["Content-Type", "Authorization"],
+    }),
+  )
+
   // ルートパスはbuildTmpの中身をいい感じに返す
   .get("/", (c) => c.env.ASSETS.fetch("http://assets.local/index.html"))
 
@@ -55,12 +55,12 @@ const app = new Hono<AppContext>()
   .get("/auth/*", (c) => c.env.ASSETS.fetch("http://assets.local/spa.html"))
   .get("/god/*", (c) => c.env.ASSETS.fetch("http://assets.local/spa.html"))
 
-  // その他の静的ファイル。URL パスに対応するファイルが存在しない場合は 404 を返す。
-  .get("/*", (c) => c.env.ASSETS.fetch(c.req.url.split("?")[0]))
-
   // ドメイン毎のルーターを/api 以下にマウントする。
   // v1から増やすとき、v2にしたくないならv1aとかにする。
-  .route("/apiv1/", apiRouter);
+  .route("/apiv1/*", apiRouter)
+
+  // その他の静的ファイル。URL パスに対応するファイルが存在しない場合は 404 を返す。
+  .get("/*", (c) => c.env.ASSETS.fetch(c.req.url.split("?")[0]));
 
 export default app;
 
