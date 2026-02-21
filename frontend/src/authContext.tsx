@@ -190,28 +190,28 @@ export const login = async (email: string, password: string) => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
   } catch (error) {
-    console.error("Login failed:", error);
+    raiseError("Login failed:", "error", String(error));
   }
 };
 export const logout = async () => {
   try {
     await signOut(auth);
   } catch (error) {
-    console.error("Logout failed:", error);
+    raiseError("Logout failed:", "error", String(error));
   }
 };
 export const register = async (email: string, password: string) => {
   try {
     await createUserWithEmailAndPassword(auth, email, password);
   } catch (error) {
-    console.error("Registration failed:", error);
+    raiseError("Registration failed:", "error", String(error));
   }
 };
 export const resetPassword = async (email: string) => {
   try {
     await sendPasswordResetEmail(auth, email);
   } catch (error) {
-    console.error("Password reset failed:", error);
+    raiseError("Password reset failed:", "error", String(error));
   }
 };
 export const sendVerificationEmail = async () => {
@@ -219,7 +219,7 @@ export const sendVerificationEmail = async () => {
     try {
       await sendEmailVerification(auth.currentUser);
     } catch (error) {
-      console.error("Verification email sending failed:", error);
+      raiseError("Verification email sending failed:", "error", String(error));
     }
   }
 };

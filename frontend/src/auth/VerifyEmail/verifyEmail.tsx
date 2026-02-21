@@ -5,14 +5,14 @@ import { Navigate } from "react-router";
 
 /**
  * @fileoverview
- * `Signin`コンポーネントはログインフォームを提供します。
- * ユーザーはメールアドレスとパスワードを入力し、ログインボタンを押すことができます。
+ * `VerifyEmail`コンポーネントはメールアドレス認証画面を提供します。
+ * ユーザーは認証メールを確認し、再送信ボタンを押すことができます。
  *
  * @component
  * @example
- * <Signin />
+ * <VerifyEmail />
  *
- * @returns {FC} ログインフォームを含むReactコンポーネント
+ * @returns {FC} メールアドレス認証画面を含むReactコンポーネント
  *
  * @remarks
  * - `useState`フックを使用してフォームの入力値を管理します。
@@ -21,7 +21,7 @@ import { Navigate } from "react-router";
  */
 
 const VerifyEmail: FC = () => {
-  const token = useAuthContext()?.token;
+  const token = useAuthContext(false)?.token;
 
   if (!token) {
     return <Navigate to="/auth/login" />;
