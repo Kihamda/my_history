@@ -14,41 +14,49 @@ import { faArrowRight } from "@fortawesome/free-solid-svg-icons/faArrowRight";
 const LandTop: React.FC = () => {
   return (
     <FillBackgroundDesign backgroundImagePath="landing/bg.webp">
-      <div className="container text-white d-flex justify-content-left align-items-center position-relative">
+      <div className="container text-white pt-5 px-3 px-md-4">
         <div
-          className="p-5 "
+          className="p-4 p-md-5"
           style={{
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            backgroundColor: "rgba(0, 0, 0, 0.45)",
             borderLeft: "5px solid rgb(255, 255, 255)",
-            backdropFilter: "blur(5px)",
+            backdropFilter: "blur(6px)",
           }}
         >
-          <h1 style={{ fontSize: "4rem" }}>ボーイスカウト活動に革新を</h1>
-          <p>
-            デジタル技術による団運営の円滑化で未来のスカウト活動を創造していく
+          <p className="mb-2" style={{ opacity: 0.7, fontSize: "0.9rem" }}>
+            ボーイスカウト団向けの情報管理アプリ
           </p>
-          <p>
-            スカウトによって作られた、スカウトのための情報管理アプリである
-            <br />「<span className="fw-bold">My Historyアプリ</span>」 は
-            ボーイスカウトの活動記録をデジタルで管理し、団の運営をサポートします。
+          <h1
+            className="fw-bold lh-sm mb-3"
+            style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)" }}
+          >
+            名簿と活動記録を
+            <br />
+            ひとつにまとめる
+          </h1>
+          <p className="mb-4">
+            進級記録・活動履歴・メンバー管理を一画面で。
+            <br className="d-none d-md-inline" />
+            スマホでも同じように使えます。
           </p>
-          <div className="mt-3 d-flex">
+
+          <div className="d-flex flex-wrap gap-3 align-items-center">
             <a href="/auth/register" className="text-decoration-none">
               <BlurCard
                 className="d-flex justify-content-center align-items-center"
-                style={{
-                  marginTop: "1rem",
-                  cursor: "pointer",
-                }}
-                aria-label="Get Started"
+                style={{ cursor: "pointer" }}
+                aria-label="無料ではじめる"
               >
-                Get Started：今すぐ始めよう
+                無料ではじめる
                 <FontAwesomeIcon
                   icon={faArrowRight}
                   className="ms-2"
                   style={{ height: "1em" }}
                 />
               </BlurCard>
+            </a>
+            <a href="/help/" className="text-white text-decoration-underline">
+              使い方を先に見る
             </a>
           </div>
         </div>
