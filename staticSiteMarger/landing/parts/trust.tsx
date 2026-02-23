@@ -41,7 +41,7 @@ const Trust = (): React.ReactElement => {
             <div className="card-body p-4">
               <h3 className="h5 mb-2">導入は小さく始めてもOK</h3>
               <p className="mb-4 text-muted small">
-                一部の隊だけで試してみながら、慵れたら全体に広げるという進め方がさまざまな団でうまくいっています。
+                一部の隊だけで試してみながら、慣れたら全体に広げるという進め方がさまざまな団でうまくいっています。
               </p>
               <div className="d-grid gap-2">
                 <a href="/auth/register" className="btn btn-dark btn-lg">
