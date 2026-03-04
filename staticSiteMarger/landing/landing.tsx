@@ -5,8 +5,8 @@ import LandTop from "./parts/top";
 
 import About from "./parts/about";
 import Features from "./parts/features";
-import Flow from "./parts/flow.tsx";
-import Trust from "./parts/trust.tsx";
+import Flow from "./parts/flow";
+import Trust from "./parts/trust";
 
 /**
  *
@@ -54,7 +54,11 @@ const Landing = (): React.ReactElement => {
           boxShadow: "0 -4px 16px rgba(0,0,0,0.12)",
         }}
       >
-        <a href="/auth/register" className="btn btn-dark w-100 py-2">
+        <a
+          href="/auth/register"
+          className="btn btn-dark w-100 py-2"
+          aria-label="無料ではじめる"
+        >
           無料ではじめる
         </a>
       </div>
