@@ -66,6 +66,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         setIsLoaded(true);
         return;
       }
+
+      // Firebaseユーザーが存在する場合、IDトークンを取得してAPIクライアントに設定し、ユーザーデータを取得
+      setIsLoaded(false);
       try {
         setHcClient(await getIdToken(fbUser, true));
         setToken(fbUser);
