@@ -38,18 +38,20 @@ const app = new Hono<AppContext>()
     ),
   )
 
-  .use("*", async (c, next) => {
-    const allowedOrigins =
-      c.env.IS_DEV === "TRUE"
-        ? ["http://localhost:5173"]
-        : ["https://myhis.kihamda.net"];
-
-    return cors({
-      origin: allowedOrigins,
+  .use(
+    "*",
+    cors({
+      origin: (origin, c) => {
+        const allowed =
+          c.env.IS_DEV === "TRUE"
+            ? "http://localhost:5173"
+            : "https://myhis.kihamda.net";
+        return origin === allowed ? origin : null;
+      },
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowHeaders: ["Content-Type", "Authorization"],
-    })(c, next);
-  })
+    }),
+  )
 
   // ルートパスはbuildTmpの中身をいい感じに返す
   .get("/", (c) => c.env.ASSETS.fetch("http://assets.local/index.html"))
