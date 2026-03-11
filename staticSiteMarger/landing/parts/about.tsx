@@ -43,12 +43,8 @@ const About = (): React.ReactElement => {
                 <li className="mb-2">
                   名簿や進級記録がExcelやノートにバラバラ
                 </li>
-                <li className="mb-2">
-                  指導者が代わるたびに引き継ぎが大変
-                </li>
-                <li className="mb-2">
-                  必要なデータをすぐに確認できない
-                </li>
+                <li className="mb-2">指導者が代わるたびに引き継ぎが大変</li>
+                <li className="mb-2">必要なデータをすぐに確認できない</li>
               </ul>
               <p className="small text-muted mb-3">
                 My
@@ -73,10 +69,7 @@ const About = (): React.ReactElement => {
                   className="d-flex align-items-center justify-content-center rounded-circle bg-dark text-white flex-shrink-0"
                   style={{ width: 48, height: 48 }}
                 >
-                  <FontAwesomeIcon
-                    icon={faUser}
-                    style={{ height: "1.1rem" }}
-                  />
+                  <FontAwesomeIcon icon={faUser} style={{ height: "1.1rem" }} />
                 </div>
                 <h3 className="h5 mb-0">スカウト・保護者の方</h3>
               </div>
@@ -84,9 +77,7 @@ const About = (): React.ReactElement => {
                 こんなこと思ったことはありませんか
               </p>
               <ul className="mb-4">
-                <li className="mb-2">
-                  自分がどこまで進級したか把握しづらい
-                </li>
+                <li className="mb-2">自分がどこまで進級したか把握しづらい</li>
                 <li className="mb-2">活動の記録を振り返る手段がない</li>
                 <li className="mb-2">団の情報を手元で確認したい</li>
               </ul>
