@@ -1,16 +1,17 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons/faCircleCheck";
+import { CONTACT_URL } from "./constants";
 
 /**
  * 信頼性訴求 + 最終CTAセクション
  */
 
 const TRUST_ITEMS = [
-  "Firebase認証による本人確認。メール認証済みのアカウントのみ利用可能",
-  "ADMIN / EDIT / VIEW のロールで編集範囲を管理できる",
-  "Cloudflare Workersで配信。国内からのアクセスが速い",
-  "ランディングは静的生成、本体は型安全なSPAで長期運用しやすい",
+  "メール認証済みアカウントのみが利用可能。不正アクセスを防止",
+  "管理者・編集者・閲覧者の3段階の権限で情報を安全に管理",
+  "高速な国内CDNで配信。どこからでも快適にアクセス",
+  "個人開発だからこそ柔軟にフィードバックを反映できる",
 ] as const;
 
 const Trust = (): React.ReactElement => {
@@ -39,13 +40,16 @@ const Trust = (): React.ReactElement => {
             style={{ borderTop: "4px solid #212529" }}
           >
             <div className="card-body p-4">
-              <h3 className="h5 mb-2">導入は小さく始めてもOK</h3>
+              <h3 className="h5 mb-2">まずは気軽にはじめてみませんか</h3>
               <p className="mb-4 text-muted small">
-                一部の隊だけで試してみながら、慣れたら全体に広げるという進め方がさまざまな団でうまくいっています。
+                一部の隊だけで試して、慣れたら全体に広げる。そんな進め方がうまくいっています。
               </p>
               <div className="d-grid gap-2">
                 <a href="/auth/register" className="btn btn-dark btn-lg">
-                  無料登録して始める
+                  無料で始める
+                </a>
+                <a href={CONTACT_URL} className="btn btn-outline-dark">
+                  団への導入を相談する
                 </a>
                 <a href="/auth/login" className="btn btn-outline-secondary">
                   すでにアカウントがある

@@ -5,10 +5,10 @@ import BlurCard from "./cardDesign";
 import React from "react";
 import FillBackgroundDesign from "./fillBackgroundDesign";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons/faArrowRight";
+import { CONTACT_URL } from "./constants";
 
 /**
  * ランディングページの一番上の表示用
- *
  */
 
 const LandTop: React.FC = () => {
@@ -24,20 +24,20 @@ const LandTop: React.FC = () => {
           }}
         >
           <p className="mb-2" style={{ opacity: 0.7, fontSize: "0.9rem" }}>
-            ボーイスカウト団向けの情報管理アプリ
+            ボーイスカウト団向けの記録管理アプリ
           </p>
           <h1
             className="fw-bold lh-sm mb-3"
             style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)" }}
           >
-            名簿と活動記録を
+            スカウティングの記録を
             <br />
-            ひとつにまとめる
+            もっとシンプルに
           </h1>
           <p className="mb-4">
-            進級記録・活動履歴・メンバー管理を一画面で。
+            指導者の団運営から、スカウト個人の進級記録まで。
             <br className="d-none d-md-inline" />
-            スマホでも同じように使えます。
+            必要な情報にすぐアクセスできるWebアプリです。
           </p>
 
           <div className="d-flex flex-wrap gap-3 align-items-center">
@@ -45,7 +45,6 @@ const LandTop: React.FC = () => {
               <BlurCard
                 className="d-flex justify-content-center align-items-center"
                 style={{ cursor: "pointer" }}
-                aria-label="無料ではじめる"
               >
                 無料ではじめる
                 <FontAwesomeIcon
@@ -55,7 +54,23 @@ const LandTop: React.FC = () => {
                 />
               </BlurCard>
             </a>
-            <a href="/help/" className="text-white text-decoration-underline">
+            <a href={CONTACT_URL} className="text-decoration-none">
+              <BlurCard
+                className="d-flex justify-content-center align-items-center"
+                style={{
+                  cursor: "pointer",
+                  backgroundColor: "rgba(255, 255, 255, 0.25)",
+                }}
+              >
+                団への導入を相談
+              </BlurCard>
+            </a>
+          </div>
+          <div className="mt-3">
+            <a
+              href="/help/"
+              className="text-white text-decoration-underline small"
+            >
               使い方を先に見る
             </a>
           </div>
@@ -69,7 +84,7 @@ const LandTop: React.FC = () => {
         }}
       >
         <BlurCard>
-          詳細はこちら
+          詳しく見る
           <br />
           <FontAwesomeIcon icon={faChevronDown} style={{ height: "1.5em" }} />
         </BlurCard>
