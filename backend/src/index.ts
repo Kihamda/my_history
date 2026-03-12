@@ -41,12 +41,12 @@ const app = new Hono<AppContext>()
   .use(
     "*",
     cors({
-      origin: (origin, c) => {
+      origin: (_, c) => {
         const allowed =
           c.env.IS_DEV === "TRUE"
-            ? "http://localhost:5173"
-            : "https://myhis.kihamda.net";
-        return origin === allowed ? origin : null;
+            ? "*"
+            : null; /* 本番環境では CORS を許可しない */
+        return allowed;
       },
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowHeaders: ["Content-Type", "Authorization"],

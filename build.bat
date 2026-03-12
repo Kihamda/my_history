@@ -1,14 +1,29 @@
 @echo off
 
 REM Build the frontend
-cd frontend
+pushd frontend
 call npm run build
-cd ..
+if errorlevel 1 (
+    echo [ERROR] Frontend build failed.
+    popd
+    exit /b 1
+)
+popd
 REM Build the admin
-cd staticSiteMarger
+pushd staticSiteMarger
 call npm run build
-
-cd ..
+if errorlevel 1 (
+    echo [ERROR] Admin build failed.
+    popd
+    exit /b 1
+)
+popd
 REM RUN the backend
-cd backend
+pushd backend
 call npm run dev
+if errorlevel 1 (
+    echo [ERROR] Backend failed to start or exited with an error.
+    popd
+    exit /b 1
+)
+popd
