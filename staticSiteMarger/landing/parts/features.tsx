@@ -15,29 +15,29 @@ import { faMobile } from "@fortawesome/free-solid-svg-icons/faMobile";
 const FEATURES = [
   {
     icon: faUsers,
-    title: "スカウト情報を一元管理",
+    title: "スカウト情報をまとめて管理",
     items: [
-      "活動履歴、進級記録、章の達成をまとめて管理",
-      "検索で必要な情報へすぐ到達",
-      "最終更新日が残るので引き継ぎしやすい",
-    ],
-  },
-  {
-    icon: faLock,
-    title: "役割ごとに安全に運営",
-    items: [
-      "ADMIN ・ EDIT ・ VIEW の3段階ロール",
-      "招待と権限変更を画面から実行",
-      "必要な人だけ編集できる",
+      "メンバー情報・進級記録・活動履歴を一画面で確認",
+      "検索ですぐに必要な情報にたどり着ける",
+      "指導者が代わってもデータはそのまま引き継げる",
     ],
   },
   {
     icon: faMobile,
-    title: "既存運用から移行しやすい",
+    title: "いつでもどこでも確認",
     items: [
-      "連盟向け既存ツールと併用しやすい設計",
-      "メール認証つきで導入ハードルを下げる",
-      "スマホでも同じように使える",
+      "スカウト自身が進級状況や章の取得を確認できる",
+      "保護者も活動の記録をスマホで見られる",
+      "PCでもスマホでも同じように使える",
+    ],
+  },
+  {
+    icon: faLock,
+    title: "安全なアクセス管理",
+    items: [
+      "管理者・編集者・閲覧者の3段階の権限",
+      "見せたい情報だけを必要な人に共有",
+      "招待制だから安心して利用できる",
     ],
   },
 ] as const;
@@ -48,7 +48,7 @@ const Features = (): React.ReactElement => {
       <div className="row">
         <div className="col-12 text-center mb-4">
           <h2 className="mb-2">できること</h2>
-          <p className="mb-0 text-muted">実装済みの主な機能です</p>
+          <p className="mb-0 text-muted">指導者にもスカウトにも便利な機能</p>
         </div>
 
         {FEATURES.map((feat) => (
@@ -79,7 +79,7 @@ const Features = (): React.ReactElement => {
 
         <div className="col-12 d-flex justify-content-center mt-2">
           <Link to="flow">
-            <Button variant="outline-secondary">導入の流れを見る</Button>
+            <Button variant="outline-secondary">はじめかたを見る</Button>
           </Link>
         </div>
       </div>

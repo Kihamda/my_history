@@ -1,6 +1,7 @@
 import React from "react";
 import SignInUp from "./signiniup";
 import LinkWithOffset from "./linkwithoffset";
+import { CONTACT_URL } from "./constants";
 
 /**
  * ランディングページ用のヘッダー
@@ -8,9 +9,9 @@ import LinkWithOffset from "./linkwithoffset";
  */
 
 const NAV_ITEMS = [
-  { to: "about", label: "概要" },
+  { to: "about", label: "こんな方へ" },
   { to: "features", label: "できること" },
-  { to: "flow", label: "導入の流れ" },
+  { to: "flow", label: "はじめかた" },
   { to: "trust", label: "安心の理由" },
 ] as const;
 
@@ -89,6 +90,9 @@ const Header = (): React.ReactElement => {
           <div className="mt-auto pt-4 d-grid gap-2">
             <a href="/auth/register" className="btn btn-dark btn-lg">
               無料ではじめる
+            </a>
+            <a href={CONTACT_URL} className="btn btn-outline-dark">
+              導入を相談する
             </a>
             <a href="/auth/login" className="btn btn-outline-secondary">
               ログイン

@@ -101,6 +101,27 @@ const GodGroupPage = () => {
             </div>
             <div className="card-footer text-end">
               <Button onClick={handleSearch}>検索</Button>
+              <Button
+                variant="secondary"
+                className="ms-2"
+                onClick={() =>
+                  setEditorSlot({
+                    id: "placeholder",
+                    data: {
+                      userSettings: {
+                        allowInvite: false,
+                        allowShare: false,
+                        name: "",
+                      },
+                      adminTags: {
+                        description: "",
+                      },
+                    },
+                  })
+                }
+              >
+                新規作成
+              </Button>
             </div>
           </div>
         </Col>
