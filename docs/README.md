@@ -1,6 +1,6 @@
 # My History of Scouting ドキュメント
 
-最終更新: 2026-01-18
+最終更新: 2026-04-01
 
 このディレクトリはフロントエンド、バックエンド、静的サイト生成の情報をまとめた単一のドキュメント置き場だよ
 実装とズレないようにコードベースを基準に更新している
@@ -20,13 +20,12 @@
 - [roadmap.md](roadmap.md) 実装計画と優先度
 - [changelog.md](changelog.md) 変更履歴
 - [help/README.md](help/README.md) 利用者向けヘルプ
-- [firestore.rules](firestore.rules) Firestore ルール草案
 
 ## 主要ディレクトリ
 
-- [frontend/](../frontend/) React SPA
-- [backend/](../backend/) Cloudflare Workers API
-- [staticSiteMarger/](../staticSiteMarger/) 静的サイト生成ツール
+- [frontend/](../frontend/) React 19 SPA (Vite + Bootstrap 5)
+- [backend/](../backend/) Cloudflare Workers API (Hono + Firestore REST)
+- [staticSiteMarger/](../staticSiteMarger/) 静的サイト生成ツール (SSR ランディング + ヘルプ)
 
 ## 更新ルール
 

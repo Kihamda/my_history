@@ -28,6 +28,9 @@ import { deleteScout } from "./handlers/delete";
 import { z } from "zod/v4";
 import { transferScout } from "./handlers/transfer";
 import { genIdSchema } from "@b/lib/randomId";
+import { db } from "@b/lib/firestore/firestore";
+import { deleteShareHandler, getSharesHandler } from "./handlers/share";
+import { HTTPException } from "hono/http-exception";
 
 const scoutRouter = new Hono<AppContext>()
   /**
@@ -83,14 +86,14 @@ const scoutRouter = new Hono<AppContext>()
       "param",
       z.object({
         id: genIdSchema,
-      })
+      }),
     ),
     async (c) => {
       console.log("Fetched scout:", c);
       const id = c.req.valid("param").id;
       const result = await getScout(id, c);
       return c.json(result);
-    }
+    },
   )
 
   /**
@@ -114,7 +117,7 @@ const scoutRouter = new Hono<AppContext>()
       const data = c.req.valid("json");
       const result = await updateScout(id, data, c);
       return c.json(result);
-    }
+    },
   )
 
   /**
@@ -132,13 +135,13 @@ const scoutRouter = new Hono<AppContext>()
       "param",
       z.object({
         id: genIdSchema,
-      })
+      }),
     ),
     async (c) => {
       const id = c.req.valid("param").id;
       const result = await deleteScout(id, c);
       return c.json(result);
-    }
+    },
   )
 
   // POST /:id/transfer - スカウトのグループ移動
@@ -148,7 +151,7 @@ const scoutRouter = new Hono<AppContext>()
       "json",
       z.object({
         targetGroupId: genIdSchema,
-      })
+      }),
     ),
     async (c) => {
       const id = z.string().parse(c.req.param("id"));
@@ -156,7 +159,72 @@ const scoutRouter = new Hono<AppContext>()
       // 移動処理を実行
       await transferScout(id, targetGroupId, c);
       return c.json({ message: "Scout transferred successfully" });
-    }
-  );
+    },
+  )
 
+  .post(
+    "/:id/share",
+    zValidator("json", z.object({ targetUserId: genIdSchema })),
+    zValidator("param", z.object({ id: genIdSchema })),
+    async (c) => {
+      const scout = await db().scouts.get(c.req.valid("param").id);
+      if (!scout) {
+        return c.json({ message: "Scout not found" }, 404);
+      }
+
+      if (c.req.valid("json").targetUserId === c.var.token.uid) {
+        return c.json({ message: "自分自身と共有することはできません" }, 400);
+      }
+
+      if (
+        !c.var.user.fn.isInRoleOnGroup(scout.belongGroupId, ["ADMIN", "EDIT"])
+      ) {
+        return c.json({ message: "権限がありません" }, 403);
+      }
+    },
+  )
+
+  .delete(
+    "/:id/share",
+    zValidator("json", z.object({ targetUserId: genIdSchema })),
+    zValidator("param", z.object({ id: genIdSchema })),
+    async (c) => {
+      const scout = await db().scouts.get(c.req.valid("param").id);
+      if (!scout) {
+        return c.json({ message: "Scout not found" }, 404);
+      }
+
+      if (
+        !c.var.user.fn.isInRoleOnGroup(scout.belongGroupId, ["ADMIN", "EDIT"])
+      ) {
+        return c.json({ message: "権限がありません" }, 403);
+      }
+
+      await deleteShareHandler(
+        c.req.valid("param").id,
+        c.req.valid("json").targetUserId,
+      );
+      return c.json({ message: "Share deleted successfully" });
+    },
+  )
+
+  .get(
+    "/:id/share",
+    zValidator("param", z.object({ id: genIdSchema })),
+    async (c) => {
+      const scout = await db().scouts.get(c.req.valid("param").id);
+      if (!scout) {
+        throw new HTTPException(404, { message: "Scout not found" });
+      }
+
+      if (
+        !c.var.user.fn.isInRoleOnGroup(scout.belongGroupId, ["ADMIN", "EDIT"])
+      ) {
+        throw new HTTPException(403, { message: "権限がありません" });
+      }
+
+      const shares = await getSharesHandler(c.req.valid("param").id);
+      return c.json(shares);
+    },
+  );
 export default scoutRouter;

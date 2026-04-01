@@ -8,6 +8,11 @@ import GinoshoList from "./edit/ginosho";
 import Events from "./edit/events";
 import type { ScoutData, ScoutUpdate } from "@f/lib/api/apiTypes";
 import { hc } from "@f/lib/api/api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShareNodes } from "@fortawesome/free-solid-svg-icons";
+import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
+import { PopupCard } from "@f/lib/popupContext/popupCard";
+import ShareBox from "./edit/share";
 
 const ScoutDetailEditor = ({
   scoutData,
@@ -37,6 +42,9 @@ const ScoutDetailEditor = ({
 
   // 保存時遷移用
   const nav = useNavigate();
+
+  // ポップアップ
+  const { showPopup } = usePopup();
 
   //　保存時にプロファイルの変更をローカルで反映させるための関数
   const handleProfileChange = async () => {
@@ -75,6 +83,21 @@ const ScoutDetailEditor = ({
         memo={"保存ボタンを押すと編集を終了します"}
         buttons={
           <>
+            <Button
+              variant="outline-secondary"
+              className="me-2"
+              onClick={() =>
+                showPopup({
+                  content: (
+                    <PopupCard title="共有設定">
+                      <ShareBox id={scoutID} />
+                    </PopupCard>
+                  ),
+                })
+              }
+            >
+              <FontAwesomeIcon icon={faShareNodes} />
+            </Button>
             <Link
               to={`/app/scouts/${scoutID}/view`}
               className="btn btn-outline-secondary me-2"
