@@ -25,8 +25,6 @@ const App = () => {
     return <Navigate to="/auth/setup" replace />;
   }
 
-  const isLeader = currentGroup != undefined || false; // リーダーかどうかのフラグ。
-
   return (
     <>
       <Header />
@@ -36,7 +34,7 @@ const App = () => {
             <Route path="/" element={<Navigate to="/app/home" />} />
             <Route
               path="/home"
-              element={<>{isLeader ? <LeaderHome /> : <VisitorHome />}</>}
+              element={<>{currentGroup ? <LeaderHome /> : <VisitorHome />}</>}
             />
             <Route path="/scouts" element={<Scouts />} />
             <Route path="/scouts/new" element={<NewScoutWizard />} />

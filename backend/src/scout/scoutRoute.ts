@@ -29,7 +29,11 @@ import { z } from "zod/v4";
 import { transferScout } from "./handlers/transfer";
 import { genIdSchema } from "@b/lib/randomId";
 import { db } from "@b/lib/firestore/firestore";
-import { deleteShareHandler, getSharesHandler } from "./handlers/share";
+import {
+  createShareHandler,
+  deleteShareHandler,
+  getSharesHandler,
+} from "./handlers/share";
 import { HTTPException } from "hono/http-exception";
 
 const scoutRouter = new Hono<AppContext>()
@@ -181,6 +185,13 @@ const scoutRouter = new Hono<AppContext>()
       ) {
         return c.json({ message: "権限がありません" }, 403);
       }
+
+      await createShareHandler(
+        c.req.valid("param").id,
+        "VIEW",
+        c.req.valid("json").targetUserId,
+      );
+      return c.json({ message: "Share created successfully" });
     },
   )
 

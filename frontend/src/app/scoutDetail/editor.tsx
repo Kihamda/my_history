@@ -11,8 +11,7 @@ import { hc } from "@f/lib/api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareNodes } from "@fortawesome/free-solid-svg-icons";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
-import { PopupCard } from "@f/lib/popupContext/popupCard";
-import ShareBox from "./edit/share";
+import ShareBoxPopupCard from "@f/lib/popupContext/shares";
 
 const ScoutDetailEditor = ({
   scoutData,
@@ -88,11 +87,7 @@ const ScoutDetailEditor = ({
               className="me-2"
               onClick={() =>
                 showPopup({
-                  content: (
-                    <PopupCard title="共有設定">
-                      <ShareBox id={scoutID} />
-                    </PopupCard>
-                  ),
+                  content: <ShareBoxPopupCard id={scoutID} isEditable />,
                 })
               }
             >
