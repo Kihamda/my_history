@@ -45,8 +45,6 @@ const godScoutRouter = new Hono<AppContext>()
         }
       }
 
-      console.log(c.req.valid("query"));
-
       // クエリパラメータによる検索
       let query: ReturnType<typeof db>["scouts"]["lis"] extends (
         query: infer R,
@@ -88,7 +86,7 @@ const godScoutRouter = new Hono<AppContext>()
     zValidator("json", ScoutRecordSchema),
     async (c) => {
       const id =
-        c.req.valid("param").id == ""
+        c.req.valid("param").id == "new"
           ? generateRandomId()
           : c.req.valid("param").id;
       const data = c.req.valid("json");

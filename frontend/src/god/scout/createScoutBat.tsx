@@ -12,6 +12,15 @@ const CreateScoutBatPage = () => {
   const [csvParsedData, setCsvParsedData] = useState<CsvScoutRecord[] | null>(
     null,
   );
+  const [status, setStatus] = useState<{
+    number: number;
+    success: number;
+    failed: number;
+  }>({
+    number: 0,
+    success: 0,
+    failed: 0,
+  });
 
   const handleParse = () => {
     // CSVデータをパースしてAPIに送信する処理をここに実装
@@ -23,16 +32,26 @@ const CreateScoutBatPage = () => {
 
   const handleSubmit = async () => {
     if (!csvParsedData) return;
+    setStatus({ number: csvParsedData.length, success: 0, failed: 0 });
 
     for (const record of csvParsedData) {
-      hc.apiv1.god.scout[":id"].setScoutData.$post({
-        param: {
-          id: record.id.length == 0 ? "" : record.id, // 一括登録用の特別なIDなどを指定
-        },
-        json: {
-          ...record,
-        },
-      });
+      hc.apiv1.god.scout[":id"].setScoutData
+        .$post({
+          param: {
+            id: record.id.length == 0 ? "new" : record.id, // 一括登録用の特別なIDなどを指定
+          },
+          json: {
+            ...record,
+          },
+        })
+        .then(() => {
+          console.log(`Record with ID ${record.id} submitted successfully.`);
+          setStatus((prev) => ({ ...prev, success: prev.success + 1 }));
+        })
+        .catch((error) => {
+          console.error(`Error submitting record with ID ${record.id}:`, error);
+          setStatus((prev) => ({ ...prev, failed: prev.failed + 1 }));
+        });
     }
   };
 
@@ -61,9 +80,16 @@ const CreateScoutBatPage = () => {
           </div>
 
           <div className="card-footer text-end">
-            <Button variant="success" onClick={handleSubmit}>
-              APIに送信
-            </Button>
+            {status.number > 0 ? (
+              <div className="mb-2">
+                <strong>送信状況:</strong> {status.success} 成功,
+                {status.failed} 失敗
+              </div>
+            ) : (
+              <Button variant="success" onClick={handleSubmit}>
+                APIに送信
+              </Button>
+            )}
           </div>
         </div>
       ) : (

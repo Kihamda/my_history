@@ -34,6 +34,3 @@ export default everyYearAprilFirst;
 13: RS        大2
 
 */
-for (let i = 0; i < 20; i++) {
-  console.log(i, everyYearAprilFirst(new Date("2008/12/29"))[i]);
-}

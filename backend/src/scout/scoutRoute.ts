@@ -93,7 +93,6 @@ const scoutRouter = new Hono<AppContext>()
       }),
     ),
     async (c) => {
-      console.log("Fetched scout:", c);
       const id = c.req.valid("param").id;
       const result = await getScout(id, c);
       return c.json(result);
@@ -177,13 +176,15 @@ const scoutRouter = new Hono<AppContext>()
       }
 
       if (c.req.valid("json").targetUserId === c.var.token.uid) {
-        return c.json({ message: "自分自身と共有することはできません" }, 400);
+        throw new HTTPException(400, {
+          message: "自分自身と共有することはできません",
+        });
       }
 
       if (
         !c.var.user.fn.isInRoleOnGroup(scout.belongGroupId, ["ADMIN", "EDIT"])
       ) {
-        return c.json({ message: "権限がありません" }, 403);
+        throw new HTTPException(403, { message: "権限がありません" });
       }
 
       await createShareHandler(
@@ -202,13 +203,13 @@ const scoutRouter = new Hono<AppContext>()
     async (c) => {
       const scout = await db().scouts.get(c.req.valid("param").id);
       if (!scout) {
-        return c.json({ message: "Scout not found" }, 404);
+        throw new HTTPException(404, { message: "Scout not found" });
       }
 
       if (
         !c.var.user.fn.isInRoleOnGroup(scout.belongGroupId, ["ADMIN", "EDIT"])
       ) {
-        return c.json({ message: "権限がありません" }, 403);
+        throw new HTTPException(403, { message: "権限がありません" });
       }
 
       await deleteShareHandler(

@@ -22,6 +22,7 @@ const ShareBoxPopupCard = ({
   const [isEditing, setIsEditing] = useState(false);
   const [newData, setNewData] = useState<ShareSettings | null>(null);
 
+  // 共有設定の追加
   const handleAdd = async () => {
     // ここで新しい共有設定を追加するAPIを呼び出す
 
@@ -50,14 +51,40 @@ const ShareBoxPopupCard = ({
     }
   };
 
+  // 共有設定の読み込み
   const handleLoad = async () => {
     try {
       const data = await hc.apiv1.scout[":id"]["share"]["$get"]({
         param: { id },
       });
-      setShareSettings(await data.json());
+
+      if (data.status == 200) {
+        setShareSettings(await data.json());
+      } else {
+        raiseError("共有設定の取得に失敗しました");
+      }
     } catch (error) {
       raiseError("共有設定の取得に失敗しました");
+    }
+  };
+
+  // 共有設定の削除
+  const handleDelete = async (targetUserId: string) => {
+    try {
+      const response = await hc.apiv1.scout[":id"]["share"]["$delete"]({
+        param: { id },
+        json: {
+          targetUserId,
+        },
+      });
+      if (response.status === 200) {
+        handleLoad();
+      } else {
+        const errorData = await response.json();
+        raiseError("共有設定の削除に失敗しました", "error", errorData.message);
+      }
+    } catch (error) {
+      raiseError("共有設定の削除に失敗しました");
     }
   };
 
@@ -139,7 +166,11 @@ const ShareBoxPopupCard = ({
               </div>
               {isEditable && (
                 <div className="d-flex align-items-center">
-                  <Button variant="outline-danger" size="sm">
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={() => handleDelete(setting.id)}
+                  >
                     削除
                   </Button>
                 </div>
@@ -172,6 +203,8 @@ const SearchUserInput = ({
       if (response.status === 200) {
         const data = await response.json();
         setResults(data);
+      } else {
+        raiseError("ユーザーの検索に失敗しました");
       }
     } catch (error) {
       raiseError("ユーザーの検索に失敗しました");
@@ -195,11 +228,7 @@ const SearchUserInput = ({
       </div>
 
       {results.map((user) => (
-        <div
-          className="p-2 border-bottom d-flex flex-column"
-          key={user.uid}
-          onClick={() => onUserSelect(user)}
-        >
+        <div className="p-2 border-bottom d-flex flex-column" key={user.uid}>
           <div className="flex-grow-1">
             <h3 className="mb-0">{user.profile.displayName}</h3>
             <p>

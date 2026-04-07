@@ -18,8 +18,7 @@ const app = new Hono<AppContext>()
     if (error instanceof HTTPException) {
       return error.getResponse();
     }
-
-    console.error("Unhandled error", error);
+    c.env.IS_DEV === "TRUE" && console.error("HTTPException", error);
     return c.json(
       {
         message: "INTERNAL_SERVER_ERROR",

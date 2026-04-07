@@ -12,7 +12,7 @@ export const createShareHandler = async (
     throw new HTTPException(404, { message: "User not found" });
   }
 
-  if (user.auth.shares?.filter((id) => id.endsWith(scoutId)).length) {
+  if (user.auth.shares?.filter((id) => id.split(";")[1] == scoutId).length) {
     throw new HTTPException(400, { message: "すでに共有されています" });
   }
 
@@ -24,13 +24,6 @@ export const createShareHandler = async (
     },
   };
 
-  console.log("Creating share:", {
-    targetUserId,
-    scoutId,
-    role,
-    newUser,
-    newShares: newUser.auth.shares,
-  });
   await db().users.set(targetUserId, newUser);
 };
 
@@ -43,7 +36,7 @@ export const deleteShareHandler = async (
     throw new HTTPException(404, { message: "User not found" });
   }
 
-  if (!user.auth.shares?.filter((id) => id.endsWith(scoutId)).length) {
+  if (!user.auth.shares?.filter((id) => id.split(";")[1] == scoutId).length) {
     throw new HTTPException(400, { message: "共有されていません" });
   }
 
@@ -51,23 +44,21 @@ export const deleteShareHandler = async (
     ...user,
     auth: {
       ...user.auth,
-      shares: user.auth.shares?.filter((id) => !id.endsWith(scoutId)),
+      shares:
+        user.auth.shares?.filter((id) => id.split(";")[1] != scoutId) || [],
     },
   };
   await db().users.set(targetUserId, newUser);
 };
 
 export const getSharesHandler = async (scoutId: string) => {
-  const users = await db().users.lis(
-    [
-      {
-        field: "auth.shares",
-        op: "array-contains-any",
-        value: [`VIEW;${scoutId}`, `EDIT;${scoutId}`],
-      },
-    ],
-    10,
-  );
+  const users = await db().users.lis([
+    {
+      field: "auth.shares",
+      op: "array-contains-any",
+      value: [`VIEW;${scoutId}`, `EDIT;${scoutId}`],
+    },
+  ]);
 
   return users.map((u) => ({
     id: u.doc_id,
