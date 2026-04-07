@@ -1,7 +1,7 @@
 import type { AppContext } from "@b/apiRotuer";
 import { db } from "@b/lib/firestore/firestore";
 import { ScoutRecordSchema } from "@b/lib/firestore/schemas";
-import { genIdSchema } from "@b/lib/randomId";
+import { generateRandomId, genIdSchema } from "@b/lib/randomId";
 import { UnitIdWithOb, type UnitIdWithObType } from "@b/lib/scoutGroup";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
@@ -26,10 +26,10 @@ const godScoutRouter = new Hono<AppContext>()
               val
                 ?.split(",")
                 .filter(
-                  (z) => UnitIdWithOb.safeParse(z).success ?? []
-                ) as UnitIdWithObType[]
+                  (z) => UnitIdWithOb.safeParse(z).success ?? [],
+                ) as UnitIdWithObType[],
           ),
-      })
+      }),
     ),
     async (c) => {
       // データ取得
@@ -49,7 +49,7 @@ const godScoutRouter = new Hono<AppContext>()
 
       // クエリパラメータによる検索
       let query: ReturnType<typeof db>["scouts"]["lis"] extends (
-        query: infer R
+        query: infer R,
       ) => void
         ? R
         : never = [];
@@ -78,7 +78,7 @@ const godScoutRouter = new Hono<AppContext>()
 
       const result = await db().scouts.lis(query);
       return c.json(result);
-    }
+    },
   )
 
   // スカウトのデータ更新
@@ -87,11 +87,14 @@ const godScoutRouter = new Hono<AppContext>()
     zValidator("param", z.object({ id: genIdSchema })),
     zValidator("json", ScoutRecordSchema),
     async (c) => {
-      const id = c.req.valid("param").id;
+      const id =
+        c.req.valid("param").id == ""
+          ? generateRandomId()
+          : c.req.valid("param").id;
       const data = c.req.valid("json");
       await db().scouts.set(id, data);
       return c.json({ message: "スカウトデータを更新しました" });
-    }
+    },
   )
 
   // スカウトのデータ削除
@@ -101,13 +104,13 @@ const godScoutRouter = new Hono<AppContext>()
       "param",
       z.object({
         id: genIdSchema,
-      })
+      }),
     ),
     async (c) => {
       const id = c.req.valid("param").id;
       await db().scouts.del(id);
       return c.json({ message: "スカウトデータを削除しました" });
-    }
+    },
   );
 
 export default godScoutRouter;

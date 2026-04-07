@@ -64,48 +64,48 @@ type QueryField<T extends Record<string, unknown>> =
 
 type FieldValue<
   T extends Record<string, unknown>,
-  F extends QueryField<T>
+  F extends QueryField<T>,
 > = F extends "doc_id"
   ? string
   : F extends `${infer K1}.${infer K2}.${infer K3}.${infer K4}`
-  ? K1 extends StringKeyOf<T>
-    ? T[K1] extends Record<string, unknown>
-      ? K2 extends StringKeyOf<T[K1]>
-        ? T[K1][K2] extends Record<string, unknown>
-          ? K3 extends StringKeyOf<T[K1][K2]>
-            ? T[K1][K2][K3] extends Record<string, unknown>
-              ? K4 extends StringKeyOf<T[K1][K2][K3]>
-                ? T[K1][K2][K3][K4]
+    ? K1 extends StringKeyOf<T>
+      ? T[K1] extends Record<string, unknown>
+        ? K2 extends StringKeyOf<T[K1]>
+          ? T[K1][K2] extends Record<string, unknown>
+            ? K3 extends StringKeyOf<T[K1][K2]>
+              ? T[K1][K2][K3] extends Record<string, unknown>
+                ? K4 extends StringKeyOf<T[K1][K2][K3]>
+                  ? T[K1][K2][K3][K4]
+                  : never
                 : never
               : never
             : never
           : never
         : never
       : never
-    : never
-  : F extends `${infer K1}.${infer K2}.${infer K3}`
-  ? K1 extends StringKeyOf<T>
-    ? T[K1] extends Record<string, unknown>
-      ? K2 extends StringKeyOf<T[K1]>
-        ? T[K1][K2] extends Record<string, unknown>
-          ? K3 extends StringKeyOf<T[K1][K2]>
-            ? T[K1][K2][K3]
+    : F extends `${infer K1}.${infer K2}.${infer K3}`
+      ? K1 extends StringKeyOf<T>
+        ? T[K1] extends Record<string, unknown>
+          ? K2 extends StringKeyOf<T[K1]>
+            ? T[K1][K2] extends Record<string, unknown>
+              ? K3 extends StringKeyOf<T[K1][K2]>
+                ? T[K1][K2][K3]
+                : never
+              : never
             : never
           : never
         : never
-      : never
-    : never
-  : F extends `${infer K1}.${infer K2}`
-  ? K1 extends StringKeyOf<T>
-    ? T[K1] extends Record<string, unknown>
-      ? K2 extends StringKeyOf<T[K1]>
-        ? T[K1][K2]
-        : never
-      : never
-    : never
-  : F extends StringKeyOf<T>
-  ? T[F]
-  : never;
+      : F extends `${infer K1}.${infer K2}`
+        ? K1 extends StringKeyOf<T>
+          ? T[K1] extends Record<string, unknown>
+            ? K2 extends StringKeyOf<T[K1]>
+              ? T[K1][K2]
+              : never
+            : never
+          : never
+        : F extends StringKeyOf<T>
+          ? T[F]
+          : never;
 
 type ElementIfArray<V> = V extends readonly (infer U)[] ? U : V;
 
@@ -148,14 +148,14 @@ type Operator<T extends Record<string, unknown>> = {
   lis: (
     query: QueryFilter<T>[],
     limit?: number,
-    offset?: number
+    offset?: number,
   ) => Promise<FirestoreDoc<T>[]>;
 };
 
 const createSingleSchemeOperator = <T extends Record<string, unknown>>(
   db: FirestoreClient,
   collection: string,
-  schema: ZodType<T>
+  schema: ZodType<T>,
 ): Operator<T> => ({
   new: async (value) => {
     const parsed = schema.parse(value);

@@ -24,7 +24,7 @@ const ensureFirestoreOperator = (env: FirestoreEnv): FirestoreClient => {
       projectId: env.PROJECT_ID,
       clientEmail: env.FIREBASE_CLIENT_EMAIL,
       privateKey: env.FIREBASE_SERVICE_ACCOUNT_KEY,
-    })
+    }),
   );
 
   cached = { key: currentKey, client };
@@ -42,7 +42,3 @@ export const db = (): FirestoreClient => {
   }
   return cached.client;
 };
-
-export type FirestoreReturn<T> = {
-  id: string;
-} & T;

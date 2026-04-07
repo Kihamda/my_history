@@ -5,6 +5,11 @@ import { Link } from "react-router";
 import GinoshoList from "./view/ginosho";
 import Events from "./view/events";
 import type { ScoutData } from "@f/lib/api/apiTypes";
+import { Button } from "react-bootstrap";
+import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShareNodes } from "@fortawesome/free-solid-svg-icons";
+import ShareBoxPopupCard from "@f/lib/popupContext/shares";
 
 const ScoutDetailViewer = ({
   scoutData,
@@ -15,6 +20,8 @@ const ScoutDetailViewer = ({
   isEditable: boolean;
   scoutID: string;
 }): React.ReactElement => {
+  const { showPopup } = usePopup();
+
   return (
     <>
       <FullWidthCardHeader
@@ -24,6 +31,17 @@ const ScoutDetailViewer = ({
         }
         buttons={
           <>
+            <Button
+              variant="outline-secondary"
+              className="me-2"
+              onClick={() =>
+                showPopup({
+                  content: <ShareBoxPopupCard id={scoutID} />,
+                })
+              }
+            >
+              <FontAwesomeIcon icon={faShareNodes} />
+            </Button>
             <Link to={`/app/scouts`} className="btn btn-outline-secondary me-2">
               検索結果に戻る
             </Link>

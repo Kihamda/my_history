@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
 import FormGroup from "../formGroup";
 import { hc } from "@f/lib/api/api";
+import { raiseError } from "@f/errorHandler";
 
 /**
  * @fileoverview
@@ -40,7 +41,7 @@ const Setup: React.FC = () => {
       alert("ユーザープロフィールが作成されました。");
       window.location.reload();
     } catch (error) {
-      alert("ユーザーの作成中にエラーが発生しました。");
+      raiseError("ユーザーの作成中にエラーが発生しました。", "error");
       console.error(error);
     }
   };
