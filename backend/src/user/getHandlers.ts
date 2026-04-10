@@ -100,6 +100,7 @@ export const getUserHandler = async (c: Context): Promise<UserProfileType> => {
         };
       }),
       emailVerified: token.email_verified || false,
+      acceptsInvite: user.auth.acceptsInvite || false,
       isGod: user.auth.isGod || false,
     },
   };

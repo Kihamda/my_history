@@ -3,6 +3,7 @@ import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import MainPage from "./page/main";
 import UserGroupsSettingsPage from "./page/groups";
 import UserInvitesSettingsPage from "./page/invites";
+import SecuritySettingsPage from "./page/security";
 
 const Setting = () => {
   return (
@@ -15,19 +16,14 @@ const Setting = () => {
         pathBase="/app/setting"
         data={[
           {
-            title: "基本設定",
+            title: "プロフィール設定",
             path: "/",
             routeElement: <MainPage />,
-            index: [
-              {
-                key: "profile",
-                label: "プロフィール設定",
-              },
-              {
-                key: "privacy",
-                label: "プライバシー設定",
-              },
-            ],
+          },
+          {
+            title: "セキュリティ設定",
+            path: "/security",
+            routeElement: <SecuritySettingsPage />,
           },
           {
             title: "所属中の組織",

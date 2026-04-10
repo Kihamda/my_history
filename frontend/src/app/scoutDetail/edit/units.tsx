@@ -31,7 +31,7 @@ const Units = ({
                     <div className="mb-3">
                       <h5>基本情報</h5>
                       <InputGroupUI
-                        label={data.experienced ? "入団済" : "未入団"}
+                        label={data.experienced ? "入隊済" : "未入隊"}
                         value={data.joinedDate}
                         setValueFunc={(e) => {
                           setScoutDataUnit((prev) => {
@@ -59,7 +59,7 @@ const Units = ({
 
                         {Object.entries(master).map(([key, value]) => {
                           const grade = data.grade.find(
-                            (g) => g.uniqueId === key
+                            (g) => g.uniqueId === key,
                           ) || {
                             uniqueId: key,
                             completed: false,
@@ -82,7 +82,7 @@ const Units = ({
                                 setScoutDataUnit((prev) => {
                                   if (
                                     data.grade.findIndex(
-                                      (g) => g.uniqueId === key
+                                      (g) => g.uniqueId === key,
                                     ) === -1
                                   ) {
                                     // 新規追加
@@ -112,7 +112,7 @@ const Units = ({
                                                 ? true
                                                 : false,
                                             }
-                                          : g
+                                          : g,
                                       ),
                                     },
                                   };
@@ -128,7 +128,7 @@ const Units = ({
                                       grade: data.grade.map((g) =>
                                         g.uniqueId === grade.uniqueId
                                           ? { ...g, completedDate: date }
-                                          : g
+                                          : g,
                                       ),
                                     },
                                   };
@@ -191,7 +191,7 @@ const Units = ({
                                       [unit]: {
                                         ...data,
                                         work: data.work.map((w, i) =>
-                                          i === index ? { ...w, name } : w
+                                          i === index ? { ...w, name } : w,
                                         ),
                                       },
                                     };
@@ -219,7 +219,7 @@ const Units = ({
                                                     .toISOString()
                                                     .split("T")[0],
                                                 }
-                                              : w
+                                              : w,
                                           ),
                                         },
                                       };
@@ -247,7 +247,7 @@ const Units = ({
                                                     .toISOString()
                                                     .split("T")[0],
                                                 }
-                                              : w
+                                              : w,
                                           ),
                                         },
                                       };
@@ -265,7 +265,7 @@ const Units = ({
                                         [unit]: {
                                           ...data,
                                           work: data.work.filter(
-                                            (_, i) => i !== index
+                                            (_, i) => i !== index,
                                           ),
                                         },
                                       };

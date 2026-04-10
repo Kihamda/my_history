@@ -56,6 +56,7 @@ export const UserProfile = z.object({
       }),
     ),
     isGod: z.boolean(),
+    acceptsInvite: z.boolean(),
   }),
   profile: z.object({
     displayName: z.string().min(2).max(100),

@@ -223,7 +223,9 @@ const SearchUserInput = ({
           />
         </div>
         <div>
-          <Button onClick={() => handleSearch(query)}>検索</Button>
+          <Button className="ms-2" onClick={() => handleSearch(query)}>
+            検索
+          </Button>
         </div>
       </div>
 

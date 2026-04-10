@@ -44,9 +44,22 @@ const CreateScoutBatPage = () => {
             ...record,
           },
         })
-        .then(() => {
-          console.log(`Record with ID ${record.id} submitted successfully.`);
-          setStatus((prev) => ({ ...prev, success: prev.success + 1 }));
+        .then((e) => {
+          if (e.status === 201) {
+            console.warn(
+              `Record with ID ${record.id} not found. Created new record.`,
+            );
+            setStatus((prev) => ({ ...prev, success: prev.success + 1 }));
+          } else if (e.status === 200) {
+            console.log(`Record with ID ${record.id} updated successfully.`);
+            setStatus((prev) => ({ ...prev, success: prev.success + 1 }));
+          } else {
+            console.warn(
+              `Unexpected response for record with ID ${record.id}:`,
+              e,
+            );
+            setStatus((prev) => ({ ...prev, failed: prev.failed + 1 }));
+          }
         })
         .catch((error) => {
           console.error(`Error submitting record with ID ${record.id}:`, error);
