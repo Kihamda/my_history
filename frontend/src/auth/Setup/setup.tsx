@@ -36,6 +36,7 @@ const Setup: React.FC = () => {
         json: {
           displayName: displayName,
           statusMessage: statusMessage,
+          acceptsInvite: false, // 初期値はfalseで設定。ユーザーが後で変更できるようにする。
         },
       });
       alert("ユーザープロフィールが作成されました。");

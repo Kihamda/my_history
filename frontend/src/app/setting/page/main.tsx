@@ -14,6 +14,7 @@ const MainPage = () => {
       json: {
         displayName: setting.profile.displayName,
         statusMessage: setting.profile.statusMessage,
+        acceptsInvite: setting.profile.acceptsInvite,
       },
     });
     if (result.status === 200) {

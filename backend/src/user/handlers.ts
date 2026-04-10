@@ -33,7 +33,6 @@ export const createUserHandler = async (
       memberships: [],
       invites: [],
       shares: [],
-      acceptsInvite: true,
       isGod: false,
     },
   });
@@ -231,30 +230,4 @@ export const leaveSharedByHandler = async (
     },
   });
   return { message: "Left shared by group successfully" };
-};
-
-// ユーザーのセキュリティ設定変更を処理するハンドラー
-export const updateUserSecuritySettingsHandler = async (
-  c: Context,
-  acceptsInvite: boolean,
-): Promise<{ message: string }> => {
-  const user = c.var.user;
-  // Firestoreのユーザーデータを更新
-  await db().users.set(c.var.token.uid, {
-    ...user,
-    auth: {
-      ...user.auth,
-      acceptsInvite: acceptsInvite,
-      invites: user.auth.invites.map((inv) => {
-        return IdWithGroupRoleStringifier(inv);
-      }),
-      memberships: user.auth.memberships.map((mem) => {
-        return IdWithGroupRoleStringifier(mem);
-      }),
-      shares: user.auth.shares.map((sh) => {
-        return IdWithShareRoleStringifier(sh);
-      }),
-    },
-  });
-  return { message: "User security settings updated successfully" };
 };

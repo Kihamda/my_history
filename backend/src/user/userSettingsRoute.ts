@@ -8,7 +8,6 @@ import {
   leaveGroupHandler,
   leaveSharedByHandler,
   rejectUserInviteHandler,
-  updateUserSecuritySettingsHandler,
 } from "./handlers";
 
 const userSettingsRouter = new Hono<AppContext>()
@@ -61,16 +60,6 @@ const userSettingsRouter = new Hono<AppContext>()
     async (c) => {
       const sharedById = c.req.valid("param").sharedById;
       const result = await leaveSharedByHandler(c, sharedById);
-      return c.json(result);
-    },
-  )
-
-  .post(
-    "/setSecuritySettings",
-    zValidator("json", z.object({ acceptsInvite: z.boolean() })),
-    async (c) => {
-      const { acceptsInvite } = c.req.valid("json");
-      const result = await updateUserSecuritySettingsHandler(c, acceptsInvite);
       return c.json(result);
     },
   );

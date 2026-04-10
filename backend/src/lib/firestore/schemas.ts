@@ -243,7 +243,6 @@ export const UserAuthSchemaString = z.object({
     .max(10)
     .nullable()
     .transform((v) => v ?? []),
-  acceptsInvite: z.boolean(),
   isGod: z.boolean().default(false),
 });
 

@@ -74,6 +74,7 @@ export const getUserHandler = async (c: Context): Promise<UserProfileType> => {
     profile: {
       displayName: user.profile.displayName,
       statusMessage: user.profile.statusMessage,
+      acceptsInvite: user.profile.acceptsInvite,
     },
     auth: {
       // グループ名を含むメンバーシップ情報を構築
@@ -100,7 +101,6 @@ export const getUserHandler = async (c: Context): Promise<UserProfileType> => {
         };
       }),
       emailVerified: token.email_verified || false,
-      acceptsInvite: user.auth.acceptsInvite || false,
       isGod: user.auth.isGod || false,
     },
   };

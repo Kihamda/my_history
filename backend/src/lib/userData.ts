@@ -19,13 +19,13 @@ export interface UserDataContext {
       id: string;
       role: "EDIT" | "VIEW";
     }[];
-    acceptsInvite: boolean;
     isGod: boolean;
   };
   email: string;
   profile: {
     displayName: string;
     statusMessage: string;
+    acceptsInvite: boolean;
   };
   fn: {
     isInRoleOnGroup: (
@@ -62,7 +62,6 @@ export const loadUserData = async (c: Context, next: () => Promise<void>) => {
       memberships: groups,
       invites: invites,
       shares: shares,
-      acceptsInvite: userData.auth.acceptsInvite,
       isGod: userData.auth.isGod || false,
     },
     fn: {
