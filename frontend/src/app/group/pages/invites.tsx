@@ -67,7 +67,7 @@ const InvitesPage = () => {
         offset: String(offset ?? 0),
       },
     });
-    if (result.status === 200) {
+    if (result.ok) {
       const data = await result.json();
       if (offset === undefined) {
         setResults(data.invitees);
