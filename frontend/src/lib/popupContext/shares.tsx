@@ -121,7 +121,17 @@ const ShareBoxPopupCard = ({
               ユーザーを追加すると、そのユーザーもこのスカウトの情報を閲覧できるようになります。共有設定は後から変更・削除することも可能です。追加ボタンを押すとすぐに反映されるのでご注意ください。
             </p>
             <div className="text-end ms-2">
-              <Button onClick={handleAdd}>追加</Button>
+              <Button
+                onClick={() => {
+                  if (
+                    confirm(`本当に${newData.name}さんを共有に追加しますか？`)
+                  ) {
+                    handleAdd();
+                  }
+                }}
+              >
+                追加
+              </Button>
             </div>
           </div>
         ) : (
@@ -158,7 +168,14 @@ const ShareBoxPopupCard = ({
       ) : (
         <div className="d-flex flex-column gap-3">
           {shareSettings.map((setting) => (
-            <div className="d-flex border-bottom pb-2" key={setting.id}>
+            <div
+              className={
+                "d-flex " +
+                (shareSettings.length > 1 ? "border-bottom" : "") +
+                " pb-2"
+              }
+              key={setting.id}
+            >
               <div className="flex-grow-1">
                 <h3 className="mb-0">{setting.name}</h3>
                 <p className="mb-0">ユーザーID: {setting.id}</p>
@@ -230,15 +247,19 @@ const SearchUserInput = ({
       </div>
 
       {results.map((user) => (
-        <div className="p-2 border-bottom d-flex flex-column" key={user.uid}>
+        <div
+          className={`p-2 ${results.length > 1 ? "border-bottom" : ""} d-flex`}
+          key={user.uid}
+        >
           <div className="flex-grow-1">
             <h3 className="mb-0">{user.profile.displayName}</h3>
             <p>
-              {user.email}:{user.uid}
+              {user.email} <br />
+              <span className="text-muted">({user.uid})</span>
             </p>
             <p>{user.profile.statusMessage}</p>
           </div>
-          <div>
+          <div className="d-flex align-items-center">
             <Button onClick={() => onUserSelect(user)}>選択</Button>
           </div>
         </div>

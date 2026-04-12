@@ -259,6 +259,13 @@ const Units = ({
                                 <Button
                                   variant="danger"
                                   onClick={() => {
+                                    if (
+                                      !confirm(
+                                        "この役務を削除してもよろしいですか？",
+                                      )
+                                    ) {
+                                      return;
+                                    }
                                     setScoutDataUnit((prev) => {
                                       return {
                                         ...prev,
