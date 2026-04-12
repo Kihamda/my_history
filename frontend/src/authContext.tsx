@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     UserProfile["auth"]["memberships"][number] | null
   >(null);
 
-  //　認証状態の変化を監視
+  // 認証状態の変化を監視
   // token:null : ログアウト
   // token:email_Verified=false : メール未認証
   // token:email_Verified=true : 通常ログイン済み
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           setUser(null);
           raiseError("ユーザーデータが見つかりませんでした。");
         } else {
-          //　ユーザーデータを状態に保存
+          // ユーザーデータを状態に保存
           const userData: UserProfile = await user.json();
           if (userData.auth.memberships.length < 0) {
             setCurrentGroupState(null);
