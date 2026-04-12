@@ -1,3 +1,4 @@
+import { raiseError } from "@f/errorHandler";
 import { hc } from "@f/lib/api/api";
 import csvScoutDataParser, {
   HEADER_LINE,
@@ -12,16 +13,6 @@ const CreateScoutBatPage = () => {
   const [csvParsedData, setCsvParsedData] = useState<CsvScoutRecord[] | null>(
     null,
   );
-  const [status, setStatus] = useState<{
-    number: number;
-    success: number;
-    failed: number;
-  }>({
-    number: 0,
-    success: 0,
-    failed: 0,
-  });
-
   const handleParse = () => {
     // CSVデータをパースしてAPIに送信する処理をここに実装
     const data = csvScoutDataParser(csvData).parsedData;
@@ -32,39 +23,30 @@ const CreateScoutBatPage = () => {
 
   const handleSubmit = async () => {
     if (!csvParsedData) return;
-    setStatus({ number: csvParsedData.length, success: 0, failed: 0 });
 
-    for (const record of csvParsedData) {
-      hc.apiv1.god.scout[":id"].setScoutData
-        .$post({
-          param: {
-            id: record.id.length == 0 ? "new" : record.id, // 一括登録用の特別なIDなどを指定
-          },
-          json: {
-            ...record,
-          },
-        })
-        .then((e) => {
-          if (e.status === 201) {
-            console.warn(
-              `Record with ID ${record.id} not found. Created new record.`,
-            );
-            setStatus((prev) => ({ ...prev, success: prev.success + 1 }));
-          } else if (e.status === 200) {
-            console.log(`Record with ID ${record.id} updated successfully.`);
-            setStatus((prev) => ({ ...prev, success: prev.success + 1 }));
-          } else {
-            console.warn(
-              `Unexpected response for record with ID ${record.id}:`,
-              e,
-            );
-            setStatus((prev) => ({ ...prev, failed: prev.failed + 1 }));
-          }
-        })
-        .catch((error) => {
-          console.error(`Error submitting record with ID ${record.id}:`, error);
-          setStatus((prev) => ({ ...prev, failed: prev.failed + 1 }));
-        });
+    try {
+      const result = await hc.apiv1.god.scout.batchSetScoutData.$post({
+        json: [
+          ...csvParsedData.map((record) => ({
+            id: record.id.length > 0 ? record.id : undefined,
+            data: {
+              ...record,
+            },
+          })),
+        ],
+      });
+
+      if (result.status === 200) {
+        raiseError("スカウトデータの一括登録に成功しました", "success");
+      } else {
+        raiseError(
+          "スカウトデータの一括登録に失敗しました",
+          "error",
+          (await result.json()).message,
+        );
+      }
+    } catch (error) {
+      raiseError("スカウトデータの一括登録に失敗しました", "error");
     }
   };
 
@@ -93,16 +75,9 @@ const CreateScoutBatPage = () => {
           </div>
 
           <div className="card-footer text-end">
-            {status.number > 0 ? (
-              <div className="mb-2">
-                <strong>送信状況:</strong> {status.success} 成功,
-                {status.failed} 失敗
-              </div>
-            ) : (
-              <Button variant="success" onClick={handleSubmit}>
-                APIに送信
-              </Button>
-            )}
+            <Button variant="success" onClick={handleSubmit}>
+              APIに送信
+            </Button>
           </div>
         </div>
       ) : (

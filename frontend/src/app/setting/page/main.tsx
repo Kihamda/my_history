@@ -10,17 +10,21 @@ const MainPage = () => {
   const [setting, setSetting] = useState(currentUserData);
 
   const handleSave = async () => {
-    const result = await hc.apiv1.user.updateProfile.$post({
-      json: {
-        displayName: setting.profile.displayName,
-        statusMessage: setting.profile.statusMessage,
-        acceptsInvite: setting.profile.acceptsInvite,
-      },
-    });
-    if (result.status === 200) {
-      raiseError("プロフィールを更新しました", "success");
-    } else {
-      raiseError("プロフィールの更新に失敗しました", "error");
+    try {
+      const result = await hc.apiv1.user.updateProfile.$post({
+        json: {
+          displayName: setting.profile.displayName,
+          statusMessage: setting.profile.statusMessage,
+          acceptsInvite: setting.profile.acceptsInvite,
+        },
+      });
+      if (result.status === 200) {
+        raiseError("プロフィールを更新しました", "success");
+      } else {
+        raiseError("プロフィールの更新に失敗しました", "error");
+      }
+    } catch (error) {
+      raiseError("プロフィールの更新に失敗しました");
     }
   };
 
