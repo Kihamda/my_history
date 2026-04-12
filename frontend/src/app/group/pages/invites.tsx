@@ -48,7 +48,11 @@ const InvitesPage = () => {
       // 必要に応じて招待一覧を再取得するなどの処理を追加
     } else {
       // 招待作成失敗時の処理
-      raiseError("招待の作成に失敗しました。", "error", await result.text());
+      raiseError(
+        "招待の作成に失敗しました。",
+        "error",
+        (await result.json()).message,
+      );
     }
   };
 
