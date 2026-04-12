@@ -41,7 +41,7 @@ const InvitesPage = () => {
       },
       param: { id: groupId },
     });
-    if (result.status === 201) {
+    if (result.ok) {
       // 招待作成成功時の処理
       setNewData(null);
       raiseError("招待を作成しました。", "success");
