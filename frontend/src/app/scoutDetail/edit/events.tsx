@@ -13,7 +13,7 @@ const Events = ({
   const [eventFilter, setEventFilter] = useState<ScoutEventType | null>(null);
 
   const eventListLength = events.filter((event) =>
-    eventFilter ? event.type == eventFilter : true
+    eventFilter ? event.type == eventFilter : true,
   ).length;
 
   const createNewRecord = () => {
@@ -99,7 +99,7 @@ const Events = ({
                         events.toSpliced(index, 1, {
                           ...event,
                           name: e.target.value,
-                        })
+                        }),
                       );
                     }}
                   />
@@ -112,7 +112,7 @@ const Events = ({
                         events.toSpliced(index, 1, {
                           ...event,
                           type: e.target.value as ScoutEventType,
-                        })
+                        }),
                       );
                     }}
                   >
@@ -134,7 +134,7 @@ const Events = ({
                         events.toSpliced(index, 1, {
                           ...event,
                           startDate: e.target.value,
-                        })
+                        }),
                       );
                     }}
                   />
@@ -149,7 +149,7 @@ const Events = ({
                         events.toSpliced(index, 1, {
                           ...event,
                           endDate: e.target.value,
-                        })
+                        }),
                       );
                     }}
                   />
@@ -165,7 +165,7 @@ const Events = ({
                         events.toSpliced(index, 1, {
                           ...event,
                           description: e.target.value,
-                        })
+                        }),
                       )
                     }
                   />
@@ -173,9 +173,11 @@ const Events = ({
                 <div className="mt-2 text-end">
                   <Button
                     variant="danger"
-                    onClick={() =>
-                      setEventFunc(events.filter((_, i) => i !== index))
-                    }
+                    onClick={() => {
+                      if (confirm("この記録を削除してもよろしいですか？")) {
+                        setEventFunc(events.filter((_, i) => i !== index));
+                      }
+                    }}
                   >
                     この記録を削除
                   </Button>

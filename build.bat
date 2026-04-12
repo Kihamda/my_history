@@ -20,7 +20,7 @@ if errorlevel 1 (
 popd
 REM RUN the backend
 pushd backend
-call npm run dev
+call npm run dry-run
 if errorlevel 1 (
     echo [ERROR] Backend failed to start or exited with an error.
     popd

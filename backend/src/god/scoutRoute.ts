@@ -45,8 +45,6 @@ const godScoutRouter = new Hono<AppContext>()
         }
       }
 
-      console.log(c.req.valid("query"));
-
       // クエリパラメータによる検索
       let query: ReturnType<typeof db>["scouts"]["lis"] extends (
         query: infer R,
@@ -81,16 +79,35 @@ const godScoutRouter = new Hono<AppContext>()
     },
   )
 
+  // スカウトのデータを一括登録・更新
+  .post(
+    "/batchSetScoutData",
+    zValidator(
+      "json",
+      z.array(
+        z.object({ id: genIdSchema.optional(), data: ScoutRecordSchema }),
+      ),
+    ),
+    async (c) => {
+      const data = c.req.valid("json");
+      data.forEach(async (record) => {
+        if (!record.id) {
+          record.id = generateRandomId();
+        }
+        await db().scouts.set(record.id, record.data);
+      });
+
+      return c.json({ message: "スカウトデータを一括登録・更新しました" });
+    },
+  )
+
   // スカウトのデータ更新
   .post(
     "/:id/setScoutData",
     zValidator("param", z.object({ id: genIdSchema })),
     zValidator("json", ScoutRecordSchema),
     async (c) => {
-      const id =
-        c.req.valid("param").id == ""
-          ? generateRandomId()
-          : c.req.valid("param").id;
+      const id = c.req.valid("param").id;
       const data = c.req.valid("json");
       await db().scouts.set(id, data);
       return c.json({ message: "スカウトデータを更新しました" });

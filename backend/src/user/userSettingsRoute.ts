@@ -62,9 +62,6 @@ const userSettingsRouter = new Hono<AppContext>()
       const result = await leaveSharedByHandler(c, sharedById);
       return c.json(result);
     },
-  )
-
-  .post("/setIsAcceptInvite");
-//
+  );
 
 export default userSettingsRouter;

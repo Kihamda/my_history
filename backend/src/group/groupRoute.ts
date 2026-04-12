@@ -28,6 +28,7 @@ import {
   getGroupMembers,
   getGroupInvitees,
   getGroupProfileData,
+  updateGroupProfileData,
 } from "./handler";
 import { genIdSchema } from "@b/lib/randomId";
 
@@ -52,6 +53,18 @@ const groupRouter = new Hono<AppContext>()
     async (c) => {
       const id = c.req.param("id");
       const group = await getGroupProfileData(id);
+      return c.json(group);
+    },
+  )
+
+  .post(
+    "/:id/profile",
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("json", z.object({ name: z.string().max(100) })),
+    async (c) => {
+      const id = c.req.param("id");
+      const { name } = c.req.valid("json");
+      const group = await updateGroupProfileData(c, id, { name });
       return c.json(group);
     },
   )

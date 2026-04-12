@@ -8,18 +8,18 @@
     "test": "tsx test.ts"
   },
   "devDependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.7.2",
-    "@fortawesome/free-solid-svg-icons": "^6.7.2",
-    "@fortawesome/react-fontawesome": "^0.2.2",
-    "@types/node": "^24.5.2",
-    "@types/react": "^19.1.13",
-    "@types/react-dom": "^19.1.9",
-    "marked": "^16.3.0",
-    "react": "^19.1.1",
+    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@fortawesome/react-fontawesome": "^3.3.0",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "marked": "^18.0.0",
+    "react": "^19.2.5",
     "react-bootstrap": "^2.10.10",
-    "react-dom": "^19.1.1",
+    "react-dom": "^19.2.5",
     "react-scroll": "^1.9.3",
-    "tsx": "^4.20.6",
-    "typescript": "^5.9.2"
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
   }
 }

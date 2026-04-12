@@ -243,7 +243,6 @@ export const UserAuthSchemaString = z.object({
     .max(10)
     .nullable()
     .transform((v) => v ?? []),
-  acceptsInvite: z.boolean(),
   isGod: z.boolean().default(false),
 });
 
@@ -251,13 +250,13 @@ export const UserAuthSchema = z.object({
   memberships: z.array(IdWithGroupRole).max(10),
   invites: z.array(IdWithGroupRole).max(10),
   shares: z.array(IdWithShareRole).max(10),
-  acceptsInvite: z.boolean(),
   isGod: z.boolean().default(false),
 });
 
 export const UserProfileSchema = z.object({
   displayName: z.string(),
   statusMessage: z.string(),
+  acceptsInvite: z.boolean(),
 });
 
 export const UserRecordSchemaString = z.object({

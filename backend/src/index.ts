@@ -18,7 +18,6 @@ const app = new Hono<AppContext>()
     if (error instanceof HTTPException) {
       return error.getResponse();
     }
-
     console.error("Unhandled error", error);
     return c.json(
       {

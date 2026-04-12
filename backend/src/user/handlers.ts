@@ -33,7 +33,6 @@ export const createUserHandler = async (
       memberships: [],
       invites: [],
       shares: [],
-      acceptsInvite: true,
       isGod: false,
     },
   });

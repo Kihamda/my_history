@@ -1,3 +1,4 @@
+import { raiseError } from "@f/errorHandler";
 import { hc } from "@f/lib/api/api";
 import csvScoutDataParser, {
   HEADER_LINE,
@@ -12,7 +13,6 @@ const CreateScoutBatPage = () => {
   const [csvParsedData, setCsvParsedData] = useState<CsvScoutRecord[] | null>(
     null,
   );
-
   const handleParse = () => {
     // CSVデータをパースしてAPIに送信する処理をここに実装
     const data = csvScoutDataParser(csvData).parsedData;
@@ -24,15 +24,29 @@ const CreateScoutBatPage = () => {
   const handleSubmit = async () => {
     if (!csvParsedData) return;
 
-    for (const record of csvParsedData) {
-      hc.apiv1.god.scout[":id"].setScoutData.$post({
-        param: {
-          id: record.id.length == 0 ? "" : record.id, // 一括登録用の特別なIDなどを指定
-        },
-        json: {
-          ...record,
-        },
+    try {
+      const result = await hc.apiv1.god.scout.batchSetScoutData.$post({
+        json: [
+          ...csvParsedData.map((record) => ({
+            id: record.id.length > 0 ? record.id : undefined,
+            data: {
+              ...record,
+            },
+          })),
+        ],
       });
+
+      if (result.status === 200) {
+        raiseError("スカウトデータの一括登録に成功しました", "success");
+      } else {
+        raiseError(
+          "スカウトデータの一括登録に失敗しました",
+          "error",
+          (await result.json()).message,
+        );
+      }
+    } catch (error) {
+      raiseError("スカウトデータの一括登録に失敗しました", "error");
     }
   };
 

@@ -3,8 +3,11 @@ import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import MainPage from "./page/main";
 import UserGroupsSettingsPage from "./page/groups";
 import UserInvitesSettingsPage from "./page/invites";
+import { useAuthContext } from "@f/authContext";
 
 const Setting = () => {
+  const currentUserData = useAuthContext().user.auth;
+
   return (
     <>
       <FullWidthCardHeader
@@ -15,27 +18,17 @@ const Setting = () => {
         pathBase="/app/setting"
         data={[
           {
-            title: "基本設定",
+            title: "プロフィール設定",
             path: "/",
             routeElement: <MainPage />,
-            index: [
-              {
-                key: "profile",
-                label: "プロフィール設定",
-              },
-              {
-                key: "privacy",
-                label: "プライバシー設定",
-              },
-            ],
           },
           {
-            title: "所属中の組織",
+            title: "所属中の組織" + `(${currentUserData.memberships.length})`,
             path: "/groups",
             routeElement: <UserGroupsSettingsPage />,
           },
           {
-            title: "受けている招待",
+            title: "受けている招待" + `(${currentUserData.invites.length})`,
             path: "/invites",
             routeElement: <UserInvitesSettingsPage />,
           },

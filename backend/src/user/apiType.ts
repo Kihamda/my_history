@@ -60,6 +60,7 @@ export const UserProfile = z.object({
   profile: z.object({
     displayName: z.string().min(2).max(100),
     statusMessage: z.string().max(500),
+    acceptsInvite: z.boolean(),
   }),
 });
 

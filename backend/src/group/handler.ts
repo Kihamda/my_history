@@ -32,6 +32,31 @@ export const getGroupProfileData = async (id: string) => {
   return group.userSettings;
 };
 
+export const updateGroupProfileData = async (
+  c: Context,
+  id: string,
+  data: { name: string },
+) => {
+  if (!c.var.user.fn.isInRoleOnGroup(id, ["ADMIN"])) {
+    throw new HTTPException(403, {
+      message: "You do not have permission to update this group",
+    });
+  }
+  const group = await db().groups.get(id);
+  if (!group) {
+    throw new HTTPException(404, { message: "Group not found" });
+  }
+  await db().groups.set(id, {
+    ...group,
+    userSettings: {
+      ...group.userSettings,
+      name: data.name,
+    },
+  });
+
+  return { message: "Group updated successfully" };
+};
+
 /**
  * グループ取得(認可付き)
  * - グループ自体の存在確認
@@ -150,7 +175,7 @@ export const addGroupInvite = async (
     throw new HTTPException(404, { message: "User not found" });
   }
 
-  if (!user.auth.acceptsInvite) {
+  if (!user.profile.acceptsInvite) {
     throw new HTTPException(403, { message: "User does not accept invites" });
   }
 
