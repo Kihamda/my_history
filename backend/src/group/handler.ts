@@ -263,7 +263,7 @@ export const updateMemberRole = async (
   // 認可
   if (!c.var.user.fn.isInRoleOnGroup(groupId, ["ADMIN"])) {
     throw new HTTPException(403, {
-      message: "あなたはこのグループのメンバー権限を持っていません",
+      message: "あなたはこのグループの管理者権限を持っていません",
     });
   }
 
