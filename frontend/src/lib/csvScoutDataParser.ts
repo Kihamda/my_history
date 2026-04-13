@@ -35,9 +35,16 @@ type UnitData = CsvScoutRecord["unit"][UnitId];
 // ---------- 定数 ----------
 
 const UNIT_IDS: UnitId[] = ["bvs", "cs", "bs", "vs", "rs"];
+const UNIT_GRADE_IDS: Record<UnitId, readonly string[]> = {
+  bvs: ["beaver", "bigbeaver"],
+  cs: ["rabbit", "deer", "bear"],
+  bs: ["beginner", "second", "first", "mum"],
+  vs: ["venture", "falcon", "fuji"],
+  rs: [],
+};
 
 // カラム名一覧（順序が重要）
-const COLUMNS = [
+const COMMON_COLUMNS = [
   "id",
   "belongGroupId",
   "name",
@@ -54,17 +61,26 @@ const COLUMNS = [
   "religion_done",
   "faith_date",
   "faith_done",
-  ...UNIT_IDS.flatMap((u) => [
-    `${u}_experienced`,
-    `${u}_joinedDate`,
-    `${u}_work`,
-    `${u}_grade`,
-  ]),
-  "ginosho",
-  "event",
-  "last_Edited",
 ] as const;
 
+const UNIT_COLUMNS = UNIT_IDS.flatMap((u) => [
+  `${u}_experienced`,
+  `${u}_joinedDate`,
+  `${u}_work`,
+  ...UNIT_GRADE_IDS[u].flatMap((gradeId) => [
+    `${u}-grade-${gradeId}-completed`,
+    `${u}-grade-${gradeId}-completedDate`,
+    `${u}-grade-${gradeId}-details`,
+  ]),
+]);
+
+const TRAILING_COLUMNS = ["ginosho", "event", "last_Edited"] as const;
+
+const COLUMNS = [
+  ...COMMON_COLUMNS,
+  ...UNIT_COLUMNS,
+  ...TRAILING_COLUMNS,
+] as const;
 export const HEADER_LINE = COLUMNS.join(",");
 
 // ---------- ヘルパー ----------
@@ -114,25 +130,25 @@ const decodeWork = (raw: string): UnitWork[] => {
   });
 };
 
-const encodeGrade = (grade: UnitGrade[]): string =>
-  grade
-    .map(
-      (g) =>
-        `${escapeField(g.uniqueId)}~${escapeField(g.completedDate)}~${b2s(g.completed)}~${encodeDetails(g.details)}`,
-    )
-    .join("|");
+const decodeFlatGrade = (
+  uniqueId: string,
+  completedRaw: string,
+  completedDate: string,
+  detailsRaw: string,
+): UnitGrade | null => {
+  if (completedRaw === "" && completedDate === "" && detailsRaw === "") {
+    return null;
+  }
 
-const decodeGrade = (raw: string): UnitGrade[] => {
-  if (raw === "") return [];
-  return raw.split(/(?<!\\)\|/).map((part) => {
-    const subParts = part.split(/(?<!\\)~/);
-    return {
-      uniqueId: unescapeField(subParts[0] || ""),
-      completedDate: unescapeField(subParts[1] || ""),
-      completed: s2b(unescapeField(subParts[2] || "")),
-      details: decodeDetails(subParts.slice(3).join("~")),
-    };
-  });
+  const completed =
+    completedRaw === "" ? completedDate !== "" : s2b(completedRaw);
+
+  return {
+    uniqueId,
+    completed,
+    completedDate,
+    details: decodeDetails(detailsRaw),
+  };
 };
 
 const encodeGinosho = (ginosho: Ginosho[]): string =>
@@ -270,11 +286,18 @@ const csvScoutDataParser = (raw: string) => {
 
     const unit = {} as Record<UnitId, UnitData>;
     for (const uid of UNIT_IDS) {
+      const experienced = s2b(next());
+      const unitJoinedDate = next();
+      const work = decodeWork(next());
+      const grade = UNIT_GRADE_IDS[uid]
+        .map((gradeId) => decodeFlatGrade(gradeId, next(), next(), next()))
+        .filter((g): g is UnitGrade => g !== null);
+
       unit[uid] = {
-        experienced: s2b(next()),
-        joinedDate: next(),
-        work: decodeWork(next()),
-        grade: decodeGrade(next()),
+        experienced,
+        joinedDate: unitJoinedDate,
+        work,
+        grade,
       };
     }
 
@@ -339,12 +362,16 @@ export const csvScoutDataEncoder = (records: CsvScoutRecord[]): string => {
 
     for (const uid of UNIT_IDS) {
       const u = r.unit[uid];
-      cols.push(
-        b2s(u.experienced),
-        u.joinedDate,
-        encodeWork(u.work),
-        encodeGrade(u.grade),
-      );
+      cols.push(b2s(u.experienced), u.joinedDate, encodeWork(u.work));
+
+      for (const gradeId of UNIT_GRADE_IDS[uid]) {
+        const grade = u.grade.find((g) => g.uniqueId === gradeId);
+        cols.push(
+          b2s(grade?.completed ?? false),
+          grade?.completedDate ?? "",
+          encodeDetails(grade?.details ?? []),
+        );
+      }
     }
 
     cols.push(encodeGinosho(r.ginosho), encodeEvents(r.event), r.last_Edited);
