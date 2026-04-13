@@ -31,17 +31,19 @@ const ScoutDetailViewer = ({
         }
         buttons={
           <>
-            <Button
-              variant="outline-secondary"
-              className="me-2"
-              onClick={() =>
-                showPopup({
-                  content: <ShareBoxPopupCard id={scoutID} />,
-                })
-              }
-            >
-              <FontAwesomeIcon icon={faShareNodes} />
-            </Button>
+            {isEditable && (
+              <Button
+                variant="outline-primary"
+                className="me-2"
+                onClick={() =>
+                  showPopup({
+                    content: <ShareBoxPopupCard id={scoutID} />,
+                  })
+                }
+              >
+                <FontAwesomeIcon icon={faShareNodes} />
+              </Button>
+            )}
             <Link to={`/app/scouts`} className="btn btn-outline-secondary me-2">
               検索結果に戻る
             </Link>

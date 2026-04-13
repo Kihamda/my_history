@@ -27,7 +27,7 @@ import { type GroupRoleSchemaType } from "../lib/scoutGroup";
 export const getGroupProfileData = async (id: string) => {
   const group = await db().groups.get(id);
   if (!group) {
-    throw new HTTPException(404, { message: "Group not found" });
+    throw new HTTPException(404, { message: "グループが見つかりませんでした" });
   }
   return group.userSettings;
 };
@@ -39,12 +39,12 @@ export const updateGroupProfileData = async (
 ) => {
   if (!c.var.user.fn.isInRoleOnGroup(id, ["ADMIN"])) {
     throw new HTTPException(403, {
-      message: "You do not have permission to update this group",
+      message: "あなたはこのグループを更新する権限を持っていません",
     });
   }
   const group = await db().groups.get(id);
   if (!group) {
-    throw new HTTPException(404, { message: "Group not found" });
+    throw new HTTPException(404, { message: "グループが見つかりませんでした" });
   }
   await db().groups.set(id, {
     ...group,
@@ -54,7 +54,7 @@ export const updateGroupProfileData = async (
     },
   });
 
-  return { message: "Group updated successfully" };
+  return { message: "グループが正常に更新されました" };
 };
 
 /**
@@ -78,7 +78,7 @@ export const getGroupMembers = async (
 > => {
   if (!c.var.user.fn.isInRoleOnGroup(id, ["ADMIN"])) {
     throw new HTTPException(403, {
-      message: "You do not have permission to access this group",
+      message: "あなたはこのグループにアクセスする権限を持っていません",
     });
   }
 
@@ -127,7 +127,7 @@ export const getGroupInvitees = async (
 > => {
   if (!c.var.user.fn.isInRoleOnGroup(id, ["ADMIN"])) {
     throw new HTTPException(403, {
-      message: "You do not have permission to access this group",
+      message: "あなたはこのグループにアクセスする権限を持っていません",
     });
   }
   const invites = await db().users.lis(
@@ -166,30 +166,32 @@ export const addGroupInvite = async (
   // 権限チェック(ADMIN必須)
   if (!c.var.user.fn.isInRoleOnGroup(groupId, ["ADMIN"])) {
     throw new HTTPException(403, {
-      message: "You do not have permission to invite members to this group",
+      message: "あなたはこのグループにメンバーを招待する権限を持っていません",
     });
   }
 
   const user = await db().users.get(invite.targetUid);
   if (!user) {
-    throw new HTTPException(404, { message: "User not found" });
+    throw new HTTPException(404, { message: "ユーザーが見つかりませんでした" });
   }
 
   if (!user.profile.acceptsInvite) {
-    throw new HTTPException(403, { message: "User does not accept invites" });
+    throw new HTTPException(403, {
+      message: "ユーザーは招待を受け入れていません",
+    });
   }
 
   // 重複チェック
   if (user.auth.memberships.some((v) => v.endsWith(`;${groupId}`))) {
-    throw new HTTPException(409, { message: "User is already a member" });
+    throw new HTTPException(409, { message: "ユーザーは既にメンバーです" });
   }
 
   if (user.auth.invites.some((v) => v.endsWith(`;${groupId}`))) {
-    throw new HTTPException(409, { message: "Invite already exists" });
+    throw new HTTPException(409, { message: "招待は既に存在します" });
   }
 
   if (user.auth.invites.length >= 10) {
-    throw new HTTPException(409, { message: "Invite limit reached" });
+    throw new HTTPException(409, { message: "招待の上限に達しました" });
   }
 
   const inviteKey = IdWithGroupRoleStringifier({
@@ -219,19 +221,19 @@ export const removeGroupMember = async (
   // 認可
   if (!c.var.user.fn.isInRoleOnGroup(groupId, ["ADMIN"])) {
     throw new HTTPException(403, {
-      message: "You do not have permission to remove members from this group",
+      message: "あなたはこのグループからメンバーを削除する権限を持っていません",
     });
   }
 
   if (c.var.token.uid === targetUid) {
     throw new HTTPException(400, {
-      message: "You cannot remove yourself from the group",
+      message: "あなた自身をグループから削除することはできません",
     });
   }
 
   const user = await db().users.get(targetUid);
   if (!user) {
-    throw new HTTPException(404, { message: "User not found" });
+    throw new HTTPException(404, { message: "ユーザーが見つかりませんでした" });
   }
 
   const newMemberships = user.auth.memberships.filter(
@@ -261,14 +263,13 @@ export const updateMemberRole = async (
   // 認可
   if (!c.var.user.fn.isInRoleOnGroup(groupId, ["ADMIN"])) {
     throw new HTTPException(403, {
-      message:
-        "You do not have permission to update member roles in this group",
+      message: "あなたはこのグループの管理者権限を持っていません",
     });
   }
 
   if (c.var.token.uid === targetUid) {
     throw new HTTPException(400, {
-      message: "You cannot change your own role",
+      message: "あなた自身のロールは変更できません",
     });
   }
 
@@ -277,11 +278,11 @@ export const updateMemberRole = async (
     m.endsWith(`;${groupId}`),
   );
   if (!user) {
-    throw new HTTPException(404, { message: "User not found" });
+    throw new HTTPException(404, { message: "ユーザーが見つかりませんでした" });
   }
   if (idx === undefined || idx < 0) {
     throw new HTTPException(404, {
-      message: "User is not a member of the group",
+      message: "ユーザーはこのグループのメンバーではありません",
     });
   }
 

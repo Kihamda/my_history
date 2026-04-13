@@ -41,14 +41,18 @@ const InvitesPage = () => {
       },
       param: { id: groupId },
     });
-    if (result.status === 201) {
+    if (result.ok) {
       // 招待作成成功時の処理
       setNewData(null);
       raiseError("招待を作成しました。", "success");
       // 必要に応じて招待一覧を再取得するなどの処理を追加
     } else {
       // 招待作成失敗時の処理
-      raiseError("招待の作成に失敗しました。", "error", await result.text());
+      raiseError(
+        "招待の作成に失敗しました。",
+        "error",
+        (await result.json()).message,
+      );
     }
   };
 
@@ -63,7 +67,7 @@ const InvitesPage = () => {
         offset: String(offset ?? 0),
       },
     });
-    if (result.status === 200) {
+    if (result.ok) {
       const data = await result.json();
       if (offset === undefined) {
         setResults(data.invitees);
