@@ -12,6 +12,7 @@ type AlertLevel = "error" | "warning" | "info" | "success";
 type RaisedError = {
   id: string;
   message: string;
+  sub?: string;
   trace?: string;
   level: AlertLevel;
 };
@@ -46,6 +47,7 @@ const createId = () =>
 export const raiseError = (
   message: string,
   level: AlertLevel = "error",
+  sub?: string,
   trace?: string,
 ) => {
   const detail: RaisedError = {
@@ -53,6 +55,7 @@ export const raiseError = (
     message: message,
     trace: import.meta.env.DEV ? trace : undefined,
     level,
+    sub,
   };
 
   // カスタムイベントを発行してエラーメッセージを伝える
@@ -101,7 +104,7 @@ const ErrorProvider: FC<{ children: ReactNode }> = ({ children }) => {
           zIndex: 9999,
         }}
       >
-        {error.map(({ id, message, trace, level }) => (
+        {error.map(({ id, message, sub, trace, level }) => (
           <div
             key={id}
             className={`alert alert-${levelToVariant[level]} alert-dismissible fade show m-0 mt-2 d-flex align-items-center gap-2`}
@@ -111,6 +114,7 @@ const ErrorProvider: FC<{ children: ReactNode }> = ({ children }) => {
             <FontAwesomeIcon icon={levelToIcon[level]} />
             <div className="d-flex flex-column gap-1">
               <span>{message}</span>
+              {sub && <span className="small text-muted">{sub}</span>}
               {trace ? (
                 <pre
                   className="mb-0 small bg-transparent border-0 p-0 text-body-secondary"
