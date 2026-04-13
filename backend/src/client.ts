@@ -1,6 +1,6 @@
 import { hc, type InferResponseType } from "hono/client";
 import type { ResponseFormat } from "hono/types";
-import type { StatusCode } from "hono/utils/http-status";
+import type { StatusCode, SuccessStatusCode } from "hono/utils/http-status";
 import type { AppType } from "./index";
 
 type Client = ReturnType<typeof hc<AppType>>;
@@ -13,7 +13,9 @@ declare module "hono/client" {
     U extends number = StatusCode,
     F extends ResponseFormat = ResponseFormat,
   > {
-    json(): F extends "text"
+    json(
+      this: ClientResponse<T, U, F>,
+    ): F extends "text"
       ? Promise<never>
       : F extends "json"
         ? Promise<T extends object ? T & { message?: string } : T>
@@ -36,4 +38,5 @@ export const createClient = (baseUrl: string, token?: string) => {
 };
 
 export type { InferResponseType };
+export type { SuccessStatusCode };
 export type { Client };
