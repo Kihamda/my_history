@@ -73,7 +73,7 @@ const GodGroupPage = () => {
       raiseError(
         "グループデータの保存に失敗しました。",
         "error",
-        await result.text(),
+        (await result.json()).message,
       );
     }
   };

@@ -82,7 +82,7 @@ const InvitesPage = () => {
       raiseError(
         "招待一覧の取得に失敗しました。",
         "error",
-        await result.text(),
+        (await result.json()).message,
       );
     }
   };

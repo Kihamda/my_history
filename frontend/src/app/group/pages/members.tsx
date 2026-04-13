@@ -39,7 +39,7 @@ const MemberEditor = ({
       raiseError(
         "メンバー情報の保存に失敗しました。",
         "error",
-        await result.text(),
+        (await result.json()).message,
       );
     }
   };
@@ -60,7 +60,7 @@ const MemberEditor = ({
       raiseError(
         "メンバーの削除に失敗しました。",
         "error",
-        await result.text(),
+        (await result.json()).message,
       );
     }
   };
@@ -147,7 +147,7 @@ const MembersPage = () => {
         raiseError(
           "メンバー一覧の取得に失敗しました。",
           "error",
-          await result.text(),
+          (await result.json()).message,
         );
       }
     } catch (error) {

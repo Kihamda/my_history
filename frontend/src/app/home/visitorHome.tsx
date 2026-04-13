@@ -26,7 +26,7 @@ const VisitorHome = () => {
       raiseError(
         "スカウトの取得に失敗しました",
         "error",
-        await response.text(),
+        (await response.json()).message,
       );
     }
     setIsLoading(false);

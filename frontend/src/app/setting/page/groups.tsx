@@ -27,7 +27,7 @@ const UserGroupsSettingsPage = () => {
         raiseError(
           "グループの脱退に失敗しました。",
           "error",
-          await result.text(),
+          (await result.json()).message,
         );
         return;
       }
@@ -35,7 +35,7 @@ const UserGroupsSettingsPage = () => {
       raiseError(
         "グループを脱退しました。",
         "success",
-        `Left Group ID: ${groupId}`,
+        (await result.json()).message,
       );
     }
   };
