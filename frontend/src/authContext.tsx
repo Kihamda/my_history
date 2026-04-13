@@ -79,6 +79,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         if (user.status === 404) {
           setUser(null);
           raiseError("ユーザーデータが見つかりませんでした。");
+        } else if (!user.ok) {
+          setUser(null);
+          raiseError(
+            "ユーザーデータの取得に失敗しました。",
+            "error",
+            (await user.json()).message,
+          );
         } else {
           // ユーザーデータを状態に保存
           const userData: UserProfile = await user.json();

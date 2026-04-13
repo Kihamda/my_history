@@ -10,7 +10,7 @@ type ScoutDataType = ResType<typeof hc.apiv1.god.scout.getScoutData.$get>;
 const GodScoutPage = () => {
   const [results, setResults] = useState<ScoutDataType>([]);
   const [editorSlot, setEditorSlot] = useState<ScoutDataType[number] | null>(
-    null
+    null,
   );
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -49,7 +49,7 @@ const GodScoutPage = () => {
       raiseError(
         "スカウトデータの保存に失敗しました。",
         "error",
-        await result.text()
+        (await result.json()).message,
       );
     }
   };
@@ -66,7 +66,7 @@ const GodScoutPage = () => {
       raiseError(
         "スカウトデータの削除に失敗しました。",
         "error",
-        await result.text()
+        (await result.json()).message,
       );
     }
   };
@@ -132,8 +132,8 @@ const GodScoutPage = () => {
                       onClick={() => {
                         setEditorSlot(
                           results.find(
-                            (e) => e.doc_id === editorSlot?.doc_id
-                          ) || null
+                            (e) => e.doc_id === editorSlot?.doc_id,
+                          ) || null,
                         );
                         setIsEditing(false);
                       }}

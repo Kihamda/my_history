@@ -1,9 +1,27 @@
 import { hc, type InferResponseType } from "hono/client";
+import type { ResponseFormat } from "hono/types";
+import type { StatusCode, SuccessStatusCode } from "hono/utils/http-status";
 import type { AppType } from "./index";
 
 type Client = ReturnType<typeof hc<AppType>>;
 const hcWithType = (...args: Parameters<typeof hc<AppType>>): Client =>
   hc<AppType>(...args);
+
+declare module "hono/client" {
+  interface ClientResponse<
+    T,
+    U extends number = StatusCode,
+    F extends ResponseFormat = ResponseFormat,
+  > {
+    json(
+      this: ClientResponse<T, U, F>,
+    ): F extends "text"
+      ? Promise<never>
+      : F extends "json"
+        ? Promise<T extends object ? T & { message?: string } : T>
+        : Promise<unknown>;
+  }
+}
 
 export type ClientType = ReturnType<typeof createClient>;
 // 認証なしでバックエンドにアクセスするための最小クライアント生成。
@@ -20,4 +38,5 @@ export const createClient = (baseUrl: string, token?: string) => {
 };
 
 export type { InferResponseType };
+export type { SuccessStatusCode };
 export type { Client };

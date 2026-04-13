@@ -36,7 +36,7 @@ const UserInvitesSettingsPage = () => {
         raiseError(
           "グループの脱退に失敗しました。",
           "error",
-          await result.text(),
+          (await result.json()).message,
         );
         return;
       }

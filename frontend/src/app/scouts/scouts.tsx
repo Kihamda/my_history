@@ -67,17 +67,17 @@ const Scouts: React.FC = () => {
 
     // 検索実行
     try {
-      const search = await hc?.apiv1.scout.search.$post({
+      const search = await hc.apiv1.scout.search.$post({
         json: query,
       });
 
       if (search?.status !== 200) {
-        raiseError("Search API call failed: " + (await search?.text()));
+        raiseError("Search API call failed: " + (await search.json()).message);
         setResult([]);
         setIsPending(false);
         return;
       }
-      const searchResult: ScoutSearchResponse = (await search?.json()) || [];
+      const searchResult: ScoutSearchResponse = (await search.json()) || [];
       setResult(searchResult);
       setResultsCache(searchResult);
     } catch (error) {

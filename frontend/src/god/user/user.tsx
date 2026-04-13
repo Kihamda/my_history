@@ -50,7 +50,7 @@ const GodUserPage = () => {
       raiseError(
         "ユーザーデータの保存に失敗しました。",
         "error",
-        await result.text(),
+        (await result.json()).message,
       );
     }
   };
@@ -67,7 +67,7 @@ const GodUserPage = () => {
       raiseError(
         "ユーザーデータの削除に失敗しました。",
         "error",
-        await result.text(),
+        (await result.json()).message,
       );
     }
   };

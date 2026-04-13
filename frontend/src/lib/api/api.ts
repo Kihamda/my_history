@@ -2,6 +2,7 @@ import {
   createClient,
   type ClientType,
   type InferResponseType,
+  type SuccessStatusCode,
 } from "@b/client";
 
 const BASE_URL = import.meta.env.VITE_API_URL
@@ -16,4 +17,4 @@ export const setHcClient = (token?: string) => {
 // GETのqueryパラメータ、POSTのjson/formボディを取得
 export type ReqType<T> = (T extends (...args: infer A) => any ? A : never)[0];
 
-export type ResType<T> = InferResponseType<T>;
+export type ResType<T> = InferResponseType<T, SuccessStatusCode>;
