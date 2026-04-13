@@ -33,7 +33,7 @@ const ScoutDetailViewer = ({
           <>
             {isEditable && (
               <Button
-                variant="outline-primary"
+                variant="outline-secondary"
                 className="me-2"
                 onClick={() =>
                   showPopup({

@@ -35,8 +35,10 @@ const GinoshoList = ({
             );
             if (newData === null) {
               // 削除
-              newList.splice(index, 1);
-              setGinoshoFunc(newList);
+              if (index !== -1) {
+                newList.splice(index, 1);
+                setGinoshoFunc(newList);
+              }
             } else if (index !== -1) {
               newList[index] = newData;
               setGinoshoFunc(newList);
