@@ -14,9 +14,38 @@ const toStatus = (status: number): ContentfulStatusCode => {
 const app = new Hono<AppContext>()
 
   // 共通のエラーハンドラー。HTTPException を尊重し、それ以外は 500 を返す。
-  .onError((error, c) => {
+  .onError(async (error, c) => {
     if (error instanceof HTTPException) {
-      return error.getResponse();
+      const response = error.getResponse();
+      const responseText = await response.clone().text();
+
+      let message = responseText;
+
+      try {
+        const body = JSON.parse(responseText) as unknown;
+
+        if (typeof body === "string") {
+          message = body;
+        } else if (body && typeof body === "object" && "message" in body) {
+          const maybeMessage = (body as { message?: unknown }).message;
+          if (typeof maybeMessage === "string" && maybeMessage.length > 0) {
+            message = maybeMessage;
+          }
+        }
+      } catch {
+        // JSONとして解釈できない場合は text をそのまま message として採用する。
+      }
+
+      if (!message || message.length === 0) {
+        message = error.message || "不明なエラーが発生しました";
+      }
+
+      return c.json(
+        {
+          message,
+        },
+        toStatus(response.status),
+      );
     }
     console.error("Unhandled error", error);
     return c.json(
