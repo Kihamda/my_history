@@ -4,7 +4,7 @@
 
 - Node.js 18 以上
 - Cloudflare アカウント
-- Firebase プロジェクト (my-history-v2)
+- Firebase プロジェクト (production / development で分離)
 
 ## バックエンド
 
@@ -33,6 +33,44 @@
 }
 ```
 
+### 環境分離 (production / development)
+
+`wrangler.jsonc` のトップレベルを production、`env.dev` を development として利用する
+
+```jsonc
+{
+  "name": "my-history-backend",
+  "vars": {
+    "PROJECT_ID": "my-history-v2",
+    "PUBLIC_JWK_CACHE_KEY": "my-history-public-jwk",
+  },
+  "kv_namespaces": [
+    {
+      "binding": "MY_HISTORY_KV_CACHE",
+      "id": "<production_kv_id>",
+    },
+  ],
+  "env": {
+    "dev": {
+      "name": "my-history-dev",
+      "vars": {
+        "PROJECT_ID": "my-history-dev",
+        "PUBLIC_JWK_CACHE_KEY": "my-history-dev-jwk",
+        "IS_DEV": "TRUE",
+      },
+      "kv_namespaces": [
+        {
+          "binding": "MY_HISTORY_KV_CACHE",
+          "id": "<development_kv_id>",
+        },
+      ],
+    },
+  },
+}
+```
+
+> 注意: `binding` 名はコード側参照 (`MY_HISTORY_KV_CACHE`) と一致させる必要があるため、環境ごとに変えるのは `id` のみ
+
 ### 環境変数 (Workers)
 
 | 変数名                         | 種類    | 説明                         |
@@ -43,6 +81,27 @@
 | `MY_HISTORY_KV_CACHE`          | binding | KV Namespace                 |
 | `FIREBASE_SERVICE_ACCOUNT_KEY` | secret  | Service Account JSON         |
 | `FIREBASE_CLIENT_EMAIL`        | secret  | SA クライアントメール        |
+| `FIREBASE_PROJECT_ID`          | secret  | Firebase プロジェクトID      |
+
+### Secret 設定 (Workers)
+
+production (トップレベル環境)
+
+```bash
+cd backend
+npx wrangler secret put FIREBASE_SERVICE_ACCOUNT_KEY
+npx wrangler secret put FIREBASE_CLIENT_EMAIL
+npx wrangler secret put FIREBASE_PROJECT_ID
+```
+
+development (`env.dev`)
+
+```bash
+cd backend
+npx wrangler secret put FIREBASE_SERVICE_ACCOUNT_KEY --env dev
+npx wrangler secret put FIREBASE_CLIENT_EMAIL --env dev
+npx wrangler secret put FIREBASE_PROJECT_ID --env dev
+```
 
 ### ローカル開発
 
@@ -54,10 +113,30 @@ npm run dev
 
 ### デプロイ
 
+production
+
 ```bash
 cd backend
 npm run deploy
 ```
+
+development
+
+```bash
+cd backend
+npx wrangler deploy --env=dev --minify
+```
+
+### CI/CD (GitHub Actions)
+
+`.github/workflows/cloudflare-deploy.yml` は 1 つの workflow でブランチにより環境を分岐する
+
+| ブランチ | GitHub Environment | Wrangler コマンド                        |
+| -------- | ------------------ | ---------------------------------------- |
+| `main`   | `production`       | `npx wrangler deploy --minify`           |
+| `dev`    | `development`      | `npx wrangler deploy --env=dev --minify` |
+
+必要に応じて `production` / `development` Environment に同名 secret (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) を設定する
 
 ### 型チェック
 
@@ -125,8 +204,12 @@ cd ../backend && npm run dev
 
 ### プロジェクト
 
-- プロジェクトID: `my-history-v2`
-- 認証ドメイン: `my-history-v2.firebaseapp.com`
+- production
+  - プロジェクトID: `my-history-v2`
+  - 認証ドメイン: `my-history-v2.firebaseapp.com`
+- development
+  - プロジェクトID: `my-history-dev` (例)
+  - 認証ドメイン: `my-history-dev.firebaseapp.com` (例)
 
 ### 必要なサービス
 
