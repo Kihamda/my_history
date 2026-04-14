@@ -18,32 +18,31 @@
   "main": "src/index.ts",
   "vars": {
     "PROJECT_ID": "my-history-v2",
-    "PUBLIC_JWK_CACHE_KEY": "my-history-public-jwk"
+    "PUBLIC_JWK_CACHE_KEY": "my-history-public-jwk",
   },
   "assets": {
     "directory": "./buildTmp",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "kv_namespaces": [
     {
       "binding": "MY_HISTORY_KV_CACHE",
-      "id": "..."
-    }
-  ]
+      "id": "...",
+    },
+  ],
 }
 ```
 
 ### 環境変数 (Workers)
 
-| 変数名                       | 種類     | 説明                        |
-| ---------------------------- | -------- | --------------------------- |
-| `PROJECT_ID`                 | var      | Firebase プロジェクトID     |
-| `PUBLIC_JWK_CACHE_KEY`       | var      | KV キャッシュキー           |
-| `IS_DEV`                     | var      | 開発モード (`"TRUE"` で有効) |
-| `MY_HISTORY_KV_CACHE`        | binding  | KV Namespace               |
-| `FIREBASE_SERVICE_ACCOUNT_KEY` | secret | Service Account JSON       |
-| `FIREBASE_CLIENT_EMAIL`      | secret   | SA クライアントメール       |
-| `FIREBASE_PROJECT_ID`        | secret   | Firebase プロジェクトID     |
+| 変数名                         | 種類    | 説明                         |
+| ------------------------------ | ------- | ---------------------------- |
+| `PROJECT_ID`                   | var     | Firebase プロジェクトID      |
+| `PUBLIC_JWK_CACHE_KEY`         | var     | KV キャッシュキー            |
+| `IS_DEV`                       | var     | 開発モード (`"TRUE"` で有効) |
+| `MY_HISTORY_KV_CACHE`          | binding | KV Namespace                 |
+| `FIREBASE_SERVICE_ACCOUNT_KEY` | secret  | Service Account JSON         |
+| `FIREBASE_CLIENT_EMAIL`        | secret  | SA クライアントメール        |
 
 ### ローカル開発
 
@@ -71,9 +70,9 @@ npm run typecheck
 
 ### 環境変数
 
-| 変数名         | 説明                    | デフォルト |
-| -------------- | ----------------------- | ---------- |
-| `VITE_API_URL` | API ベース URL          | `/`        |
+| 変数名         | 説明           | デフォルト |
+| -------------- | -------------- | ---------- |
+| `VITE_API_URL` | API ベース URL | `/`        |
 
 ### ローカル開発
 

@@ -19,6 +19,23 @@
     },
   ],
 
+  "env": {
+    "dev": {
+      "name": "my-history-dev",
+      "vars": {
+        "PROJECT_ID": "my-history-dev",
+        "PUBLIC_JWK_CACHE_KEY": "my-history-dev-jwk",
+        "IS_DEV": "TRUE",
+      },
+      "kv_namespaces": [
+        {
+          "binding": "MY_HISTORY_KV_CACHE",
+          "id": "3de538a7c1cf4b929e5f241625c5649e",
+        },
+      ],
+    },
+  },
+
   "observability": {
     "enabled": false,
     "head_sampling_rate": 1,
