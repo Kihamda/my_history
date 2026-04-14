@@ -12,6 +12,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareNodes } from "@fortawesome/free-solid-svg-icons";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import ShareBoxPopupCard from "@f/lib/popupContext/shares";
+import { raiseError } from "@f/errorHandler";
+import ScoutTransfarPopup from "./edit/scoutTransfar";
 
 const ScoutDetailEditor = ({
   scoutData,
@@ -71,7 +73,24 @@ const ScoutDetailEditor = ({
         event: scoutDataEvents,
         last_Edited: new Date().toISOString().split("T")[0],
       });
+      raiseError("スカウトデータの保存に成功しました。", "success");
       nav(`/app/scouts/${scoutID}/view`);
+    }
+  };
+
+  const handleDelete = async () => {
+    const result = await hc.apiv1.scout[":id"].$delete({
+      param: { id: scoutID },
+    });
+    if (result.status === 200) {
+      raiseError("スカウトデータの削除に成功しました。", "success");
+      nav(`/app/scouts`);
+    } else {
+      raiseError(
+        "スカウトデータの削除に失敗しました。",
+        "error",
+        (await result.json()).message,
+      );
     }
   };
 
@@ -141,6 +160,56 @@ const ScoutDetailEditor = ({
         <Units
           scoutDataUnit={scoutDataUnit}
           setScoutDataUnit={setScoutDataUnit}
+        />
+      </div>
+
+      <div className="mt-3">
+        <FullWidthCardHeader
+          title="スカウトデータの削除"
+          buttons={
+            <>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  if (
+                    confirm(
+                      "本当に削除しますか？この操作は取り消せません。データの復旧は管理者も不可能ですから、利用者の責任において削除したものとします。",
+                    ) &&
+                    confirm(
+                      "本当に削除しますか？" +
+                        scoutData.personal.name +
+                        "さんのデータは完全に抹消されます。この操作は取り消せません。",
+                    )
+                  )
+                    handleDelete();
+                }}
+              >
+                スカウトデータを削除する
+              </Button>
+            </>
+          }
+          memo="スカウトデータを削除します。削除したデータは復元できません。"
+        />
+        <div className="mt-3"></div>
+        <FullWidthCardHeader
+          title="スカウトデータの移管"
+          memo="スカウトデータを他のユーザーに移管します。移管したデータは復元できません。"
+          buttons={
+            <>
+              <Button
+                variant="warning"
+                onClick={() =>
+                  showPopup({
+                    content: (
+                      <ScoutTransfarPopup data={scoutData} id={scoutID} />
+                    ),
+                  })
+                }
+              >
+                スカウトデータを移管する
+              </Button>
+            </>
+          }
         />
       </div>
     </>
