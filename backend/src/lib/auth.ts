@@ -27,7 +27,6 @@ export interface FirebaseAuthBindings {
   MY_HISTORY_KV_CACHE: KVNamespace;
   FIREBASE_SERVICE_ACCOUNT_KEY: string;
   FIREBASE_CLIENT_EMAIL: string;
-  FIREBASE_PROJECT_ID: string;
   FIREBASE_AUTH_EMULATOR_HOST: string;
 }
 
