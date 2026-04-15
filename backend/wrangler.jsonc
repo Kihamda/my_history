@@ -23,7 +23,7 @@
     "dev": {
       "name": "my-history-dev",
       "vars": {
-        "PROJECT_ID": "my-history-dev",
+        "PROJECT_ID": "my-history-dev-67b03",
         "PUBLIC_JWK_CACHE_KEY": "my-history-dev-jwk",
         "IS_DEV": "TRUE",
       },

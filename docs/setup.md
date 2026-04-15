@@ -27,26 +27,6 @@
   "kv_namespaces": [
     {
       "binding": "MY_HISTORY_KV_CACHE",
-      "id": "...",
-    },
-  ],
-}
-```
-
-### 環境分離 (production / development)
-
-`wrangler.jsonc` のトップレベルを production、`env.dev` を development として利用する
-
-```jsonc
-{
-  "name": "my-history-backend",
-  "vars": {
-    "PROJECT_ID": "my-history-v2",
-    "PUBLIC_JWK_CACHE_KEY": "my-history-public-jwk",
-  },
-  "kv_namespaces": [
-    {
-      "binding": "MY_HISTORY_KV_CACHE",
       "id": "<production_kv_id>",
     },
   ],
@@ -136,7 +116,11 @@ npx wrangler deploy --env=dev --minify
 | `main`   | `production`       | `npx wrangler deploy --minify`           |
 | `dev`    | `development`      | `npx wrangler deploy --env=dev --minify` |
 
-必要に応じて `production` / `development` Environment に同名 secret (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) を設定する
+GitHub Environment (`production` / `development`) には次を設定する
+
+- secret: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
+- secret: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID`, `VITE_FIREBASE_MEASUREMENT_ID`
+- variable (任意): `VITE_API_URL`
 
 ### 型チェック
 
@@ -149,9 +133,21 @@ npm run typecheck
 
 ### 環境変数
 
-| 変数名         | 説明           | デフォルト |
-| -------------- | -------------- | ---------- |
-| `VITE_API_URL` | API ベース URL | `/`        |
+| 変数名                              | 説明                              | 例                                  |
+| ----------------------------------- | --------------------------------- | ----------------------------------- |
+| `VITE_API_URL`                      | API ベース URL                    | `/`                                 |
+| `VITE_FIREBASE_API_KEY`             | Firebase API キー                 | `AIza...`                           |
+| `VITE_FIREBASE_AUTH_DOMAIN`         | Firebase Auth ドメイン            | `my-history-v2.firebaseapp.com`     |
+| `VITE_FIREBASE_PROJECT_ID`          | Firebase プロジェクトID           | `my-history-v2`                     |
+| `VITE_FIREBASE_STORAGE_BUCKET`      | Firebase Storage バケット         | `my-history-v2.firebasestorage.app` |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Messaging Sender ID      | `1015...`                           |
+| `VITE_FIREBASE_APP_ID`              | Firebase App ID                   | `1:...:web:...`                     |
+| `VITE_FIREBASE_MEASUREMENT_ID`      | Firebase Analytics Measurement ID | `G-...`                             |
+
+`frontend/.env.example` をコピーして、ローカル用の env ファイルを作成する
+
+- `frontend/.env.development`
+- `frontend/.env.production`
 
 ### ローカル開発
 
@@ -163,9 +159,18 @@ npm run dev
 
 ### ビルド
 
+production
+
 ```bash
 cd frontend
 npm run build
+```
+
+development モードでビルド
+
+```bash
+cd frontend
+npm run build -- --mode development
 ```
 
 ### Lint
