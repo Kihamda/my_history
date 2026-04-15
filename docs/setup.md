@@ -144,7 +144,7 @@ npm run typecheck
 | `VITE_FIREBASE_APP_ID`              | Firebase App ID                   | `1:...:web:...`                     |
 | `VITE_FIREBASE_MEASUREMENT_ID`      | Firebase Analytics Measurement ID | `G-...`                             |
 
-`frontend/.env.example` をコピーして、ローカル用の env ファイルを作成する
+上記の環境変数一覧をもとに、ローカル用の env ファイルを作成する
 
 - `frontend/.env.development`
 - `frontend/.env.production`
