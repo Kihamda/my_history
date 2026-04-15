@@ -49,7 +49,8 @@ const verifyJWT = async (
     const firebaseToken = await auth.verifyIdToken(jwt, false, env);
     return firebaseToken;
   } catch (error) {
-    console.error("JWT verification failed:", error);
+    const errorName = error instanceof Error ? error.name : typeof error;
+    console.error("JWT verification failed:", errorName);
     return null;
   }
 };
