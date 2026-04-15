@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
+      - dev
 
 jobs:
   deploy:
-    name: Build & Deploy to production
+    name: Build & Deploy
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,6 +39,8 @@ jobs:
 
       - name: Build frontend
         working-directory: frontend
+        env:
+          VITE_IS_DEV: ${{ vars.VITE_IS_DEV }}
         run: npm run build
 
       - name: Generate static site content
@@ -48,4 +52,9 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deploy --minify
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "dev" ]; then
+            npx wrangler deploy --env=dev --minify
+          else
+            npx wrangler deploy --minify
+          fi

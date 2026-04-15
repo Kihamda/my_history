@@ -27,7 +27,6 @@ export interface FirebaseAuthBindings {
   MY_HISTORY_KV_CACHE: KVNamespace;
   FIREBASE_SERVICE_ACCOUNT_KEY: string;
   FIREBASE_CLIENT_EMAIL: string;
-  FIREBASE_PROJECT_ID: string;
   FIREBASE_AUTH_EMULATOR_HOST: string;
 }
 
@@ -50,6 +49,8 @@ const verifyJWT = async (
     const firebaseToken = await auth.verifyIdToken(jwt, false, env);
     return firebaseToken;
   } catch (error) {
+    const errorName = error instanceof Error ? error.name : typeof error;
+    console.error("JWT verification failed:", errorName);
     return null;
   }
 };
