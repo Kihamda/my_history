@@ -39,6 +39,8 @@ jobs:
 
       - name: Build frontend
         working-directory: frontend
+        env:
+          VITE_IS_DEV: ${{ variables.VITE_IS_DEV }}
         run: npm run build
 
       - name: Generate static site content
