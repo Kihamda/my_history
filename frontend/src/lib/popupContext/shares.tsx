@@ -1,7 +1,7 @@
 import { raiseError } from "@f/errorHandler";
 import { hc, type ResType } from "@f/lib/api/api";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import InputGroupUI from "../style/imputGroupUI";
 
@@ -22,6 +22,23 @@ const ShareBoxPopupCard = ({
   const [isEditing, setIsEditing] = useState(false);
   const [newData, setNewData] = useState<ShareSettings | null>(null);
 
+  // 共有設定の読み込み
+  const handleLoad = useCallback(async () => {
+    try {
+      const data = await hc.apiv1.scout[":id"]["share"]["$get"]({
+        param: { id },
+      });
+
+      if (data.status == 200) {
+        setShareSettings(await data.json());
+      } else {
+        raiseError("共有設定の取得に失敗しました");
+      }
+    } catch {
+      raiseError("共有設定の取得に失敗しました");
+    }
+  }, [id]);
+
   // 共有設定の追加
   const handleAdd = async () => {
     // ここで新しい共有設定を追加するAPIを呼び出す
@@ -41,30 +58,13 @@ const ShareBoxPopupCard = ({
       if (response.status === 200) {
         setIsEditing(false);
         setNewData(null);
-        handleLoad();
+        await handleLoad();
       } else {
         const errorData = await response.json();
         raiseError("共有設定の追加に失敗しました", "error", errorData.message);
       }
-    } catch (error) {
+    } catch {
       raiseError("共有設定の追加に失敗しました");
-    }
-  };
-
-  // 共有設定の読み込み
-  const handleLoad = async () => {
-    try {
-      const data = await hc.apiv1.scout[":id"]["share"]["$get"]({
-        param: { id },
-      });
-
-      if (data.status == 200) {
-        setShareSettings(await data.json());
-      } else {
-        raiseError("共有設定の取得に失敗しました");
-      }
-    } catch (error) {
-      raiseError("共有設定の取得に失敗しました");
     }
   };
 
@@ -78,20 +78,26 @@ const ShareBoxPopupCard = ({
         },
       });
       if (response.status === 200) {
-        handleLoad();
+        await handleLoad();
       } else {
         const errorData = await response.json();
         raiseError("共有設定の削除に失敗しました", "error", errorData.message);
       }
-    } catch (error) {
+    } catch {
       raiseError("共有設定の削除に失敗しました");
     }
   };
 
   // コンポーネントがマウントされたとき、またはidが変更されたときに共有設定を読み込む
   useEffect(() => {
-    handleLoad();
-  }, [id]);
+    const timeoutId = window.setTimeout(() => {
+      void handleLoad();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [handleLoad]);
 
   // 編集モードの表示
   if (isEditing && isEditable) {
@@ -223,7 +229,7 @@ const SearchUserInput = ({
       } else {
         raiseError("ユーザーの検索に失敗しました");
       }
-    } catch (error) {
+    } catch {
       raiseError("ユーザーの検索に失敗しました");
     }
   };

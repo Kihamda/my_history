@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import {
   createContext,
   useContext,
@@ -21,8 +23,9 @@ import { setHcClient, hc } from "@f/lib/api/api";
 import type { UserProfile } from "./lib/api/apiTypes";
 import { raiseError } from "./errorHandler";
 import { getBrowserSettings } from "./lib/localCache";
+import { useNavigate } from "react-router";
 
-interface UserProfileContext extends UserProfile {}
+type UserProfileContext = UserProfile;
 
 interface AuthContextValue {
   user: UserProfileContext | null;
@@ -173,13 +176,15 @@ export function useAuthContext(
   safe = true,
 ): AuthContextValue | SafeAuthContextValue {
   const context = useContext(AuthContext);
+  const navigate = useNavigate();
+
   if (!context) {
     throw new Error("useAuthContext must be used within an AuthProvider");
   }
 
   if (safe) {
     if (!context.user || !context.token) {
-      window.location.href = "/auth/login";
+      navigate("/auth/login");
       throw new Error("AuthContext user or token is null");
     }
   }

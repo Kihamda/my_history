@@ -7,19 +7,21 @@ import { useState } from "react";
 
 const GroupTopPage = () => {
   const { currentGroup } = useAuthContext();
+  const [changedGroupName, setChangedGroupName] = useState(
+    currentGroup?.name ?? "",
+  );
 
   if (!currentGroup) {
     raiseError("グループが選択されていません。");
     return <></>;
   }
-  const [changedCurrentGroup, setChangedCurrentGroup] = useState(currentGroup);
 
   const handleSave = async () => {
     try {
       const result = await hc.apiv1.group[":id"].profile.$post({
         param: { id: currentGroup.id },
         json: {
-          name: changedCurrentGroup.name,
+          name: changedGroupName,
         },
       });
       if (result.status === 200) {
@@ -31,7 +33,7 @@ const GroupTopPage = () => {
           (await result.json()).message,
         );
       }
-    } catch (error) {
+    } catch {
       raiseError("グループの更新に失敗しました。");
     }
   };
@@ -43,13 +45,8 @@ const GroupTopPage = () => {
         <div className="card-body">
           <InputGroupUI
             label="グループ名"
-            value={changedCurrentGroup.name}
-            setValueFunc={(e) =>
-              setChangedCurrentGroup({
-                ...changedCurrentGroup,
-                name: e,
-              })
-            }
+            value={changedGroupName}
+            setValueFunc={setChangedGroupName}
           />
         </div>
         <div className="card-footer text-end">

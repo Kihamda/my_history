@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from "react-router";
 import ScoutDetailViewer from "./viewer";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ScoutDetailEditor from "./editor";
 import LoadingSplash from "@f/lib/style/loadingSplash";
 import { raiseError } from "@f/errorHandler";
@@ -17,7 +17,7 @@ const ScoutDetail = (): React.ReactElement => {
   const [isLoading, setIsLoading] = useState(true);
   const { currentGroup, user } = useAuthContext();
 
-  const handleFetchScouts = async (scoutId: string) => {
+  const handleFetchScouts = useCallback(async (scoutId: string) => {
     setIsLoading(true);
     const data = await hc.apiv1.scout[":id"].$get({ param: { id: scoutId } });
     if (data.ok) {
@@ -28,11 +28,17 @@ const ScoutDetail = (): React.ReactElement => {
       setScoutData(null);
     }
     setIsLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
-    handleFetchScouts(id);
-  }, [id]);
+    const timeoutId = window.setTimeout(() => {
+      void handleFetchScouts(id);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [handleFetchScouts, id]);
 
   // データがロード中の場合はローディング表示を返す
   if (isLoading) {

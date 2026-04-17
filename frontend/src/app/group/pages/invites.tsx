@@ -4,7 +4,7 @@ import { hc, type ReqType } from "@f/lib/api/api";
 import SearchUserWithMail from "@f/lib/popupContext/searchUserWithMailPopup";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
 
 type InviteData = ReqType<
@@ -56,7 +56,7 @@ const InvitesPage = () => {
     }
   };
 
-  const handleGetInvites = async (offset?: number) => {
+  const handleGetInvites = useCallback(async (offset?: number) => {
     if (!groupId) {
       raiseError("グループが選択されていません。");
       return;
@@ -85,11 +85,17 @@ const InvitesPage = () => {
         (await result.json()).message,
       );
     }
-  };
+  }, [groupId]);
 
   useEffect(() => {
-    handleGetInvites();
-  }, [groupId]);
+    const timeoutId = window.setTimeout(() => {
+      void handleGetInvites();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [handleGetInvites]);
 
   return (
     <>

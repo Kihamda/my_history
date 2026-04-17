@@ -23,7 +23,7 @@ const MainPage = () => {
       } else {
         raiseError("プロフィールの更新に失敗しました", "error");
       }
-    } catch (error) {
+    } catch {
       raiseError("プロフィールの更新に失敗しました");
     }
   };

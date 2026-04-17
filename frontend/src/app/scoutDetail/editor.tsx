@@ -47,7 +47,7 @@ const ScoutDetailEditor = ({
   // ポップアップ
   const { showPopup } = usePopup();
 
-  //　保存時にプロファイルの変更をローカルで反映させるための関数
+  // 保存時にプロファイルの変更をローカルで反映させるための関数
   const handleProfileChange = async () => {
     const updatedData: ScoutUpdate = {
       json: {

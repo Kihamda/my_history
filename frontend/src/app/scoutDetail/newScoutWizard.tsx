@@ -1,27 +1,27 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { raiseError } from "@f/errorHandler";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import InputGroupUI from "@f/lib/style/imputGroupUI";
 import { hc } from "@f/lib/api/api";
 import type { ScoutCreate } from "@f/lib/api/apiTypes";
 import { useAuthContext } from "@f/authContext";
+
 const NewScoutWizard = () => {
   const nav = useNavigate();
   const { currentGroup } = useAuthContext();
-
-  if (!currentGroup) {
-    raiseError("グループに所属していないため、スカウトを作成できません。");
-    nav("/app/scouts", { replace: true });
-    return <></>;
-  }
 
   const [scoutData, setScoutData] = useState<ScoutCreate>({
     name: "",
     scoutId: "",
     birthDate: new Date().toISOString().split("T")[0],
-    belongGroupId: currentGroup.id,
+    belongGroupId: currentGroup?.id || "",
   });
+
+  if (!currentGroup || scoutData.belongGroupId == "") {
+    raiseError("グループに所属していないため、スカウトを作成できません。");
+    return <Navigate to="/app/scouts" replace />;
+  }
 
   const handleSave = async (newScoutData: ScoutCreate) => {
     const result = await hc.apiv1.scout.create.$post({

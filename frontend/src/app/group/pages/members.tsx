@@ -4,7 +4,7 @@ import { hc, type ResType } from "@f/lib/api/api";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
 import LoadingSplash from "@f/lib/style/loadingSplash";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 
 type MembersResponse = ResType<
@@ -114,50 +114,60 @@ const MembersPage = () => {
   const groupId = useAuthContext().currentGroup?.id;
 
   const { showPopup } = usePopup();
-  useEffect(() => {
-    handleGetMembers();
-  }, [groupId]);
 
-  const handleGetMembers = async (offset?: number) => {
-    if (!groupId) {
-      raiseError("グループが選択されていません。");
-      return;
-    }
+  const handleGetMembers = useCallback(
+    async (offset?: number) => {
+      if (!groupId) {
+        raiseError("グループが選択されていません。");
+        return;
+      }
 
-    try {
-      const result = await hc.apiv1.group[":id"].members.$get({
-        param: { id: groupId },
-        query: {
-          offset: String(offset ?? 0),
-        },
-      });
+      try {
+        const result = await hc.apiv1.group[":id"].members.$get({
+          param: { id: groupId },
+          query: {
+            offset: String(offset ?? 0),
+          },
+        });
 
-      if (result.status === 200) {
-        const data = (await result.json()).members;
-        if (offset === undefined) {
-          setResults(data);
-        } else {
-          if (data.length === 0) {
-            raiseError("これ以上メンバーはいません。", "info");
-            return;
+        if (result.status === 200) {
+          const data = (await result.json()).members;
+          if (offset === undefined) {
+            setResults(data);
+          } else {
+            if (data.length === 0) {
+              raiseError("これ以上メンバーはいません。", "info");
+              return;
+            }
+            setResults((prev) => [...prev, ...data]);
           }
-          setResults((prev) => [...prev, ...data]);
+        } else {
+          raiseError(
+            "メンバー一覧の取得に失敗しました。",
+            "error",
+            (await result.json()).message,
+          );
         }
-      } else {
+      } catch (error) {
         raiseError(
-          "メンバー一覧の取得に失敗しました。",
+          "メンバー一覧の取得中にエラーが発生しました。",
           "error",
-          (await result.json()).message,
+          String(error),
         );
       }
-    } catch (error) {
-      raiseError(
-        "メンバー一覧の取得中にエラーが発生しました。",
-        "error",
-        String(error),
-      );
-    }
-  };
+    },
+    [groupId],
+  );
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void handleGetMembers();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [handleGetMembers]);
 
   const handleDetail = (member: MembersResponse[number]) => {
     // 詳細表示の処理をここに実装
@@ -166,9 +176,11 @@ const MembersPage = () => {
         <MemberEditor
           setEditorSlot={(data) => {
             if (data === null) {
-              setResults(results.filter((m) => m.uid !== member.uid));
+              setResults((prev) => prev.filter((m) => m.uid !== member.uid));
             } else {
-              setResults(results.map((m) => (m.uid === data.uid ? data : m)));
+              setResults((prev) =>
+                prev.map((m) => (m.uid === data.uid ? data : m)),
+              );
             }
           }}
           editorSlot={member}
