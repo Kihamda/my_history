@@ -8,6 +8,7 @@ import { Route, Routes } from "react-router";
  */
 import { lazy, Suspense, useEffect } from "react";
 import LoadingSplash from "@f/lib/style/loadingSplash";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const ErrorProvider = lazy(() => import("@f/errorHandler"));
 const Auth = lazy(() => import("@f/auth/auth"));
@@ -17,24 +18,27 @@ const PopupProvider = lazy(() => import("@f/lib/popupContext/fullscreanPopup"));
 const GodMode = lazy(() => import("@f/god/god"));
 
 // ここで/〇〇/の変更が生じるときはfirebase.jsonのrewritesも変更すること
+const queryClient = new QueryClient();
 
 // メインアプリケーションコンポーネント
 function MainApp() {
   return (
     <Suspense fallback={<LoadingSplash />}>
-      <ErrorProvider>
-        <AuthProvider>
-          <PopupProvider>
-            <Routes>
-              <Route path="/" element={<Reload />} />
-              <Route path="*" element={<NotFound />} />
-              <Route path="/auth/*" element={<Auth />} />
-              <Route path="/app/*" element={<AppPage />} />
-              <Route path="/god/*" element={<GodMode />} />
-            </Routes>
-          </PopupProvider>
-        </AuthProvider>
-      </ErrorProvider>
+      <QueryClientProvider client={queryClient}>
+        <ErrorProvider>
+          <AuthProvider>
+            <PopupProvider>
+              <Routes>
+                <Route path="/" element={<Reload />} />
+                <Route path="*" element={<NotFound />} />
+                <Route path="/auth/*" element={<Auth />} />
+                <Route path="/app/*" element={<AppPage />} />
+                <Route path="/god/*" element={<GodMode />} />
+              </Routes>
+            </PopupProvider>
+          </AuthProvider>
+        </ErrorProvider>
+      </QueryClientProvider>
     </Suspense>
   );
 }

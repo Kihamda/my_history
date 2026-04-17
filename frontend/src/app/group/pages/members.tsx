@@ -117,45 +117,47 @@ const MembersPage = () => {
 
   const handleGetMembers = useCallback(
     async (offset?: number) => {
-    if (!groupId) {
-      raiseError("グループが選択されていません。");
-      return;
-    }
+      if (!groupId) {
+        raiseError("グループが選択されていません。");
+        return;
+      }
 
-    try {
-      const result = await hc.apiv1.group[":id"].members.$get({
-        param: { id: groupId },
-        query: {
-          offset: String(offset ?? 0),
-        },
-      });
+      try {
+        const result = await hc.apiv1.group[":id"].members.$get({
+          param: { id: groupId },
+          query: {
+            offset: String(offset ?? 0),
+          },
+        });
 
-      if (result.status === 200) {
-        const data = (await result.json()).members;
-        if (offset === undefined) {
-          setResults(data);
-        } else {
-          if (data.length === 0) {
-            raiseError("これ以上メンバーはいません。", "info");
-            return;
+        if (result.status === 200) {
+          const data = (await result.json()).members;
+          if (offset === undefined) {
+            setResults(data);
+          } else {
+            if (data.length === 0) {
+              raiseError("これ以上メンバーはいません。", "info");
+              return;
+            }
+            setResults((prev) => [...prev, ...data]);
           }
-          setResults((prev) => [...prev, ...data]);
+        } else {
+          raiseError(
+            "メンバー一覧の取得に失敗しました。",
+            "error",
+            (await result.json()).message,
+          );
         }
-      } else {
+      } catch (error) {
         raiseError(
-          "メンバー一覧の取得に失敗しました。",
+          "メンバー一覧の取得中にエラーが発生しました。",
           "error",
-          (await result.json()).message,
+          String(error),
         );
       }
-    } catch (error) {
-      raiseError(
-        "メンバー一覧の取得中にエラーが発生しました。",
-        "error",
-        String(error),
-      );
-    }
-  }, [groupId]);
+    },
+    [groupId],
+  );
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
