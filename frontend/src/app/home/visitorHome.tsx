@@ -3,7 +3,7 @@ import { raiseError } from "@f/errorHandler";
 import { hc, type ResType } from "@f/lib/api/api";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import LoadingSplash from "@f/lib/style/loadingSplash";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router";
 
@@ -14,7 +14,7 @@ const VisitorHome = () => {
   const [result, setResult] = useState<ScoutSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const handleFetchScouts = useCallback(async (offset: number) => {
+  const handleFetchScouts = async (offset: number) => {
     setIsLoading(true);
     const response = await hc.apiv1.user.sharedScouts.$get({
       query: { offset: String(offset) },
@@ -30,18 +30,13 @@ const VisitorHome = () => {
       );
     }
     setIsLoading(false);
-  }, []);
+  };
 
   useEffect(() => {
     // 初回レンダリング時にデフォルトのスカウトを選択
-    const timeoutId = window.setTimeout(() => {
-      void handleFetchScouts(0);
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [handleFetchScouts]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    handleFetchScouts(0);
+  }, []);
 
   return (
     <>

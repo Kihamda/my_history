@@ -56,8 +56,7 @@ const InvitesPage = () => {
     }
   };
 
-  const handleGetInvites = useCallback(
-    async (offset?: number) => {
+  const handleGetInvites = useCallback(async (offset?: number) => {
     if (!groupId) {
       raiseError("グループが選択されていません。");
       return;
@@ -89,13 +88,8 @@ const InvitesPage = () => {
   }, [groupId]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      void handleGetInvites();
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    handleGetInvites();
   }, [handleGetInvites]);
 
   return (

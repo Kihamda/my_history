@@ -90,13 +90,8 @@ const ShareBoxPopupCard = ({
 
   // コンポーネントがマウントされたとき、またはidが変更されたときに共有設定を読み込む
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      void handleLoad();
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    handleLoad();
   }, [handleLoad]);
 
   // 編集モードの表示
