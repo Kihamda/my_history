@@ -3,7 +3,7 @@ import { raiseError } from "@f/errorHandler";
 import { hc, type ResType } from "@f/lib/api/api";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import LoadingSplash from "@f/lib/style/loadingSplash";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router";
 
@@ -11,32 +11,27 @@ type ScoutSummary = ResType<typeof hc.apiv1.user.sharedScouts.$get>[number];
 
 const VisitorHome = () => {
   const { user } = useAuthContext();
-  const [result, setResult] = useState<ScoutSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const handleFetchScouts = async (offset: number) => {
-    setIsLoading(true);
-    const response = await hc.apiv1.user.sharedScouts.$get({
-      query: { offset: String(offset) },
-    });
+  const { data: result = [], isPending: isLoading } = useQuery<ScoutSummary[]>({
+    queryKey: ["shared-scouts", 0],
+    queryFn: async () => {
+      const response = await hc.apiv1.user.sharedScouts.$get({
+        query: { offset: "0" },
+      });
 
-    if (response.ok) {
-      setResult(await response.json());
-    } else {
-      raiseError(
-        "スカウトの取得に失敗しました",
-        "error",
-        (await response.json()).message,
-      );
-    }
-    setIsLoading(false);
-  };
+      if (!response.ok) {
+        raiseError(
+          "スカウトの取得に失敗しました",
+          "error",
+          await response.text(),
+        );
+        return [];
+      }
 
-  useEffect(() => {
-    // 初回レンダリング時にデフォルトのスカウトを選択
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    handleFetchScouts(0);
-  }, []);
+      return await response.json();
+    },
+    retry: false,
+  });
 
   return (
     <>

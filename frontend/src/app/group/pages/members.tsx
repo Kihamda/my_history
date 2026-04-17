@@ -4,7 +4,12 @@ import { hc, type ResType } from "@f/lib/api/api";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
 import LoadingSplash from "@f/lib/style/loadingSplash";
-import { useCallback, useEffect, useState } from "react";
+import {
+  type InfiniteData,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useState } from "react";
 import { Button } from "react-bootstrap";
 
 type MembersResponse = ResType<
@@ -110,59 +115,54 @@ const MemberEditor = ({
 };
 
 const MembersPage = () => {
-  const [results, setResults] = useState<MembersResponse>([]);
   const groupId = useAuthContext().currentGroup?.id;
+  const queryClient = useQueryClient();
+  const queryKey = ["group-members", groupId] as const;
 
   const { showPopup } = usePopup();
 
-  const handleGetMembers = useCallback(
-    async (offset?: number) => {
-      if (!groupId) {
-        raiseError("グループが選択されていません。");
-        return;
-      }
+  const handleGetMembers = async (offset: number): Promise<MembersResponse> => {
+    if (!groupId) {
+      raiseError("グループが選択されていません。");
+      return [];
+    }
 
-      try {
-        const result = await hc.apiv1.group[":id"].members.$get({
-          param: { id: groupId },
-          query: {
-            offset: String(offset ?? 0),
-          },
-        });
+    const result = await hc.apiv1.group[":id"].members.$get({
+      param: { id: groupId },
+      query: {
+        offset: String(offset ?? 0),
+      },
+    });
 
-        if (result.status === 200) {
-          const data = (await result.json()).members;
-          if (offset === undefined) {
-            setResults(data);
-          } else {
-            if (data.length === 0) {
-              raiseError("これ以上メンバーはいません。", "info");
-              return;
-            }
-            setResults((prev) => [...prev, ...data]);
-          }
-        } else {
-          raiseError(
-            "メンバー一覧の取得に失敗しました。",
-            "error",
-            (await result.json()).message,
-          );
-        }
-      } catch (error) {
-        raiseError(
-          "メンバー一覧の取得中にエラーが発生しました。",
-          "error",
-          String(error),
-        );
-      }
+    if (!result.ok) {
+      raiseError(
+        "メンバー一覧の取得に失敗しました。",
+        "error",
+        await result.text(),
+      );
+      return [];
+    }
+
+    return (await result.json()).members;
+  };
+
+  const membersQuery = useInfiniteQuery<MembersResponse>({
+    queryKey,
+    enabled: Boolean(groupId),
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      return handleGetMembers(pageParam as number);
     },
-    [groupId],
-  );
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length === 0) {
+        return undefined;
+      }
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    handleGetMembers();
-  }, [handleGetMembers]);
+      return allPages.reduce((sum, page) => sum + page.length, 0);
+    },
+  });
+
+  const results = membersQuery.data?.pages.flat() ?? [];
 
   const handleDetail = (member: MembersResponse[number]) => {
     // 詳細表示の処理をここに実装
@@ -170,13 +170,24 @@ const MembersPage = () => {
       content: (
         <MemberEditor
           setEditorSlot={(data) => {
-            if (data === null) {
-              setResults((prev) => prev.filter((m) => m.uid !== member.uid));
-            } else {
-              setResults((prev) =>
-                prev.map((m) => (m.uid === data.uid ? data : m)),
-              );
-            }
+            queryClient.setQueryData<InfiniteData<MembersResponse>>(
+              queryKey,
+              (prev) => {
+                if (!prev) return prev;
+
+                return {
+                  ...prev,
+                  pages:
+                    data === null
+                      ? prev.pages.map((page) =>
+                          page.filter((m) => m.uid !== member.uid),
+                        )
+                      : prev.pages.map((page) =>
+                          page.map((m) => (m.uid === data.uid ? data : m)),
+                        ),
+                };
+              },
+            );
           }}
           editorSlot={member}
           groupId={groupId}
@@ -190,8 +201,10 @@ const MembersPage = () => {
       <div className="card">
         <div className="card-body">
           <h3>メンバ一覧</h3>
-          {!results.length ? (
+          {membersQuery.isPending ? (
             <LoadingSplash fullScreen={false} />
+          ) : !results.length ? (
+            <p>メンバーが存在しません。</p>
           ) : (
             <table className="table">
               <thead>
@@ -231,8 +244,27 @@ const MembersPage = () => {
           )}
         </div>
         <div className="card-footer text-end">
-          <Button onClick={() => handleGetMembers(results.length)}>
-            メンバーをもっと読み込む
+          <Button
+            onClick={async () => {
+              if (!membersQuery.hasNextPage) {
+                raiseError("これ以上メンバーはいません。", "info");
+                return;
+              }
+
+              const nextData = await membersQuery.fetchNextPage();
+              if (nextData.data?.pages.at(-1)?.length === 0) {
+                raiseError("これ以上メンバーはいません。", "info");
+              }
+            }}
+            disabled={
+              !groupId ||
+              membersQuery.isPending ||
+              membersQuery.isFetchingNextPage
+            }
+          >
+            {membersQuery.isFetchingNextPage
+              ? "メンバーを読み込み中..."
+              : "メンバーをもっと読み込む"}
           </Button>
         </div>
       </div>

@@ -1,7 +1,8 @@
 import { raiseError } from "@f/errorHandler";
 import { hc, type ResType } from "@f/lib/api/api";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
-import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Button } from "react-bootstrap";
 import InputGroupUI from "../style/imputGroupUI";
 
@@ -16,83 +17,104 @@ const ShareBoxPopupCard = ({
   id: string;
   isEditable?: boolean;
 }) => {
-  const [shareSettings, setShareSettings] = useState<ShareSettings[] | null>(
-    null,
-  );
   const [isEditing, setIsEditing] = useState(false);
   const [newData, setNewData] = useState<ShareSettings | null>(null);
+  const queryClient = useQueryClient();
+  const queryKey = ["scout-share-settings", id] as const;
 
-  // 共有設定の読み込み
-  const handleLoad = useCallback(async () => {
-    try {
+  const shareQuery = useQuery<ShareSettings[]>({
+    queryKey,
+    queryFn: async () => {
       const data = await hc.apiv1.scout[":id"]["share"]["$get"]({
         param: { id },
       });
 
-      if (data.status == 200) {
-        setShareSettings(await data.json());
-      } else {
-        raiseError("共有設定の取得に失敗しました");
+      if (!data.ok) {
+        raiseError("共有設定の取得に失敗しました", "error", await data.text());
+        return [];
       }
-    } catch {
-      raiseError("共有設定の取得に失敗しました");
-    }
-  }, [id]);
 
-  // 共有設定の追加
-  const handleAdd = async () => {
-    // ここで新しい共有設定を追加するAPIを呼び出す
+      return await data.json();
+    },
+    retry: false,
+  });
 
-    if (!newData) {
-      raiseError("新しい共有設定のデータがありません");
-      return;
-    }
+  const shareSettings = shareQuery.data ?? [];
 
-    try {
+  const addShareMutation = useMutation({
+    mutationFn: async (targetUserId: string) => {
       const response = await hc.apiv1.scout[":id"]["share"]["$post"]({
         param: { id },
         json: {
-          targetUserId: newData.id,
+          targetUserId,
         },
       });
-      if (response.status === 200) {
-        setIsEditing(false);
-        setNewData(null);
-        await handleLoad();
-      } else {
-        const errorData = await response.json();
-        raiseError("共有設定の追加に失敗しました", "error", errorData.message);
-      }
-    } catch {
-      raiseError("共有設定の追加に失敗しました");
-    }
-  };
 
-  // 共有設定の削除
-  const handleDelete = async (targetUserId: string) => {
-    try {
+      if (!response.ok) {
+        raiseError(
+          "共有設定の追加に失敗しました",
+          "error",
+          (await response.json()).message,
+        );
+        return false;
+      }
+
+      return true;
+    },
+    onSuccess: async (succeeded) => {
+      if (!succeeded) {
+        return;
+      }
+
+      setIsEditing(false);
+      setNewData(null);
+      await queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  const deleteShareMutation = useMutation({
+    mutationFn: async (targetUserId: string) => {
       const response = await hc.apiv1.scout[":id"]["share"]["$delete"]({
         param: { id },
         json: {
           targetUserId,
         },
       });
-      if (response.status === 200) {
-        await handleLoad();
-      } else {
-        const errorData = await response.json();
-        raiseError("共有設定の削除に失敗しました", "error", errorData.message);
+
+      if (!response.ok) {
+        raiseError(
+          "共有設定の削除に失敗しました",
+          "error",
+          await response.text(),
+        );
+        return false;
       }
-    } catch {
-      raiseError("共有設定の削除に失敗しました");
+
+      return true;
+    },
+    onSuccess: async (succeeded) => {
+      if (!succeeded) {
+        return;
+      }
+
+      await queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  // 共有設定の追加
+  const handleAdd = async () => {
+    if (!newData) {
+      raiseError("新しい共有設定のデータがありません");
+      return;
     }
+
+    await addShareMutation.mutateAsync(newData.id);
   };
 
-  // コンポーネントがマウントされたとき、またはidが変更されたときに共有設定を読み込む
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    handleLoad();
-  }, [handleLoad]);
+  // 共有設定の削除
+  const handleDelete = async (targetUserId: string) => {
+    await deleteShareMutation.mutateAsync(targetUserId);
+  };
 
   // 編集モードの表示
   if (isEditing && isEditable) {
@@ -162,7 +184,7 @@ const ShareBoxPopupCard = ({
         )
       }
     >
-      {!shareSettings ? (
+      {shareQuery.isPending ? (
         <div>共有設定を読み込んでいます...</div>
       ) : shareSettings.length === 0 ? (
         <div>共有設定がありません</div>
