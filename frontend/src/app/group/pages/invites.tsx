@@ -56,7 +56,8 @@ const InvitesPage = () => {
     }
   };
 
-  const handleGetInvites = useCallback(async (offset?: number) => {
+  const handleGetInvites = useCallback(
+    async (offset?: number) => {
     if (!groupId) {
       raiseError("グループが選択されていません。");
       return;
