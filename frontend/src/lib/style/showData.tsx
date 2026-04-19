@@ -13,7 +13,7 @@ const ShowData = ({
   value?: string;
   memo?: string;
   bordered?: boolean;
-  detailAction?: Function;
+  detailAction?: () => void;
   detailButtonContent?: string;
 }) => {
   return (

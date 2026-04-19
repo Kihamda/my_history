@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { useState, useEffect } from "react";
 import type { ReactNode, FC } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
