@@ -120,7 +120,7 @@ const CreateScoutBatPage = () => {
           (await result.json()).message,
         );
       }
-    } catch (error) {
+    } catch {
       raiseError("スカウトデータの一括登録に失敗しました", "error");
     }
   };

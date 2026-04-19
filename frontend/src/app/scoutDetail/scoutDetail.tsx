@@ -31,6 +31,7 @@ const ScoutDetail = (): React.ReactElement => {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     handleFetchScouts(id);
   }, [id]);
 

@@ -29,7 +29,7 @@ const ScoutTransfarPopup = ({ data, id }: { data: ScoutData; id: string }) => {
       } else {
         raiseError("指定された団体IDは存在しません。");
       }
-    } catch (error) {
+    } catch {
       raiseError("団体IDの確認に失敗しました。");
     }
   };
@@ -43,7 +43,7 @@ const ScoutTransfarPopup = ({ data, id }: { data: ScoutData; id: string }) => {
       if (response.status === 200) {
         raiseError("データの移管が完了しました。", "success");
       }
-    } catch (error) {
+    } catch {
       raiseError("データの移管に失敗しました。");
     }
   };

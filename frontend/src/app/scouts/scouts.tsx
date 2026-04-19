@@ -19,6 +19,36 @@ const Scouts: React.FC = () => {
   const searchBox = (useLocation().state?.searchName || "") as string;
   const belongGroupId = useAuthContext().currentGroup?.id;
 
+  const [searchQuery, setSearchQuery] = useState<ScoutSearchRequest>(() => {
+    const cached = getSearchQueryCache() || {
+      scoutId: "",
+      name: "",
+      currentUnit: [],
+      belongGroupId: belongGroupId ?? "",
+    };
+
+    if (searchBox) {
+      const { scoutId, name, currentUnit } = queryParser(searchBox);
+      return {
+        scoutId,
+        name,
+        currentUnit,
+        belongGroupId: belongGroupId ?? "",
+      };
+    }
+
+    return {
+      ...cached,
+      belongGroupId: cached.belongGroupId || belongGroupId || "",
+    };
+  });
+
+  const [result, setResult] = useState<ScoutSearchResponse>(
+    getResultsCache() || [],
+  ); // 初期値としてローカルストレージから取得したスカウトデータを使用
+
+  const [isPending, setIsPending] = useState<boolean>(false);
+
   if (!belongGroupId) {
     return (
       <div className="text-center mt-3">
@@ -27,36 +57,12 @@ const Scouts: React.FC = () => {
     );
   }
 
-  // 検索クエリの初期化
-  let initialSearchQuery: ScoutSearchRequest = getSearchQueryCache() || {
-    scoutId: "",
-    name: "",
-    currentUnit: [],
-    belongGroupId,
-  };
-
-  // 検索窓から来た人用
-  if (searchBox) {
-    const { scoutId, name, currentUnit } = queryParser(searchBox);
-
-    initialSearchQuery = {
-      scoutId: scoutId,
-      name: name,
-      currentUnit: currentUnit,
-      belongGroupId,
-    };
-  }
-
-  const [searchQuery, setSearchQuery] =
-    useState<ScoutSearchRequest>(initialSearchQuery);
-
-  const [result, setResult] = useState<ScoutSearchResponse>(
-    getResultsCache() || [],
-  ); // 初期値としてローカルストレージから取得したスカウトデータを使用
-
-  const [isPending, setIsPending] = useState<boolean>(false);
-
   const handleSearch = async (queryBefore: ScoutSearchRequest) => {
+    if (!belongGroupId) {
+      raiseError("所属グループが設定されていません。");
+      return;
+    }
+
     const query = {
       ...queryBefore,
       belongGroupId,

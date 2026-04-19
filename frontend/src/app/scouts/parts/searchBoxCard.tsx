@@ -21,7 +21,7 @@ const SearchboxCard = ({
   };
 
   const getExplain = (current: ScoutSearchRequest) => {
-    let explainMessage: string[] = [];
+    const explainMessage: string[] = [];
 
     if (
       !current.name &&

@@ -15,6 +15,7 @@ export const setHcClient = (token?: string) => {
 };
 
 // GETのqueryパラメータ、POSTのjson/formボディを取得
-export type ReqType<T> = (T extends (...args: infer A) => any ? A : never)[0];
+export type ReqType<T> =
+  (T extends (...args: infer A) => unknown ? A : never)[0];
 
 export type ResType<T> = InferResponseType<T, SuccessStatusCode>;

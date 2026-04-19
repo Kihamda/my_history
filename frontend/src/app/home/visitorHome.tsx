@@ -31,8 +31,10 @@ const VisitorHome = () => {
     }
     setIsLoading(false);
   };
+
   useEffect(() => {
     // 初回レンダリング時にデフォルトのスカウトを選択
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     handleFetchScouts(0);
   }, []);
 

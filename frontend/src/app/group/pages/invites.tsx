@@ -33,7 +33,6 @@ const InvitesPage = () => {
       raiseError("グループが選択されていません。");
       return;
     }
-
     const result = await hc.apiv1.group[":id"].invites.create.$post({
       json: {
         targetUid: newData.uid,
@@ -56,7 +55,7 @@ const InvitesPage = () => {
     }
   };
 
-  const handleGetInvites = async (offset?: number) => {
+  const handleGetInvites = async (groupId?: string, offset?: number) => {
     if (!groupId) {
       raiseError("グループが選択されていません。");
       return;
@@ -88,7 +87,9 @@ const InvitesPage = () => {
   };
 
   useEffect(() => {
-    handleGetInvites();
+    (async () => {
+      handleGetInvites(groupId);
+    })();
   }, [groupId]);
 
   return (
@@ -216,7 +217,7 @@ const InvitesPage = () => {
           )}
         </div>
         <div className="card-footer text-end">
-          <Button onClick={() => handleGetInvites(results.length)}>
+          <Button onClick={() => handleGetInvites(groupId, results.length)}>
             招待をもっと読み込む
           </Button>
         </div>

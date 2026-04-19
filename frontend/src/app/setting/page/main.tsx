@@ -2,11 +2,13 @@ import { useAuthContext } from "@f/authContext";
 import { raiseError } from "@f/errorHandler";
 import { hc } from "@f/lib/api/api";
 import InputGroupUI from "@f/lib/style/imputGroupUI";
+import { deleteUser } from "firebase/auth";
 import { useState } from "react";
 import { Button, FormSelect } from "react-bootstrap";
 
 const MainPage = () => {
   const currentUserData = useAuthContext().user;
+  const currentUserToken = useAuthContext().token;
   const [setting, setSetting] = useState(currentUserData);
 
   const handleSave = async () => {
@@ -23,8 +25,29 @@ const MainPage = () => {
       } else {
         raiseError("プロフィールの更新に失敗しました", "error");
       }
-    } catch (error) {
+    } catch {
       raiseError("プロフィールの更新に失敗しました");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      const result = await hc.apiv1.user.delete.$delete();
+      if (result.status === 200) {
+        try {
+          deleteUser(currentUserToken);
+          raiseError("アカウントを削除しました", "success");
+        } catch {
+          raiseError(
+            "アカウントは削除されましたが、認証情報の削除に失敗しました。管理者にお問い合わせください",
+            "error",
+          );
+        }
+      } else {
+        raiseError("アカウントの削除に失敗しました", "error");
+      }
+    } catch {
+      raiseError("アカウントの削除に失敗しました");
     }
   };
 
@@ -84,6 +107,31 @@ const MainPage = () => {
               <option value="deny">招待を受け取らない</option>
             </FormSelect>
           </div>
+        </div>
+      </div>
+      <div className="card mb-3">
+        <div className="card-body">
+          <h2 className="card-title mb-3">アカウント削除</h2>
+          <p>
+            アカウントを削除すると、あなたのプロフィールやスカウト記録などのデータがすべて削除されます。削除したアカウントは復元できませんのでご注意ください。
+          </p>
+          <Button
+            variant="danger"
+            onClick={() => {
+              if (
+                confirm(
+                  "本当にアカウントを削除してもよろしいですか？この操作は取り消せません。",
+                ) &&
+                confirm(
+                  "本当にアカウントを削除しますか？これが最後の確認です。あなたのプロフィールやスカウト記録などのデータはすべて削除されます。この操作は取り消せません。",
+                )
+              ) {
+                handleDeleteAccount();
+              }
+            }}
+          >
+            アカウントを削除する
+          </Button>
         </div>
       </div>
       <div className="card mb-3">

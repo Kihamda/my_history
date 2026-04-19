@@ -114,11 +114,8 @@ const MembersPage = () => {
   const groupId = useAuthContext().currentGroup?.id;
 
   const { showPopup } = usePopup();
-  useEffect(() => {
-    handleGetMembers();
-  }, [groupId]);
 
-  const handleGetMembers = async (offset?: number) => {
+  const handleGetMembers = async (groupId?: string, offset?: number) => {
     if (!groupId) {
       raiseError("グループが選択されていません。");
       return;
@@ -159,6 +156,12 @@ const MembersPage = () => {
     }
   };
 
+  useEffect(() => {
+    (async () => {
+      await handleGetMembers(groupId);
+    })();
+  }, [groupId]);
+
   const handleDetail = (member: MembersResponse[number]) => {
     // 詳細表示の処理をここに実装
     showPopup({
@@ -166,9 +169,11 @@ const MembersPage = () => {
         <MemberEditor
           setEditorSlot={(data) => {
             if (data === null) {
-              setResults(results.filter((m) => m.uid !== member.uid));
+              setResults((prev) => prev.filter((m) => m.uid !== member.uid));
             } else {
-              setResults(results.map((m) => (m.uid === data.uid ? data : m)));
+              setResults((prev) =>
+                prev.map((m) => (m.uid === data.uid ? data : m)),
+              );
             }
           }}
           editorSlot={member}
@@ -224,7 +229,7 @@ const MembersPage = () => {
           )}
         </div>
         <div className="card-footer text-end">
-          <Button onClick={() => handleGetMembers(results.length)}>
+          <Button onClick={() => handleGetMembers(groupId, results.length)}>
             メンバーをもっと読み込む
           </Button>
         </div>
