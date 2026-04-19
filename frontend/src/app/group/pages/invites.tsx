@@ -4,7 +4,7 @@ import { hc, type ReqType } from "@f/lib/api/api";
 import SearchUserWithMail from "@f/lib/popupContext/searchUserWithMailPopup";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
 
 type InviteData = ReqType<
@@ -33,7 +33,6 @@ const InvitesPage = () => {
       raiseError("グループが選択されていません。");
       return;
     }
-
     const result = await hc.apiv1.group[":id"].invites.create.$post({
       json: {
         targetUid: newData.uid,
@@ -56,7 +55,7 @@ const InvitesPage = () => {
     }
   };
 
-  const handleGetInvites = useCallback(async (offset?: number) => {
+  const handleGetInvites = async (groupId?: string, offset?: number) => {
     if (!groupId) {
       raiseError("グループが選択されていません。");
       return;
@@ -85,12 +84,13 @@ const InvitesPage = () => {
         (await result.json()).message,
       );
     }
-  }, [groupId]);
+  };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    handleGetInvites();
-  }, [handleGetInvites]);
+    (async () => {
+      handleGetInvites(groupId);
+    })();
+  }, [groupId]);
 
   return (
     <>
@@ -217,7 +217,7 @@ const InvitesPage = () => {
           )}
         </div>
         <div className="card-footer text-end">
-          <Button onClick={() => handleGetInvites(results.length)}>
+          <Button onClick={() => handleGetInvites(groupId, results.length)}>
             招待をもっと読み込む
           </Button>
         </div>

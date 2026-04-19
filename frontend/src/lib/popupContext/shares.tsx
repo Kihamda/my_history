@@ -1,7 +1,7 @@
 import { raiseError } from "@f/errorHandler";
 import { hc, type ResType } from "@f/lib/api/api";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import InputGroupUI from "../style/imputGroupUI";
 
@@ -23,7 +23,7 @@ const ShareBoxPopupCard = ({
   const [newData, setNewData] = useState<ShareSettings | null>(null);
 
   // 共有設定の読み込み
-  const handleLoad = useCallback(async () => {
+  const handleLoad = async (id: string) => {
     try {
       const data = await hc.apiv1.scout[":id"]["share"]["$get"]({
         param: { id },
@@ -37,7 +37,7 @@ const ShareBoxPopupCard = ({
     } catch {
       raiseError("共有設定の取得に失敗しました");
     }
-  }, [id]);
+  };
 
   // 共有設定の追加
   const handleAdd = async () => {
@@ -58,7 +58,7 @@ const ShareBoxPopupCard = ({
       if (response.status === 200) {
         setIsEditing(false);
         setNewData(null);
-        await handleLoad();
+        await handleLoad(id);
       } else {
         const errorData = await response.json();
         raiseError("共有設定の追加に失敗しました", "error", errorData.message);
@@ -78,7 +78,7 @@ const ShareBoxPopupCard = ({
         },
       });
       if (response.status === 200) {
-        await handleLoad();
+        await handleLoad(id);
       } else {
         const errorData = await response.json();
         raiseError("共有設定の削除に失敗しました", "error", errorData.message);
@@ -90,9 +90,10 @@ const ShareBoxPopupCard = ({
 
   // コンポーネントがマウントされたとき、またはidが変更されたときに共有設定を読み込む
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    handleLoad();
-  }, [handleLoad]);
+    (async () => {
+      handleLoad(id);
+    })();
+  }, [id]);
 
   // 編集モードの表示
   if (isEditing && isEditable) {

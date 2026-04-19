@@ -4,7 +4,7 @@ import { hc, type ResType } from "@f/lib/api/api";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
 import LoadingSplash from "@f/lib/style/loadingSplash";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 
 type MembersResponse = ResType<
@@ -115,7 +115,7 @@ const MembersPage = () => {
 
   const { showPopup } = usePopup();
 
-  const handleGetMembers = useCallback(async (offset?: number) => {
+  const handleGetMembers = async (groupId?: string, offset?: number) => {
     if (!groupId) {
       raiseError("グループが選択されていません。");
       return;
@@ -154,12 +154,13 @@ const MembersPage = () => {
         String(error),
       );
     }
-  }, [groupId]);
+  };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    handleGetMembers();
-  }, [handleGetMembers]);
+    (async () => {
+      await handleGetMembers(groupId);
+    })();
+  }, [groupId]);
 
   const handleDetail = (member: MembersResponse[number]) => {
     // 詳細表示の処理をここに実装
@@ -228,7 +229,7 @@ const MembersPage = () => {
           )}
         </div>
         <div className="card-footer text-end">
-          <Button onClick={() => handleGetMembers(results.length)}>
+          <Button onClick={() => handleGetMembers(groupId, results.length)}>
             メンバーをもっと読み込む
           </Button>
         </div>
