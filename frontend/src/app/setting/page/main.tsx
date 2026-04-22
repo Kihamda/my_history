@@ -1,4 +1,4 @@
-import { useAuthContext } from "@f/authContext";
+import { resetPassword, useAuthContext } from "@f/authContext";
 import { raiseError } from "@f/errorHandler";
 import { hc } from "@f/lib/api/api";
 import InputGroupUI from "@f/lib/style/imputGroupUI";
@@ -51,6 +51,15 @@ const MainPage = () => {
     }
   };
 
+  const handleReset = async () => {
+    try {
+      await resetPassword(currentUserData.email);
+      raiseError("パスワードリセットメールを送信しました", "success");
+    } catch (error) {
+      raiseError("パスワードリセットメールの送信に失敗しました", "error");
+    }
+  };
+
   return (
     <>
       <div className="card mb-3">
@@ -86,7 +95,7 @@ const MainPage = () => {
         <div className="card-body">
           <h2 className="card-title mb-3">セキュリティ設定</h2>
           <p>
-            グループからの招待を受け取るかどうかを設定します。招待を拒否すると、グループからの新しい招待が届かなくなります。
+            あなたのアカウントが他のユーザに表示されるかどうかを設定します。招待を拒否すると、グループからの新しい招待が届かなくなります。
             <br />
             既に受け取っている招待には影響しません。
           </p>
@@ -103,8 +112,8 @@ const MainPage = () => {
                 })
               }
             >
-              <option value="accept">招待を受け取る</option>
-              <option value="deny">招待を受け取らない</option>
+              <option value="accept">プロフィールを表示する</option>
+              <option value="deny">プロフィールを表示しない</option>
             </FormSelect>
           </div>
         </div>
@@ -131,6 +140,18 @@ const MainPage = () => {
             }}
           >
             アカウントを削除する
+          </Button>
+        </div>
+      </div>
+
+      <div className="card mb-3">
+        <div className="card-body">
+          <h2 className="card-title mb-3">パスワードリセット</h2>
+          <p>
+            パスワードを忘れた場合やセキュリティのためにパスワードを変更したい場合は、以下のボタンをクリックしてパスワードリセットメールを送信してください。メールに記載された手順に従って新しいパスワードを設定できます。
+          </p>
+          <Button variant="warning" onClick={handleReset}>
+            パスワードリセットメールを送信
           </Button>
         </div>
       </div>

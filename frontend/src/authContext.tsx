@@ -15,6 +15,7 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  verifyBeforeUpdateEmail,
   type User,
 } from "firebase/auth";
 import { auth } from "./firebase";
@@ -227,6 +228,15 @@ export const resetPassword = async (email: string) => {
     await sendPasswordResetEmail(auth, email);
   } catch (error) {
     raiseError("Password reset failed:", "error", String(error));
+  }
+};
+export const updateEmail = async (email: string) => {
+  if (auth.currentUser) {
+    try {
+      await verifyBeforeUpdateEmail(auth.currentUser, email);
+    } catch (error) {
+      raiseError("Email update failed:", "error", String(error));
+    }
   }
 };
 export const sendVerificationEmail = async () => {
