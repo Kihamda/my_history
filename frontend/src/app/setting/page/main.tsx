@@ -52,12 +52,7 @@ const MainPage = () => {
   };
 
   const handleReset = async () => {
-    try {
-      await resetPassword(currentUserData.email);
-      raiseError("パスワードリセットメールを送信しました", "success");
-    } catch (error) {
-      raiseError("パスワードリセットメールの送信に失敗しました", "error");
-    }
+    await resetPassword(currentUserData.email);
   };
 
   return (

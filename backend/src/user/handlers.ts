@@ -77,7 +77,7 @@ export const deleteUserHandler = async (
 
 // メールアドレスからユーザーを検索
 export const searchUserHandler = async (email: string) => {
-  // 認可処理：なし => 誰でも実行可能
+  // Firestoreからメールアドレスでユーザーを検索
   const users = await db().users.lis(
     [
       { field: "email", op: "==", value: email },

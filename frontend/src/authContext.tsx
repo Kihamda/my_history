@@ -206,28 +206,28 @@ export const login = async (email: string, password: string) => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
   } catch (error) {
-    raiseError("Login failed:", "error", String(error));
+    raiseError("ログインに失敗しました", "error", String(error));
   }
 };
 export const logout = async () => {
   try {
     await signOut(auth);
   } catch (error) {
-    raiseError("Logout failed:", "error", String(error));
+    raiseError("ログアウトに失敗しました", "error", String(error));
   }
 };
 export const register = async (email: string, password: string) => {
   try {
     await createUserWithEmailAndPassword(auth, email, password);
   } catch (error) {
-    raiseError("Registration failed:", "error", String(error));
+    raiseError("登録に失敗しました", "error", String(error));
   }
 };
 export const resetPassword = async (email: string) => {
   try {
     await sendPasswordResetEmail(auth, email);
   } catch (error) {
-    raiseError("Password reset failed:", "error", String(error));
+    raiseError("パスワードリセットに失敗しました", "error", String(error));
   }
 };
 export const updateEmail = async (email: string) => {
@@ -235,7 +235,7 @@ export const updateEmail = async (email: string) => {
     try {
       await verifyBeforeUpdateEmail(auth.currentUser, email);
     } catch (error) {
-      raiseError("Email update failed:", "error", String(error));
+      raiseError("メールアドレスの更新に失敗しました", "error", String(error));
     }
   }
 };
@@ -244,7 +244,7 @@ export const sendVerificationEmail = async () => {
     try {
       await sendEmailVerification(auth.currentUser);
     } catch (error) {
-      raiseError("Verification email sending failed:", "error", String(error));
+      raiseError("確認メールの送信に失敗しました", "error", String(error));
     }
   }
 };
