@@ -205,6 +205,7 @@ export function useCurrentGroup() {
 export const login = async (email: string, password: string) => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
+    raiseError("ログインしました", "success");
   } catch (error) {
     raiseError("ログインに失敗しました", "error", String(error));
   }
@@ -212,6 +213,7 @@ export const login = async (email: string, password: string) => {
 export const logout = async () => {
   try {
     await signOut(auth);
+    raiseError("ログアウトしました", "success");
   } catch (error) {
     raiseError("ログアウトに失敗しました", "error", String(error));
   }
@@ -219,6 +221,7 @@ export const logout = async () => {
 export const register = async (email: string, password: string) => {
   try {
     await createUserWithEmailAndPassword(auth, email, password);
+    raiseError("登録が完了しました", "success");
   } catch (error) {
     raiseError("登録に失敗しました", "error", String(error));
   }
@@ -226,6 +229,7 @@ export const register = async (email: string, password: string) => {
 export const resetPassword = async (email: string) => {
   try {
     await sendPasswordResetEmail(auth, email);
+    raiseError("パスワードリセットメールを送信しました", "success");
   } catch (error) {
     raiseError("パスワードリセットに失敗しました", "error", String(error));
   }
@@ -234,6 +238,10 @@ export const updateEmail = async (email: string) => {
   if (auth.currentUser) {
     try {
       await verifyBeforeUpdateEmail(auth.currentUser, email);
+      raiseError(
+        "メールアドレスを更新しました。確認メールを送信しました。",
+        "success",
+      );
     } catch (error) {
       raiseError("メールアドレスの更新に失敗しました", "error", String(error));
     }
@@ -243,6 +251,7 @@ export const sendVerificationEmail = async () => {
   if (auth.currentUser) {
     try {
       await sendEmailVerification(auth.currentUser);
+      raiseError("確認メールを送信しました", "success");
     } catch (error) {
       raiseError("確認メールの送信に失敗しました", "error", String(error));
     }
