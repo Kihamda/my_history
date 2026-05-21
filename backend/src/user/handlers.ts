@@ -68,6 +68,28 @@ export const deleteUserHandler = async (
   c: Context,
 ): Promise<{ message: string }> => {
   const token = c.var.token;
+  const user = c.var.user;
+
+  for (const membership of user.auth.memberships) {
+    if (membership.role !== "ADMIN") continue;
+
+    const admins = await db().users.lis(
+      [
+        {
+          field: "auth.memberships",
+          op: "array-contains",
+          value: `ADMIN;${membership.id}`,
+        },
+      ],
+      2,
+    );
+
+    if (admins.length <= 1) {
+      throw new HTTPException(409, {
+        message: "最後の管理者は削除できません",
+      });
+    }
+  }
 
   // Firestoreからユーザーデータを削除
   await db().users.del(token.uid);
@@ -179,6 +201,26 @@ export const leaveGroupHandler = async (
   if (membershipIndex === -1) {
     throw new HTTPException(404, { message: "Membership not found" });
   }
+
+  if (user.auth.memberships[membershipIndex].role === "ADMIN") {
+    const admins = await db().users.lis(
+      [
+        {
+          field: "auth.memberships",
+          op: "array-contains",
+          value: `ADMIN;${groupId}`,
+        },
+      ],
+      2,
+    );
+
+    if (admins.length <= 1) {
+      throw new HTTPException(409, {
+        message: "最後の管理者は脱退できません",
+      });
+    }
+  }
+
   // メンバーシップを削除
   user.auth.memberships.splice(membershipIndex, 1);
   // Firestoreのユーザーデータを更新
