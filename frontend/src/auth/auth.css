@@ -1,0 +1,52 @@
+.auth-shell {
+  min-height: 100dvh;
+}
+
+.auth-visual-panel {
+  min-height: 100dvh;
+  background-image: url("/spaAssets/auth/bg.webp");
+  background-position: center;
+  background-size: cover;
+}
+
+.auth-form-panel {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-form-inner {
+  width: 100%;
+  max-width: 480px;
+}
+
+.auth-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.auth-form-card {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .auth-shell {
+    display: block;
+  }
+
+  .auth-visual-panel {
+    display: none;
+  }
+
+  .auth-form-panel {
+    min-height: 100dvh;
+    padding: 1rem;
+  }
+
+  .auth-form-inner {
+    max-width: 100%;
+  }
+}

@@ -1,38 +1,64 @@
 import { type FC, type FormEvent, useState } from "react";
-import { Card, Form, Button } from "react-bootstrap";
-import FormGroup from "../formGroup";
+import { Card, Form, Button, InputGroup, Spinner } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { resetPassword } from "@f/authContext";
 
 const Reset: FC = () => {
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (isSubmitting) return;
+
     // パスワードリセット処理を実装する
-    resetPassword(email);
+    setIsSubmitting(true);
+    try {
+      await resetPassword(email);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Card.Body>
-      <Card.Title className="text-center">
-        <h2>パスワードリセット</h2>
-      </Card.Title>
+    <Card.Body className="px-4 pb-4 pt-3">
       <Form onSubmit={handleSubmit}>
-        <FormGroup controlId="formEmail" label="メールアドレス">
-          <Form.Control
-            type="email"
-            placeholder="abc@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </FormGroup>
+        <Form.Group controlId="formEmail" className="mb-3">
+          <Form.Label>メールアドレス</Form.Label>
+          <InputGroup>
+            <InputGroup.Text>
+              <FontAwesomeIcon icon={faEnvelope} />
+            </InputGroup.Text>
+            <Form.Control
+              type="email"
+              placeholder="abc@example.com"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </InputGroup>
+        </Form.Group>
 
-        <div className="w-100 text-center">
-          <Button variant="primary" type="submit" className="mt-3 text-center">
-            リセットメール送信
-          </Button>
-        </div>
+        <Button
+          variant="primary"
+          size="lg"
+          type="submit"
+          className="w-100 mt-4"
+          disabled={isSubmitting || email.length === 0}
+        >
+          {isSubmitting && (
+            <Spinner
+              animation="border"
+              size="sm"
+              role="status"
+              aria-hidden="true"
+              className="me-2"
+            />
+          )}
+          {isSubmitting ? "送信中" : "リセットメール送信"}
+        </Button>
       </Form>
     </Card.Body>
   );

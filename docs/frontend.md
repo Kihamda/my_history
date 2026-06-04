@@ -57,7 +57,7 @@
 | `/login`  | `Signin`       | ログイン           |
 | `/register` | `Register`   | 新規登録           |
 | `/verify` | `VerifyEmail`  | メール認証待ち     |
-| `/setup`  | `Setup`        | 初期プロファイル   |
+| `/setup`  | `Setup`        | 初期プロファイル、招待検索への表示設定 |
 | `/reset`  | `Reset`        | パスワードリセット |
 
 実装は [frontend/src/auth/](../frontend/src/auth/)
