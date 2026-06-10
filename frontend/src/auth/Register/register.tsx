@@ -49,14 +49,10 @@ const Register: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await register(email, password);
+      const registered = await register(email, password);
+      if (!registered) return;
+
       await sendVerificationEmail();
-      raiseError(
-        "ユーザーが成功裏に作成されました。メールアドレス認証のためのメールを送信したので、URLをクリックして続行してください。",
-        "success",
-      );
-    } catch (error) {
-      raiseError("ユーザーの作成中にエラーが発生しました。", "error", String(error));
     } finally {
       setIsSubmitting(false);
     }

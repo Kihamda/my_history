@@ -1,4 +1,4 @@
-import { Link, Navigate, Route, Routes, useLocation } from "react-router";
+import { Navigate, Route, Routes, useLocation } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
 
@@ -80,10 +80,10 @@ const Auth = () => {
         <section className="col-lg-5 auth-form-panel" aria-label="認証">
           <div className="w-100 auth-form-inner">
             <div className="d-flex justify-content-end mb-3">
-              <Link to="/" className="btn btn-outline-secondary">
+              <a href="/" className="btn btn-outline-secondary">
                 <FontAwesomeIcon icon={faHouseChimney} className="me-2" />
                 ホーム
-              </Link>
+              </a>
             </div>
 
             <div className="card auth-form-card shadow-sm">

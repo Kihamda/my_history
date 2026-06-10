@@ -7,6 +7,15 @@ import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
 
+const closeMobileMenu = () => {
+  const offcanvas = document.getElementById("offcanvas");
+  if (!offcanvas?.classList.contains("show")) return;
+
+  offcanvas
+    .querySelector<HTMLButtonElement>('[data-bs-dismiss="offcanvas"]')
+    ?.click();
+};
+
 const HandleChangePopup = () => {
   const { hidePopup } = usePopup();
   const { user, currentGroup, setCurrentGroup } = useAuthContext();
@@ -83,7 +92,11 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
           </span>
         </li>
         <li>
-          <Link className="dropdown-item" to="/app/setting">
+          <Link
+            className="dropdown-item"
+            to="/app/setting"
+            onClick={closeMobileMenu}
+          >
             設定
           </Link>
         </li>
@@ -93,6 +106,7 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
             href="/help"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={closeMobileMenu}
           >
             ヘルプページ
           </a>

@@ -26,7 +26,7 @@ import { raiseError } from "@f/errorHandler";
 const Setup: React.FC = () => {
   const [displayName, setDisplayName] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
-  const [acceptsInvite, setAcceptsInvite] = useState<"show" | "hide">("show");
+  const [acceptsInvite, setAcceptsInvite] = useState<"show" | "hide">("hide");
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

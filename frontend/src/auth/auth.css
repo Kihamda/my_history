@@ -32,7 +32,7 @@
   width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 991.98px) {
   .auth-shell {
     display: block;
   }

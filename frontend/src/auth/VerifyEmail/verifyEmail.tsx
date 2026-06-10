@@ -2,7 +2,6 @@ import { type FC } from "react";
 import { Alert, Button, Card } from "react-bootstrap";
 import { useAuthContext, sendVerificationEmail } from "@f/authContext";
 import { Navigate } from "react-router";
-import { raiseError } from "@f/errorHandler";
 
 /**
  * @fileoverview
@@ -42,7 +41,6 @@ const VerifyEmail: FC = () => {
           size="lg"
           onClick={async () => {
             await sendVerificationEmail();
-            raiseError("認証メールを再送信しました。", "success");
           }}
         >
           認証メールの再送信
