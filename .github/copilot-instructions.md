@@ -19,6 +19,7 @@
 - For auth/permission failures, return explicit JSON messages (`UNAUTHORIZED`, `EMAIL_VERIFY_MISSING`, etc.) as seen in `backend/src/lib/auth.ts`.
 - Frontend API calls use the typed Hono client from backend types (`frontend/src/lib/api/api.ts` imports `@b/client`). Keep this type coupling.
 - Path aliases are part of the architecture: backend `@b/*` (`backend/tsconfig.json`), frontend `@f` and `@b` (`frontend/vite.config.ts`).
+- Frontend UI should stay within Bootstrap/react-bootstrap patterns. Use Bootstrap cards, forms, input groups, buttons, grids, and utilities; do not restyle ordinary controls into a separate custom design system or add AI-ish marketing panels to app screens.
 
 ## Routing and static hosting conventions
 

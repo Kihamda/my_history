@@ -23,7 +23,7 @@ import LoadingSplash from "@f/lib/style/loadingSplash";
 import { setHcClient, hc } from "@f/lib/api/api";
 import type { UserProfile } from "./lib/api/apiTypes";
 import { raiseError } from "./errorHandler";
-import { getBrowserSettings } from "./lib/localCache";
+import { getBrowserSettings, setBrowserSettings } from "./lib/localCache";
 import { useNavigate } from "react-router";
 
 type UserProfileContext = UserProfile;
@@ -93,19 +93,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         } else {
           // ユーザーデータを状態に保存
           const userData: UserProfile = await user.json();
-          if (userData.auth.memberships.length < 0) {
-            setCurrentGroupState(null);
-          } else {
-            const setedCurrentGroupIndex = userData.auth.memberships.findIndex(
-              (membership) =>
-                membership.id === getBrowserSettings().currentGroupSlotId,
-            );
-            const currentGroupIndex =
-              setedCurrentGroupIndex !== -1 ? setedCurrentGroupIndex : 0;
-            const currentGroup = userData.auth.memberships[currentGroupIndex];
-            setUser(userData);
-            setCurrentGroupState(currentGroup);
-          }
+          const settings = getBrowserSettings();
+          const currentGroup =
+            userData.auth.memberships.find(
+              (membership) => membership.id === settings.currentGroupSlotId,
+            ) ??
+            userData.auth.memberships[0] ??
+            null;
+
+          setUser(userData);
+          setCurrentGroupState(currentGroup);
+          setBrowserSettings({
+            ...settings,
+            currentGroupSlotId: currentGroup?.id ?? null,
+          });
         }
       } catch (e) {
         setUser(null);
@@ -136,18 +137,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (!token) return;
     if (id === null) {
       setCurrentGroupState(null);
+      setBrowserSettings({
+        ...getBrowserSettings(),
+        currentGroupSlotId: null,
+      });
       raiseError("グループを未選択にしました。", "success");
       return;
     }
     try {
-      setCurrentGroupState(() => {
-        if (!user) return null;
-        return (
-          user.auth.memberships.find(
-            (membership: UserProfile["auth"]["memberships"][number]) =>
-              membership.id === id,
-          ) || null
-        );
+      if (!user) return;
+      const selectedGroup =
+        user.auth.memberships.find(
+          (membership: UserProfile["auth"]["memberships"][number]) =>
+            membership.id === id,
+        ) || null;
+      if (!selectedGroup) {
+        setCurrentGroupState(null);
+        setBrowserSettings({
+          ...getBrowserSettings(),
+          currentGroupSlotId: null,
+        });
+        raiseError("指定されたグループが見つかりません。");
+        return;
+      }
+
+      setCurrentGroupState(selectedGroup);
+      setBrowserSettings({
+        ...getBrowserSettings(),
+        currentGroupSlotId: selectedGroup.id,
       });
       raiseError(
         "グループを切り替えました。",
@@ -205,48 +222,73 @@ export function useCurrentGroup() {
 export const login = async (email: string, password: string) => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
+    raiseError("ログインしました", "success");
+    return true;
   } catch (error) {
     raiseError("ログインに失敗しました", "error", String(error));
+    return false;
   }
 };
 export const logout = async () => {
   try {
     await signOut(auth);
+    raiseError("ログアウトしました", "success");
+    return true;
   } catch (error) {
     raiseError("ログアウトに失敗しました", "error", String(error));
+    return false;
   }
 };
 export const register = async (email: string, password: string) => {
   try {
     await createUserWithEmailAndPassword(auth, email, password);
+    raiseError("登録が完了しました", "success");
+    return true;
   } catch (error) {
     raiseError("登録に失敗しました", "error", String(error));
+    return false;
   }
 };
 export const resetPassword = async (email: string) => {
   try {
     await sendPasswordResetEmail(auth, email);
+    raiseError("パスワードリセットメールを送信しました", "success");
+    return true;
   } catch (error) {
     raiseError("パスワードリセットに失敗しました", "error", String(error));
+    return false;
   }
 };
 export const updateEmail = async (email: string) => {
   if (auth.currentUser) {
     try {
       await verifyBeforeUpdateEmail(auth.currentUser, email);
+      raiseError(
+        "メールアドレスを更新しました。確認メールを送信しました。",
+        "success",
+      );
+      return true;
     } catch (error) {
       raiseError("メールアドレスの更新に失敗しました", "error", String(error));
+      return false;
     }
   }
+  raiseError("ログイン中のユーザーが見つかりません。");
+  return false;
 };
 export const sendVerificationEmail = async () => {
   if (auth.currentUser) {
     try {
       await sendEmailVerification(auth.currentUser);
+      raiseError("確認メールを送信しました", "success");
+      return true;
     } catch (error) {
       raiseError("確認メールの送信に失敗しました", "error", String(error));
+      return false;
     }
   }
+  raiseError("ログイン中のユーザーが見つかりません。");
+  return false;
 };
 
 export default AuthProvider;

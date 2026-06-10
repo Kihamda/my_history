@@ -112,7 +112,7 @@ const godUserRouter = new Hono<AppContext>()
     ),
     async (c) => {
       const id = c.req.valid("param").id;
-      await db().scouts.del(id);
+      await db().users.del(id);
       return c.json({ message: "スカウトデータを削除しました" });
     },
   );
