@@ -1,26 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
 import SearchboxCard from "./parts/searchBoxCard";
 import queryParser from "./queryParser";
 import SearchResultCard from "./parts/result";
 import { getSearchQueryCache, setSearchQueryCache } from "@f/lib/localCache";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
-import { getResultsCache, setResultsCache } from "./cache";
-import { raiseError } from "@f/errorHandler";
 import LoadingSplash from "@f/lib/style/loadingSplash";
 import type {
   ScoutSearchRequest,
   ScoutSearchResponse,
 } from "@f/lib/api/apiTypes";
-import { hc } from "@f/lib/api/api";
+import { apiJson, hc } from "@f/lib/api/api";
 import { useAuthContext } from "@f/authContext";
-const Scouts: React.FC = () => {
-  // 遷移元からの検索名を取得
-  const searchBox = (useLocation().state?.searchName || "") as string;
-  const belongGroupId = useAuthContext().currentGroup?.id;
-
+import { useQuery } from "@tanstack/react-query";
+const ScoutsForGroup: React.FC<{
+  belongGroupId: string;
+  searchBox: string;
+}> = ({ belongGroupId, searchBox }) => {
   const [searchQuery, setSearchQuery] = useState<ScoutSearchRequest>(() => {
-    const cached = getSearchQueryCache() || {
+    const cached = belongGroupId
+      ? getSearchQueryCache(belongGroupId)
+      : null;
+    const fallback = {
       scoutId: "",
       name: "",
       currentUnit: [],
@@ -38,60 +39,42 @@ const Scouts: React.FC = () => {
     }
 
     return {
-      ...cached,
-      belongGroupId: cached.belongGroupId || belongGroupId || "",
+      ...(cached || fallback),
+      belongGroupId: belongGroupId || "",
     };
   });
-
-  const [result, setResult] = useState<ScoutSearchResponse>(
-    getResultsCache() || [],
-  ); // 初期値としてローカルストレージから取得したスカウトデータを使用
-
-  const [isPending, setIsPending] = useState<boolean>(false);
-
-  if (!belongGroupId) {
-    return (
-      <div className="text-center mt-3">
-        所属グループが設定されていないため、スカウトの検索はできません。
-      </div>
+  const [submittedQuery, setSubmittedQuery] =
+    useState<ScoutSearchRequest | null>(() =>
+      searchBox || getSearchQueryCache(belongGroupId) ? searchQuery : null,
     );
-  }
 
-  const handleSearch = async (queryBefore: ScoutSearchRequest) => {
-    if (!belongGroupId) {
-      raiseError("所属グループが設定されていません。");
-      return;
+  const searchResult = useQuery({
+    queryKey: ["scout-search", belongGroupId, submittedQuery],
+    enabled: !!belongGroupId && submittedQuery !== null,
+    queryFn: (): Promise<ScoutSearchResponse> =>
+      apiJson(
+        hc.apiv1.scout.search.$post({ json: submittedQuery! }),
+        "スカウトの検索に失敗しました。",
+      ),
+  });
+
+  useEffect(() => {
+    if (submittedQuery) {
+      setSearchQueryCache(belongGroupId, submittedQuery);
     }
+  }, [belongGroupId, submittedQuery]);
 
+  const handleSearch = (queryBefore: ScoutSearchRequest) => {
     const query = {
       ...queryBefore,
       belongGroupId,
     };
-    setIsPending(true);
     setSearchQuery(query);
-    setSearchQueryCache(query);
-
-    // 検索実行
-    try {
-      const search = await hc.apiv1.scout.search.$post({
-        json: query,
-      });
-
-      if (search?.status !== 200) {
-        raiseError("Search API call failed: " + (await search.json()).message);
-        setResult([]);
-        setIsPending(false);
-        return;
-      }
-      const searchResult: ScoutSearchResponse = (await search.json()) || [];
-      setResult(searchResult);
-      setResultsCache(searchResult);
-    } catch (error) {
-      raiseError("Search API call failed:" + error);
-      setResult([]);
-    }
-    setIsPending(false);
+    setSubmittedQuery(query);
   };
+
+  const result = searchResult.data || [];
+  const hasSearched = submittedQuery !== null;
 
   return (
     <div>
@@ -102,13 +85,17 @@ const Scouts: React.FC = () => {
           memo="各カードをクリックすると詳細が表示されます。"
         />
         <div className="row">
-          {isPending ? (
+          {searchResult.isPending && hasSearched ? (
             <div className="text-center mt-3">
               <LoadingSplash message="Loading..." fullScreen={false} />
             </div>
           ) : (
             <>
-              {result.length === 0 ? (
+              {!hasSearched ? (
+                <div className="text-center mt-3">
+                  条件を入力して検索してください。
+                </div>
+              ) : result.length === 0 ? (
                 <div className="text-center mt-3">
                   該当するスカウトが見つかりませんでした。
                 </div>
@@ -134,6 +121,27 @@ const Scouts: React.FC = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const Scouts: React.FC = () => {
+  const searchBox = (useLocation().state?.searchName || "") as string;
+  const belongGroupId = useAuthContext().currentGroup?.id;
+
+  if (!belongGroupId) {
+    return (
+      <div className="text-center mt-3">
+        所属グループが設定されていないため、スカウトの検索はできません。
+      </div>
+    );
+  }
+
+  return (
+    <ScoutsForGroup
+      key={belongGroupId}
+      belongGroupId={belongGroupId}
+      searchBox={searchBox}
+    />
   );
 };
 

@@ -1,9 +1,14 @@
-import { raiseError } from "@f/errorHandler";
-import { hc, type ResType } from "@f/lib/api/api";
+import {
+  apiJson,
+  hc,
+  queryClient,
+  type ResType,
+} from "@f/lib/api/api";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "react-bootstrap";
 import InputGroupUI from "../style/imputGroupUI";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 type ShareSettings = ResType<
   (typeof hc.apiv1.scout)[":id"]["share"]["$get"]
@@ -16,84 +21,50 @@ const ShareBoxPopupCard = ({
   id: string;
   isEditable?: boolean;
 }) => {
-  const [shareSettings, setShareSettings] = useState<ShareSettings[] | null>(
-    null,
-  );
   const [isEditing, setIsEditing] = useState(false);
   const [newData, setNewData] = useState<ShareSettings | null>(null);
-
-  // 共有設定の読み込み
-  const handleLoad = async (id: string) => {
-    try {
-      const data = await hc.apiv1.scout[":id"]["share"]["$get"]({
-        param: { id },
+  const sharesQuery = useQuery({
+    queryKey: ["scout-shares", id],
+    queryFn: (): Promise<ShareSettings[]> =>
+      apiJson(
+        hc.apiv1.scout[":id"]["share"]["$get"]({ param: { id } }),
+        "共有設定の取得に失敗しました",
+      ),
+  });
+  const addMutation = useMutation({
+    mutationFn: () => {
+      if (!newData) throw new Error("新しい共有設定のデータがありません");
+      return apiJson(
+        hc.apiv1.scout[":id"]["share"]["$post"]({
+          param: { id },
+          json: { targetUserId: newData.id },
+        }),
+        "共有設定の追加に失敗しました",
+      );
+    },
+    onSuccess: async () => {
+      setIsEditing(false);
+      setNewData(null);
+      await queryClient.invalidateQueries({
+        queryKey: ["scout-shares", id],
       });
-
-      if (data.status == 200) {
-        setShareSettings(await data.json());
-      } else {
-        raiseError("共有設定の取得に失敗しました");
-      }
-    } catch {
-      raiseError("共有設定の取得に失敗しました");
-    }
-  };
-
-  // 共有設定の追加
-  const handleAdd = async () => {
-    // ここで新しい共有設定を追加するAPIを呼び出す
-
-    if (!newData) {
-      raiseError("新しい共有設定のデータがありません");
-      return;
-    }
-
-    try {
-      const response = await hc.apiv1.scout[":id"]["share"]["$post"]({
-        param: { id },
-        json: {
-          targetUserId: newData.id,
-        },
-      });
-      if (response.status === 200) {
-        setIsEditing(false);
-        setNewData(null);
-        await handleLoad(id);
-      } else {
-        const errorData = await response.json();
-        raiseError("共有設定の追加に失敗しました", "error", errorData.message);
-      }
-    } catch {
-      raiseError("共有設定の追加に失敗しました");
-    }
-  };
-
-  // 共有設定の削除
-  const handleDelete = async (targetUserId: string) => {
-    try {
-      const response = await hc.apiv1.scout[":id"]["share"]["$delete"]({
-        param: { id },
-        json: {
-          targetUserId,
-        },
-      });
-      if (response.status === 200) {
-        await handleLoad(id);
-      } else {
-        const errorData = await response.json();
-        raiseError("共有設定の削除に失敗しました", "error", errorData.message);
-      }
-    } catch {
-      raiseError("共有設定の削除に失敗しました");
-    }
-  };
-
-  // コンポーネントがマウントされたとき、またはidが変更されたときに共有設定を読み込む
-  useEffect(() => {
-    (async () => {
-      handleLoad(id);
-    })();
-  }, [id]);
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: (targetUserId: string) =>
+      apiJson(
+        hc.apiv1.scout[":id"]["share"]["$delete"]({
+          param: { id },
+          json: { targetUserId },
+        }),
+        "共有設定の削除に失敗しました",
+      ),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["scout-shares", id],
+      }),
+  });
+  const shareSettings = sharesQuery.data || [];
 
   // 編集モードの表示
   if (isEditing && isEditable) {
@@ -124,15 +95,16 @@ const ShareBoxPopupCard = ({
             </p>
             <div className="text-end ms-2">
               <Button
+                disabled={addMutation.isPending}
                 onClick={() => {
                   if (
                     confirm(`本当に${newData.name}さんを共有に追加しますか？`)
                   ) {
-                    handleAdd();
+                    addMutation.mutate();
                   }
                 }}
               >
-                追加
+                {addMutation.isPending ? "追加中" : "追加"}
               </Button>
             </div>
           </div>
@@ -163,8 +135,10 @@ const ShareBoxPopupCard = ({
         )
       }
     >
-      {!shareSettings ? (
+      {sharesQuery.isPending ? (
         <div>共有設定を読み込んでいます...</div>
+      ) : sharesQuery.error ? (
+        <div className="text-danger">共有設定の取得に失敗しました</div>
       ) : shareSettings.length === 0 ? (
         <div>共有設定がありません</div>
       ) : (
@@ -188,7 +162,8 @@ const ShareBoxPopupCard = ({
                   <Button
                     variant="outline-danger"
                     size="sm"
-                    onClick={() => handleDelete(setting.id)}
+                    disabled={deleteMutation.isPending}
+                    onClick={() => deleteMutation.mutate(setting.id)}
                   >
                     削除
                   </Button>
@@ -212,23 +187,19 @@ const SearchUserInput = ({
   onUserSelect: (user: SearchUserResult) => void;
 }) => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchUserResult[]>([]);
-
-  const handleSearch = async (query: string) => {
-    try {
-      const response = await hc.apiv1.user["lookupByEmail"]["$post"]({
-        json: { email: query },
-      });
-      if (response.status === 200) {
-        const data = await response.json();
-        setResults(data);
-      } else {
-        raiseError("ユーザーの検索に失敗しました");
-      }
-    } catch {
-      raiseError("ユーザーの検索に失敗しました");
-    }
-  };
+  const [submittedQuery, setSubmittedQuery] = useState("");
+  const usersQuery = useQuery({
+    queryKey: ["user-lookup", submittedQuery],
+    enabled: submittedQuery.length > 0,
+    queryFn: (): Promise<SearchUserResult[]> =>
+      apiJson(
+        hc.apiv1.user["lookupByEmail"]["$post"]({
+          json: { email: submittedQuery },
+        }),
+        "ユーザーの検索に失敗しました",
+      ),
+  });
+  const results = usersQuery.data || [];
 
   return (
     <div>
@@ -242,8 +213,12 @@ const SearchUserInput = ({
           />
         </div>
         <div>
-          <Button className="ms-2" onClick={() => handleSearch(query)}>
-            検索
+          <Button
+            className="ms-2"
+            disabled={!query || usersQuery.isFetching}
+            onClick={() => setSubmittedQuery(query)}
+          >
+            {usersQuery.isFetching ? "検索中" : "検索"}
           </Button>
         </div>
       </div>

@@ -1,42 +1,39 @@
 import { useAuthContext } from "@f/authContext";
 import { raiseError } from "@f/errorHandler";
-import { hc } from "@f/lib/api/api";
+import { apiJson, hc } from "@f/lib/api/api";
 import { Button } from "react-bootstrap";
+import { useMutation } from "@tanstack/react-query";
 
 const UserGroupsSettingsPage = () => {
   const cont = useAuthContext();
   const groups = cont.user.auth.memberships || [];
+  const leaveMutation = useMutation({
+    mutationFn: async (groupId: string) => {
+      return apiJson(
+        hc.apiv1.user.auth.leaveGroup[":groupId"].$post({
+          param: { groupId },
+        }),
+        "グループの脱退に失敗しました。",
+      );
+    },
+    onSuccess: async () => {
+      await cont.refreshUser();
+      raiseError("グループを脱退しました。", "success");
+    },
+  });
 
   const handleSelectGroup = (groupId: string) => {
     // グループ選択のロジック
     cont.setCurrentGroup(groupId);
   };
 
-  const handleLeaveGroup = async (groupId: string) => {
-    // グループ脱退のロジックをここに実装
+  const handleLeaveGroup = (groupId: string) => {
     if (
       confirm(
         "本当にグループを脱退しますか？\n脱退後、そのグループのデータにはアクセスできなくなります。",
       )
     ) {
-      const result = await hc.apiv1.user.auth.leaveGroup[":groupId"].$post({
-        param: { groupId },
-      });
-
-      if (result.status !== 200) {
-        raiseError(
-          "グループの脱退に失敗しました。",
-          "error",
-          (await result.json()).message,
-        );
-        return;
-      }
-
-      raiseError(
-        "グループを脱退しました。",
-        "success",
-        (await result.json()).message,
-      );
+      leaveMutation.mutate(groupId);
     }
   };
 
@@ -66,9 +63,13 @@ const UserGroupsSettingsPage = () => {
                     <Button
                       variant="danger"
                       className="ms-2"
+                      disabled={leaveMutation.isPending}
                       onClick={() => handleLeaveGroup(group.id)}
                     >
-                      脱退
+                      {leaveMutation.isPending &&
+                      leaveMutation.variables === group.id
+                        ? "脱退中"
+                        : "脱退"}
                     </Button>
                   </div>
                 </div>

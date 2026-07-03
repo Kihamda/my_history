@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { hc, type ResType } from "../api/api";
+import { apiJson, hc, type ResType } from "../api/api";
 import InputGroupUI from "../style/imputGroupUI";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPerson } from "@fortawesome/free-solid-svg-icons";
-import { raiseError } from "@f/errorHandler";
 import { PopupCard } from "./popupCard";
 import { Button } from "react-bootstrap";
+import { useQuery } from "@tanstack/react-query";
 
 type UserProfile = ResType<
   (typeof hc.apiv1.user.lookupByEmail)["$post"]
@@ -17,19 +17,20 @@ const SearchUserWithMail = ({
   onSelect: (user: UserProfile) => void;
 }) => {
   const [email, setEmail] = useState<string>("");
-  const [result, setResult] = useState<UserProfile[]>([]);
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-
-  const handleSearch = async () => {
-    const result = await hc.apiv1.user.lookupByEmail.$post({ json: { email } });
-    if (result.status === 200) {
-      const users = await result.json();
-      setResult(users);
-    } else {
-      setResult([]);
-      raiseError("ユーザーの検索に失敗しました。");
-    }
-  };
+  const usersQuery = useQuery({
+    queryKey: ["user-lookup", submittedEmail],
+    enabled: submittedEmail.length > 0,
+    queryFn: (): Promise<UserProfile[]> =>
+      apiJson(
+        hc.apiv1.user.lookupByEmail.$post({
+          json: { email: submittedEmail },
+        }),
+        "ユーザーの検索に失敗しました。",
+      ),
+  });
+  const result = usersQuery.data || [];
 
   return (
     <PopupCard
@@ -47,17 +48,24 @@ const SearchUserWithMail = ({
             <div>
               <button
                 className="btn btn-primary ms-2"
-                onClick={handleSearch}
-                disabled={!email}
+                onClick={() => {
+                  setSelectedUser(null);
+                  setSubmittedEmail(email);
+                }}
+                disabled={!email || usersQuery.isFetching}
               >
-                検索
+                {usersQuery.isFetching ? "検索中" : "検索"}
               </button>
             </div>
           </div>
           <div className="mt-3">
-            {result.length === 0 ? (
+            {usersQuery.error ? (
+              <p className="text-danger">ユーザーの検索に失敗しました。</p>
+            ) : submittedEmail &&
+              result.length === 0 &&
+              !usersQuery.isFetching ? (
               <p>該当するユーザーが見つかりません。</p>
-            ) : (
+            ) : result.length > 0 ? (
               <ul className="list-group">
                 {result.map((user) => (
                   <li
@@ -85,7 +93,7 @@ const SearchUserWithMail = ({
                   </li>
                 ))}
               </ul>
-            )}
+            ) : null}
           </div>
         </>
       }

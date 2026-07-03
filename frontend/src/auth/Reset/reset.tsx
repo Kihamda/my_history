@@ -3,22 +3,18 @@ import { Card, Form, Button, InputGroup, Spinner } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { resetPassword } from "@f/authContext";
+import { useMutation } from "@tanstack/react-query";
 
 const Reset: FC = () => {
   const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const resetMutation = useMutation({
+    mutationFn: (email: string) => resetPassword(email),
+  });
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
-
-    // パスワードリセット処理を実装する
-    setIsSubmitting(true);
-    try {
-      await resetPassword(email);
-    } finally {
-      setIsSubmitting(false);
-    }
+    if (resetMutation.isPending) return;
+    resetMutation.mutate(email);
   };
 
   return (
@@ -46,9 +42,9 @@ const Reset: FC = () => {
           size="lg"
           type="submit"
           className="w-100 mt-4"
-          disabled={isSubmitting || email.length === 0}
+          disabled={resetMutation.isPending || email.length === 0}
         >
-          {isSubmitting && (
+          {resetMutation.isPending && (
             <Spinner
               animation="border"
               size="sm"
@@ -57,7 +53,7 @@ const Reset: FC = () => {
               className="me-2"
             />
           )}
-          {isSubmitting ? "送信中" : "リセットメール送信"}
+          {resetMutation.isPending ? "送信中" : "リセットメール送信"}
         </Button>
       </Form>
     </Card.Body>

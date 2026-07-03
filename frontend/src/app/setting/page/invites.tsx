@@ -1,51 +1,54 @@
 import { useAuthContext } from "@f/authContext";
 import { raiseError } from "@f/errorHandler";
-import { hc } from "@f/lib/api/api";
+import { apiJson, hc } from "@f/lib/api/api";
 import { Button } from "react-bootstrap";
+import { useMutation } from "@tanstack/react-query";
 
 const UserInvitesSettingsPage = () => {
   const cont = useAuthContext();
   const invites = cont.user.auth.invites || [];
-
-  const handleJoinGroup = async (groupId: string) => {
-    // グループ選択のロジック
-    if (confirm("本当にグループに参加しますか？")) {
-      const result = await hc.apiv1.user.auth.acceptInvite[":groupCode"].$post({
-        param: { groupCode: groupId },
-      });
-      raiseError(
-        "グループに参加しました。",
-        "success",
-        (await result.json()).message,
+  const acceptMutation = useMutation({
+    mutationFn: async (groupId: string) => {
+      return apiJson(
+        hc.apiv1.user.auth.acceptInvite[":groupCode"].$post({
+          param: { groupCode: groupId },
+        }),
+        "グループへの参加に失敗しました。",
       );
+    },
+    onSuccess: async () => {
+      await cont.refreshUser();
+      raiseError("グループに参加しました。", "success");
+    },
+  });
+  const denyMutation = useMutation({
+    mutationFn: async (groupId: string) => {
+      return apiJson(
+        hc.apiv1.user.auth.denyInvite[":groupCode"].$post({
+          param: { groupCode: groupId },
+        }),
+        "招待の拒否に失敗しました。",
+      );
+    },
+    onSuccess: async () => {
+      await cont.refreshUser();
+      raiseError("招待を拒否しました。", "success");
+    },
+  });
+
+  const handleJoinGroup = (groupId: string) => {
+    if (confirm("本当にグループに参加しますか？")) {
+      acceptMutation.mutate(groupId);
     }
   };
 
-  const handleDenyInvites = async (groupId: string) => {
-    // 招待拒否のロジックをここに実装
+  const handleDenyInvites = (groupId: string) => {
     if (
       confirm(
         "本当にグループの招待を拒否しますか？\n拒否後、そのグループの招待は取り消されます。",
       )
     ) {
-      const result = await hc.apiv1.user.auth.leaveGroup[":groupId"].$post({
-        param: { groupId },
-      });
-
-      if (result.status !== 200) {
-        raiseError(
-          "グループの脱退に失敗しました。",
-          "error",
-          (await result.json()).message,
-        );
-        return;
-      }
-
-      raiseError(
-        "グループを脱退しました。",
-        "success",
-        `Left Group ID: ${groupId}`,
-      );
+      denyMutation.mutate(groupId);
     }
   };
 
@@ -69,15 +72,29 @@ const UserInvitesSettingsPage = () => {
                 <div className="card-footer d-flex justify-content-between align-items-center">
                   <small className="text-muted">ID: {group.id}</small>
                   <div>
-                    <Button onClick={() => handleJoinGroup(group.id)}>
-                      参加する
+                    <Button
+                      disabled={
+                        acceptMutation.isPending || denyMutation.isPending
+                      }
+                      onClick={() => handleJoinGroup(group.id)}
+                    >
+                      {acceptMutation.isPending &&
+                      acceptMutation.variables === group.id
+                        ? "参加中"
+                        : "参加する"}
                     </Button>
                     <Button
                       variant="danger"
                       className="ms-2"
+                      disabled={
+                        acceptMutation.isPending || denyMutation.isPending
+                      }
                       onClick={() => handleDenyInvites(group.id)}
                     >
-                      拒否
+                      {denyMutation.isPending &&
+                      denyMutation.variables === group.id
+                        ? "拒否中"
+                        : "拒否"}
                     </Button>
                   </div>
                 </div>

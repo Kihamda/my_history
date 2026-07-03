@@ -8,39 +8,20 @@ import {
   faLock,
 } from "@fortawesome/free-solid-svg-icons";
 import { login } from "@f/authContext";
-
-/**
- * @fileoverview
- * `Signin`コンポーネントはログインフォームを提供します。
- * ユーザーはメールアドレスとパスワードを入力し、ログインボタンを押すことができます。
- *
- * @component
- * @example
- * <Signin />
- *
- * @returns {FC} ログインフォームを含むReactコンポーネント
- *
- * @remarks
- * - `useState`フックを使用してフォームの入力値を管理します。
- * - `handleSubmit`関数でフォームの送信を処理します。
- * - `FormGroup`コンポーネントを使用して各入力フィールドをグループ化します。
- */
+import { useMutation } from "@tanstack/react-query";
 
 const Signin: FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const loginMutation = useMutation({
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      login(email, password),
+  });
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-    try {
-      await login(email, password);
-    } finally {
-      setIsSubmitting(false);
-    }
+    if (loginMutation.isPending) return;
+    loginMutation.mutate({ email, password });
   };
 
   return (
@@ -88,9 +69,13 @@ const Signin: FC = () => {
           size="lg"
           type="submit"
           className="w-100 mt-4"
-          disabled={isSubmitting || email.length === 0 || password.length === 0}
+          disabled={
+            loginMutation.isPending ||
+            email.length === 0 ||
+            password.length === 0
+          }
         >
-          {isSubmitting && (
+          {loginMutation.isPending && (
             <Spinner
               animation="border"
               size="sm"
@@ -99,8 +84,8 @@ const Signin: FC = () => {
               className="me-2"
             />
           )}
-          {isSubmitting ? "ログイン中" : "ログイン"}
-          {!isSubmitting && (
+          {loginMutation.isPending ? "ログイン中" : "ログイン"}
+          {!loginMutation.isPending && (
             <FontAwesomeIcon icon={faArrowRightToBracket} className="ms-2" />
           )}
         </Button>

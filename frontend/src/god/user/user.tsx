@@ -1,9 +1,16 @@
-import { hc, type ReqType, type ResType } from "@f/lib/api/api";
+import {
+  apiJson,
+  hc,
+  queryClient,
+  type ReqType,
+  type ResType,
+} from "@f/lib/api/api";
 import { useState } from "react";
 import { raiseError } from "@f/errorHandler";
 import { Button } from "react-bootstrap";
 import { JsonEditor } from "json-edit-react";
 import UserSearchBox from "./userSearchBox";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 type UserDataType = ResType<typeof hc.apiv1.god.user.getUserData.$get>;
 export type UserSearchType = Required<
@@ -11,66 +18,69 @@ export type UserSearchType = Required<
 >;
 
 const GodUserPage = () => {
-  const [results, setResults] = useState<UserDataType>([]);
+  const [submittedQuery, setSubmittedQuery] =
+    useState<Partial<UserSearchType> | null>(null);
   const [editorSlot, setEditorSlot] = useState<UserDataType[number] | null>(
     null,
   );
   const [isEditing, setIsEditing] = useState<boolean>(false);
-
-  // 検索処理
-  const handleSearch = async (query: UserSearchType) => {
+  const usersQuery = useQuery({
+    queryKey: ["god-users", submittedQuery],
+    enabled: submittedQuery !== null,
+    queryFn: (): Promise<UserDataType> =>
+      apiJson(
+        hc.apiv1.god.user.getUserData.$get({
+          query: submittedQuery || {},
+        }),
+        "ユーザーの検索に失敗しました。",
+      ),
+  });
+  const results = usersQuery.data || [];
+  const handleSearch = (query: UserSearchType) => {
     const sanitizedQuery = Object.fromEntries(
       Object.entries(query).map(([key, value]) => [
         key,
         typeof value === "string" && value.length === 0 ? undefined : value,
       ]),
     ) as Partial<UserSearchType>;
-
-    const data = await hc.apiv1.god.user.getUserData.$get({
-      query: sanitizedQuery,
-    });
-
-    if (data.status !== 200) {
-      raiseError("ユーザーの検索に失敗しました。");
-      setResults([]);
-      return;
-    }
-    setResults(await data.json());
+    setEditorSlot(null);
+    setSubmittedQuery(sanitizedQuery);
   };
-
-  const handleSave = async () => {
-    if (!editorSlot) return;
-    const result = await hc.apiv1.god.user[":id"].setUserData.$post({
-      param: { id: editorSlot.doc_id },
-      json: editorSlot,
-    });
-    if (result.status == 200) {
-      raiseError("ユーザーデータの保存に成功しました。", "success");
-    } else {
-      raiseError(
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (!editorSlot) throw new Error("ユーザーが選択されていません。");
+      return apiJson(
+        hc.apiv1.god.user[":id"].setUserData.$post({
+          param: { id: editorSlot.doc_id },
+          json: editorSlot,
+        }),
         "ユーザーデータの保存に失敗しました。",
-        "error",
-        (await result.json()).message,
       );
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    const result = await hc.apiv1.god.user[":id"].deleteUserData.$delete({
-      param: { id },
-    });
-    if (result.status == 200) {
+    },
+    onSuccess: async () => {
+      raiseError("ユーザーデータの保存に成功しました。", "success");
+      await queryClient.invalidateQueries({
+        queryKey: ["god-users", submittedQuery],
+      });
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiJson(
+        hc.apiv1.god.user[":id"].deleteUserData.$delete({
+          param: { id },
+        }),
+        "ユーザーデータの削除に失敗しました。",
+      );
+    },
+    onSuccess: async () => {
       raiseError("ユーザーデータの削除に成功しました。", "success");
       setEditorSlot(null);
-      setResults(results.filter((e) => e.doc_id !== id));
-    } else {
-      raiseError(
-        "ユーザーデータの削除に失敗しました。",
-        "error",
-        (await result.json()).message,
-      );
-    }
-  };
+      await queryClient.invalidateQueries({
+        queryKey: ["god-users", submittedQuery],
+      });
+    },
+  });
 
   return (
     <>
@@ -144,14 +154,16 @@ const GodUserPage = () => {
                     <Button
                       className="ms-2"
                       variant="danger"
-                      onClick={() => handleDelete(editorSlot.doc_id)}
+                      disabled={deleteMutation.isPending}
+                      onClick={() => deleteMutation.mutate(editorSlot.doc_id)}
                     >
                       削除
                     </Button>
                     <Button
                       className="ms-2"
                       variant="primary"
-                      onClick={() => handleSave()}
+                      disabled={saveMutation.isPending}
+                      onClick={() => saveMutation.mutate()}
                     >
                       保存
                     </Button>

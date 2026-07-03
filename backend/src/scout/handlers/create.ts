@@ -1,35 +1,15 @@
-/**
- * @fileoverview スカウト作成ハンドラー
- *
- * このファイルの責務:
- * - スカウト作成リクエストの処理
- * - 入力データのバリデーション(Zodスキーマ)
- * - 初期データの構築
- * - サービス層への処理委譲
- *
- * @module scout/handlers/create
- */
-
 import { z } from "zod/v4";
 import type { Context } from "../../apiRotuer";
 import { generateRandomId } from "../../lib/randomId";
 import { db } from "../../lib/firestore/firestore";
 import getDefaultScoutData from "@b/lib/scoutDefaultData";
-/**
- * スカウト作成リクエストのバリデーションスキーマ
- *
- * 必須フィールド:
- * - name: スカウト名(1-100文字)
- * - scoutId: スカウトID(1-100文字)
- * - birthDate: 生年月日
- * - joinedDate: 入団日
- * - belongGroupId: 所属グループID
- * - currentUnitId: 現在の所属隊
- * - memo: メモ(最大500文字、省略可)
- */
+import { HTTPException } from "hono/http-exception";
+
 export const ScoutCreateSchema = z.object({
   name: z.string().min(1).max(100),
-  scoutId: z.string().min(1).max(100),
+  scoutId: z
+    .string()
+    .regex(/^\d{9,12}$/, { message: "Scout ID must be 9 to 12 digits" }),
   birthDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Invalid date format" }),
@@ -37,21 +17,6 @@ export const ScoutCreateSchema = z.object({
 });
 
 export type ScoutCreateSchemaType = z.infer<typeof ScoutCreateSchema>;
-
-/**
- * スカウトを作成する
- *
- * 処理内容:
- * 1. リクエストデータから初期スカウトデータを構築
- * 2. 各隊の初期データを設定
- * 3. ランダムIDを生成
- * 4. サービス層で権限チェックとFirestore操作を実行
- * 5. 作成結果を返却
- *
- * @param data - バリデーション済みのスカウト作成データ
- * @param c - Honoコンテキスト
- * @returns 作成されたスカウトのIDとメッセージ
- */
 export const createScout = async (
   data: ScoutCreateSchemaType,
   c: Context
@@ -62,7 +27,22 @@ export const createScout = async (
   ]);
 
   if (!role) {
-    throw new Error("You do not have permission to create scout in this group");
+    throw new HTTPException(403, {
+      message: "You do not have permission to create scout in this group",
+    });
+  }
+
+  const duplicate = await db().scouts.lis(
+    [
+      { field: "belongGroupId", op: "==", value: data.belongGroupId },
+      { field: "personal.scoutId", op: "==", value: data.scoutId },
+    ],
+    1,
+  );
+  if (duplicate.length > 0) {
+    throw new HTTPException(409, {
+      message: "同じ登録番号のスカウトが既に存在します",
+    });
   }
 
   // 初期スカウトデータを構築

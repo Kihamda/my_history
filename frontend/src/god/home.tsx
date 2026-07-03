@@ -1,26 +1,23 @@
-import { hc, type ResType } from "@f/lib/api/api";
+import { apiJson, hc, type ResType } from "@f/lib/api/api";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import { faChartArea } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 type ServerInfo = ResType<typeof hc.apiv1.god.$get>;
 
 const GodHome = () => {
-  const [serverInfo, setServerInfo] = useState<ServerInfo>({
-    isDev: false,
-    message: "確認がまだできてないけど、ご安全にね！！",
+  const serverInfoQuery = useQuery({
+    queryKey: ["god-info"],
+    queryFn: (): Promise<ServerInfo> =>
+      apiJson(hc.apiv1.god.$get(), "管理者情報の取得に失敗しました。"),
   });
-
-  useEffect(() => {
-    const fetchServerInfo = async () => {
-      const data = await hc.apiv1.god.$get();
-      if (data.status === 200) {
-        setServerInfo(await data.json());
-      }
-    };
-    fetchServerInfo();
-  }, []);
+  const serverInfo = serverInfoQuery.data || {
+    isDev: false,
+    message: serverInfoQuery.isPending
+      ? "確認中です"
+      : "管理者情報の取得に失敗しました",
+  };
 
   return (
     <>

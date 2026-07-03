@@ -1,5 +1,5 @@
 import { raiseError } from "@f/errorHandler";
-import { hc } from "@f/lib/api/api";
+import { apiJson, hc } from "@f/lib/api/api";
 import csvScoutDataParser, {
   HEADER_LINE,
   type CsvScoutRecord,
@@ -7,6 +7,7 @@ import csvScoutDataParser, {
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import { useState } from "react";
 import { Button } from "react-bootstrap";
+import { useMutation } from "@tanstack/react-query";
 
 const CSV_ID_CONSTRAINT_LEGEND = `type CurrentUnitId =
   | "bvs"
@@ -88,6 +89,20 @@ const CreateScoutBatPage = () => {
   const [csvParsedData, setCsvParsedData] = useState<CsvScoutRecord[] | null>(
     null,
   );
+  const submitMutation = useMutation({
+    mutationFn: (records: CsvScoutRecord[]) =>
+      apiJson(
+        hc.apiv1.god.scout.batchSetScoutData.$post({
+          json: records.map((record) => ({
+            id: record.id || undefined,
+            data: { ...record },
+          })),
+        }),
+        "スカウトデータの一括登録に失敗しました",
+      ),
+    onSuccess: () =>
+      raiseError("スカウトデータの一括登録に成功しました", "success"),
+  });
   const handleParse = () => {
     // CSVデータをパースしてAPIに送信する処理をここに実装
     const data = csvScoutDataParser(csvData).parsedData;
@@ -96,33 +111,9 @@ const CreateScoutBatPage = () => {
     // 例: APIに送信する場合
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!csvParsedData) return;
-
-    try {
-      const result = await hc.apiv1.god.scout.batchSetScoutData.$post({
-        json: [
-          ...csvParsedData.map((record) => ({
-            id: record.id.length > 0 ? record.id : undefined,
-            data: {
-              ...record,
-            },
-          })),
-        ],
-      });
-
-      if (result.status === 200) {
-        raiseError("スカウトデータの一括登録に成功しました", "success");
-      } else {
-        raiseError(
-          "スカウトデータの一括登録に失敗しました",
-          "error",
-          (await result.json()).message,
-        );
-      }
-    } catch {
-      raiseError("スカウトデータの一括登録に失敗しました", "error");
-    }
+    submitMutation.mutate(csvParsedData);
   };
 
   return (
@@ -150,8 +141,12 @@ const CreateScoutBatPage = () => {
           </div>
 
           <div className="card-footer text-end">
-            <Button variant="success" onClick={handleSubmit}>
-              APIに送信
+            <Button
+              variant="success"
+              disabled={submitMutation.isPending}
+              onClick={handleSubmit}
+            >
+              {submitMutation.isPending ? "送信中" : "APIに送信"}
             </Button>
           </div>
         </div>

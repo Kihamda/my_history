@@ -1,75 +1,84 @@
 import GodScoutSearchBox, { type ScoutSearchParams } from "./scoutSearchBox";
-import { hc, type ResType } from "@f/lib/api/api";
+import {
+  apiJson,
+  hc,
+  queryClient,
+  type ResType,
+} from "@f/lib/api/api";
 import { useState } from "react";
 import { raiseError } from "@f/errorHandler";
 import { Button } from "react-bootstrap";
 import { JsonEditor } from "json-edit-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 type ScoutDataType = ResType<typeof hc.apiv1.god.scout.getScoutData.$get>;
 
 const GodScoutPage = () => {
-  const [results, setResults] = useState<ScoutDataType>([]);
+  const [submittedQuery, setSubmittedQuery] =
+    useState<ScoutSearchParams | null>(null);
   const [editorSlot, setEditorSlot] = useState<ScoutDataType[number] | null>(
     null,
   );
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  // 検索処理
-  const handleSearch = async (query: ScoutSearchParams) => {
-    const data = await hc.apiv1.god.scout.getScoutData.$get({
-      query: {
-        id: query.id.length > 0 ? query.id : undefined,
-        scoutId: query.scoutId.length > 0 ? query.scoutId : undefined,
-        belongCurrentIds:
-          query.belongCurrentIds.length > 0
-            ? query.belongCurrentIds
-            : undefined,
-        belongGroupId:
-          query.belongGroupId.length > 0 ? query.belongGroupId : undefined,
-      },
-    });
-
-    if (data.status !== 200) {
-      raiseError("スカウトの検索に失敗しました。");
-      setResults([]);
-      return;
-    }
-    setResults(await data.json());
-  };
-
-  const handleSave = async () => {
-    if (!editorSlot) return;
-    const result = await hc.apiv1.god.scout[":id"].setScoutData.$post({
-      param: { id: editorSlot.doc_id },
-      json: editorSlot,
-    });
-    if (result.status == 200) {
-      raiseError("スカウトデータの保存に成功しました。", "success");
-    } else {
-      raiseError(
-        "スカウトデータの保存に失敗しました。",
-        "error",
-        (await result.json()).message,
+  const scoutsQuery = useQuery({
+    queryKey: ["god-scouts", submittedQuery],
+    enabled: submittedQuery !== null,
+    queryFn: async (): Promise<ScoutDataType> => {
+      const query = submittedQuery!;
+      return apiJson(
+        hc.apiv1.god.scout.getScoutData.$get({
+          query: {
+            id: query.id || undefined,
+            scoutId: query.scoutId || undefined,
+            belongCurrentIds: query.belongCurrentIds || undefined,
+            belongGroupId: query.belongGroupId || undefined,
+          },
+        }),
+        "スカウトの検索に失敗しました。",
       );
-    }
+    },
+  });
+  const results = scoutsQuery.data || [];
+  const handleSearch = (query: ScoutSearchParams) => {
+    setEditorSlot(null);
+    setSubmittedQuery(query);
   };
-
-  const handleDelete = async (id: string) => {
-    const result = await hc.apiv1.god.scout[":id"].deleteScoutData.$delete({
-      param: { id },
-    });
-    if (result.status == 200) {
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (!editorSlot) throw new Error("スカウトが選択されていません。");
+      return apiJson(
+        hc.apiv1.god.scout[":id"].setScoutData.$post({
+          param: { id: editorSlot.doc_id },
+          json: editorSlot,
+        }),
+        "スカウトデータの保存に失敗しました。",
+      );
+    },
+    onSuccess: async () => {
+      raiseError("スカウトデータの保存に成功しました。", "success");
+      await queryClient.invalidateQueries({
+        queryKey: ["god-scouts", submittedQuery],
+      });
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiJson(
+        hc.apiv1.god.scout[":id"].deleteScoutData.$delete({
+          param: { id },
+        }),
+        "スカウトデータの削除に失敗しました。",
+      );
+    },
+    onSuccess: async () => {
       raiseError("スカウトデータの削除に成功しました。", "success");
       setEditorSlot(null);
-      setResults(results.filter((e) => e.doc_id !== id));
-    } else {
-      raiseError(
-        "スカウトデータの削除に失敗しました。",
-        "error",
-        (await result.json()).message,
-      );
-    }
-  };
+      await queryClient.invalidateQueries({
+        queryKey: ["god-scouts", submittedQuery],
+      });
+    },
+  });
 
   return (
     <>
@@ -143,14 +152,16 @@ const GodScoutPage = () => {
                     <Button
                       className="ms-2"
                       variant="danger"
-                      onClick={() => handleDelete(editorSlot.doc_id)}
+                      disabled={deleteMutation.isPending}
+                      onClick={() => deleteMutation.mutate(editorSlot.doc_id)}
                     >
                       削除
                     </Button>
                     <Button
                       className="ms-2"
                       variant="primary"
-                      onClick={() => handleSave()}
+                      disabled={saveMutation.isPending}
+                      onClick={() => saveMutation.mutate()}
                     >
                       保存
                     </Button>

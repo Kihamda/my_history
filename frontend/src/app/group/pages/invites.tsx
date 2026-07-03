@@ -1,11 +1,17 @@
 import { useAuthContext } from "@f/authContext";
 import { raiseError } from "@f/errorHandler";
-import { hc, type ReqType } from "@f/lib/api/api";
+import {
+  apiJson,
+  hc,
+  queryClient,
+  type ReqType,
+} from "@f/lib/api/api";
 import SearchUserWithMail from "@f/lib/popupContext/searchUserWithMailPopup";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 
 type InviteData = ReqType<
   (typeof hc.apiv1.group)[":id"]["invites"]["create"]["$post"]
@@ -22,75 +28,47 @@ type NewInviteData = {
 const InvitesPage = () => {
   const [newData, setNewData] = useState<NewInviteData | null>(null);
   const { showPopup, hidePopup } = usePopup();
-  const [results, setResults] = useState<NewInviteData[]>([]);
 
   const groupId = useAuthContext().currentGroup?.id;
-
-  const handleCreateInvite = async () => {
-    if (!newData) return;
-
-    if (!groupId) {
-      raiseError("グループが選択されていません。");
-      return;
-    }
-    const result = await hc.apiv1.group[":id"].invites.create.$post({
-      json: {
-        targetUid: newData.uid,
-        role: newData.role,
-      },
-      param: { id: groupId },
-    });
-    if (result.ok) {
-      // 招待作成成功時の処理
+  const invitesQuery = useInfiniteQuery({
+    queryKey: ["group-invites", groupId],
+    enabled: !!groupId,
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }): Promise<NewInviteData[]> => {
+      const data = await apiJson<{ invitees: NewInviteData[] }>(
+        hc.apiv1.group[":id"].invites.$get({
+          param: { id: groupId! },
+          query: { offset: String(pageParam) },
+        }),
+        "招待一覧の取得に失敗しました。",
+      );
+      return data.invitees;
+    },
+    getNextPageParam: (lastPage, pages) =>
+      lastPage.length === 0 ? undefined : pages.flat().length,
+  });
+  const results = invitesQuery.data?.pages.flat() || [];
+  const createInviteMutation = useMutation({
+    mutationFn: async () => {
+      if (!newData || !groupId) {
+        throw new Error("招待するユーザーまたはグループが未選択です。");
+      }
+      return apiJson(
+        hc.apiv1.group[":id"].invites.create.$post({
+          json: { targetUid: newData.uid, role: newData.role },
+          param: { id: groupId },
+        }),
+        "招待の作成に失敗しました。",
+      );
+    },
+    onSuccess: async () => {
       setNewData(null);
       raiseError("招待を作成しました。", "success");
-      // 必要に応じて招待一覧を再取得するなどの処理を追加
-    } else {
-      // 招待作成失敗時の処理
-      raiseError(
-        "招待の作成に失敗しました。",
-        "error",
-        (await result.json()).message,
-      );
-    }
-  };
-
-  const handleGetInvites = async (groupId?: string, offset?: number) => {
-    if (!groupId) {
-      raiseError("グループが選択されていません。");
-      return;
-    }
-    const result = await hc.apiv1.group[":id"].invites.$get({
-      param: { id: groupId },
-      query: {
-        offset: String(offset ?? 0),
-      },
-    });
-    if (result.ok) {
-      const data = await result.json();
-      if (offset === undefined) {
-        setResults(data.invitees);
-      } else {
-        if (data.invitees.length === 0) {
-          raiseError("これ以上招待はありません。", "info");
-          return;
-        }
-        setResults((prev) => [...prev, ...data.invitees]);
-      }
-    } else {
-      raiseError(
-        "招待一覧の取得に失敗しました。",
-        "error",
-        (await result.json()).message,
-      );
-    }
-  };
-
-  useEffect(() => {
-    (async () => {
-      handleGetInvites(groupId);
-    })();
-  }, [groupId]);
+      await queryClient.invalidateQueries({
+        queryKey: ["group-invites", groupId],
+      });
+    },
+  });
 
   return (
     <>
@@ -177,12 +155,12 @@ const InvitesPage = () => {
             </Button>
             <Button
               className="ms-2"
-              disabled={newData.uid.length === 0}
-              onClick={() => {
-                handleCreateInvite();
-              }}
+              disabled={
+                newData.uid.length === 0 || createInviteMutation.isPending
+              }
+              onClick={() => createInviteMutation.mutate()}
             >
-              招待を作成
+              {createInviteMutation.isPending ? "作成中" : "招待を作成"}
             </Button>
           </div>
         </div>
@@ -191,7 +169,9 @@ const InvitesPage = () => {
       <div className="card mt-3">
         <div className="card-body">
           <h3>招待一覧</h3>
-          {results.length === 0 ? (
+          {invitesQuery.isPending ? (
+            <p>招待一覧を読み込んでいます。</p>
+          ) : results.length === 0 ? (
             <p>招待が存在しません。</p>
           ) : (
             <table className="table">
@@ -217,8 +197,17 @@ const InvitesPage = () => {
           )}
         </div>
         <div className="card-footer text-end">
-          <Button onClick={() => handleGetInvites(groupId, results.length)}>
-            招待をもっと読み込む
+          <Button
+            disabled={
+              invitesQuery.isFetchingNextPage || !invitesQuery.hasNextPage
+            }
+            onClick={() => invitesQuery.fetchNextPage()}
+          >
+            {invitesQuery.isFetchingNextPage
+              ? "読み込み中"
+              : invitesQuery.hasNextPage
+                ? "招待をもっと読み込む"
+                : "これ以上ありません"}
           </Button>
         </div>
       </div>

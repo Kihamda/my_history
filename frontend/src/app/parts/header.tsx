@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
+import { useMutation } from "@tanstack/react-query";
 
 const closeMobileMenu = () => {
   const offcanvas = document.getElementById("offcanvas");
@@ -63,9 +64,7 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
   isGod,
   showTop = false,
 }) => {
-  const handleLogout = () => {
-    logout();
-  };
+  const logoutMutation = useMutation({ mutationFn: logout });
 
   const { showPopup } = usePopup();
 
@@ -122,9 +121,14 @@ const UserDropdown: FC<{ name: string; isGod: boolean; showTop?: boolean }> = ({
           <hr className="dropdown-divider" />
         </li>
         <li>
-          <a className="dropdown-item" onClick={handleLogout}>
+          <button
+            type="button"
+            className="dropdown-item"
+            disabled={logoutMutation.isPending}
+            onClick={() => logoutMutation.mutate()}
+          >
             ログアウト
-          </a>
+          </button>
         </li>
       </ul>
     </div>

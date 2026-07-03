@@ -1,50 +1,34 @@
 import React, { useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
-import { hc } from "@f/lib/api/api";
+import { apiJson, hc, queryClient } from "@f/lib/api/api";
 import { raiseError } from "@f/errorHandler";
-
-/**
- * @fileoverview
- * `Register`コンポーネントは新規登録フォームを提供します。
- * ユーザーはメールアドレス、パスワード、パスワードの確認を入力し、
- * 利用規約とプライバシーポリシーに同意する必要があります。
- *
- * @component
- * @example
- * <Register />
- *
- * @returns {React.FC} 新規登録フォームを含むReactコンポーネント
- *
- * @remarks
- * - `useState`フックを使用してフォームの入力値を管理します。
- * - `handleSubmit`関数でフォームの送信を処理します。
- * - `FormGroup`コンポーネントを使用して各入力フィールドをグループ化します。
- * - `Form.Check`コンポーネントを使用して利用規約とプライバシーポリシーへの同意を確認します。
- * - 登録ボタンは利用規約とプライバシーポリシーに同意しない限り無効になります。
- */
+import { useMutation } from "@tanstack/react-query";
 
 const Setup: React.FC = () => {
   const [displayName, setDisplayName] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [acceptsInvite, setAcceptsInvite] = useState<"show" | "hide">("hide");
+  const createUserMutation = useMutation({
+    mutationFn: () =>
+      apiJson(
+        hc.apiv1.user.createUser.$post({
+          json: {
+            displayName,
+            statusMessage,
+            acceptsInvite: acceptsInvite === "show",
+          },
+        }),
+        "ユーザーの作成に失敗しました。",
+      ),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+      raiseError("ユーザープロフィールが作成されました。", "success");
+    },
+  });
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-
-    try {
-      await hc.apiv1.user.createUser.$post({
-        json: {
-          displayName: displayName,
-          statusMessage: statusMessage,
-          acceptsInvite: acceptsInvite === "show",
-        },
-      });
-      alert("ユーザープロフィールが作成されました。");
-      window.location.reload();
-    } catch (error) {
-      raiseError("ユーザーの作成中にエラーが発生しました。", "error");
-      console.error(error);
-    }
+    createUserMutation.mutate();
   };
 
   return (
@@ -99,8 +83,14 @@ const Setup: React.FC = () => {
           </Form.Text>
         </Form.Group>
 
-        <Button variant="primary" size="lg" type="submit" className="w-100 mt-4">
-          登録
+        <Button
+          variant="primary"
+          size="lg"
+          type="submit"
+          className="w-100 mt-4"
+          disabled={createUserMutation.isPending}
+        >
+          {createUserMutation.isPending ? "登録中" : "登録"}
         </Button>
       </Form>
     </Card.Body>
