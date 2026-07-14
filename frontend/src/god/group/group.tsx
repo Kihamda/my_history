@@ -66,10 +66,10 @@ const GodGroupPage = () => {
           },
           json: {
             userSettings: {
-              name: data.data.userSettings.name,
+              ...data.data.userSettings
             },
             adminTags: {
-              description: data.data.adminTags.description,
+              ...data.data.adminTags
             },
           },
         }),
@@ -120,8 +120,8 @@ const GodGroupPage = () => {
                     id: "placeholder",
                     data: {
                       userSettings: {
-                        allowInvite: false,
-                        allowShare: false,
+                        allowSendScout: false,
+                        allowShare: true,
                         name: "",
                       },
                       adminTags: {

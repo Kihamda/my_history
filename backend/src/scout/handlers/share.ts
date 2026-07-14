@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 
 export const createShareHandler = async (
   scoutId: string,
+  groupId: string,
   role: ShareRoleSchemaType,
   targetUserId: string,
 ) => {
@@ -14,6 +15,14 @@ export const createShareHandler = async (
 
   if (user.auth.shares?.filter((id) => id.split(";")[1] == scoutId).length) {
     throw new HTTPException(400, { message: "すでに共有されています" });
+  }
+
+
+  const group = await db().groups.get(groupId);
+  if (!group?.userSettings.allowShare) {
+    throw new HTTPException(403, {
+      message:"このスカウトのグループでは現在スカウトを共有できません"
+    })
   }
 
   const newUser = {

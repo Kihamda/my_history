@@ -13,6 +13,7 @@ import { db } from "../lib/firestore/firestore";
 import {
   IdWithGroupRoleParser,
   IdWithGroupRoleStringifier,
+  type GroupRecordSchemaType,
 } from "../lib/firestore/schemas";
 import { type GroupRoleSchemaType } from "../lib/scoutGroup";
 
@@ -35,7 +36,7 @@ export const getGroupProfileData = async (id: string) => {
 export const updateGroupProfileData = async (
   c: Context,
   id: string,
-  data: { name: string },
+  data: GroupRecordSchemaType["userSettings"],
 ) => {
   if (!c.var.user.fn.isInRoleOnGroup(id, ["ADMIN"])) {
     throw new HTTPException(403, {
@@ -49,8 +50,7 @@ export const updateGroupProfileData = async (
   await db().groups.set(id, {
     ...group,
     userSettings: {
-      ...group.userSettings,
-      name: data.name,
+      ...data
     },
   });
 
