@@ -21,7 +21,7 @@ export const createShareHandler = async (
   const group = await db().groups.get(groupId);
   if (!group?.userSettings.allowShare) {
     throw new HTTPException(403, {
-      message:"このスカウトのグループでは現在スカウトを共有できません"
+      message:"このグループでは新規共有を作成できません"
     })
   }
 

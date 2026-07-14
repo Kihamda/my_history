@@ -25,7 +25,7 @@ const GroupTopPage = () => {
   } | null>(null);
 
   const groupQuery = useQuery({
-    queryKey: ["group-profile", groupId],
+    queryKey: ["group-settings", groupId],
     enabled: !!groupId,
     queryFn: () =>
       apiJson<GroupSettings>(
@@ -68,7 +68,7 @@ const GroupTopPage = () => {
       setDraft(null);
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: ["group-profile", groupId],
+          queryKey: ["group-settings", groupId],
         }),
         queryClient.invalidateQueries({ queryKey: ["current-user"] }),
       ]);
@@ -113,7 +113,7 @@ const GroupTopPage = () => {
                 type="switch"
                 id="allowShare"
                 className="mb-3"
-                label="スカウトデータの共有を許可する"
+                label="新規共有の作成を許可する"
                 checked={settings.allowShare}
                 disabled={!isAdmin}
                 onChange={(event) =>
