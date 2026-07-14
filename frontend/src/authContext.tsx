@@ -20,11 +20,12 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase";
 import LoadingSplash from "@f/lib/style/loadingSplash";
-import { setHcClient, hc } from "@f/lib/api/api";
+import { apiJson, hc, queryClient, setHcClient } from "@f/lib/api/api";
 import type { UserProfile } from "./lib/api/apiTypes";
 import { raiseError } from "./errorHandler";
 import { getBrowserSettings, setBrowserSettings } from "./lib/localCache";
 import { useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 
 type UserProfileContext = UserProfile;
 
@@ -33,6 +34,7 @@ interface AuthContextValue {
   token: User | null;
   currentGroup: UserProfile["auth"]["memberships"][number] | null;
   setCurrentGroup?: (id: string | null) => Promise<void>;
+  refreshUser?: () => Promise<void>;
 }
 
 interface SafeAuthContextValue {
@@ -40,6 +42,7 @@ interface SafeAuthContextValue {
   token: User;
   currentGroup: UserProfile["auth"]["memberships"][number] | null;
   setCurrentGroup: (id: string | null) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -48,9 +51,8 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<UserProfileContext | null>(null);
   const [token, setToken] = useState<User | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isAuthLoaded, setIsAuthLoaded] = useState(false);
   const [currentGroup, setCurrentGroupState] = useState<
     UserProfile["auth"]["memberships"][number] | null
   >(null);
@@ -64,59 +66,59 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (!fbUser) {
-        setUser(null);
         setToken(null);
         setHcClient();
-        setIsLoaded(true);
+        queryClient.removeQueries({ queryKey: ["current-user"] });
+        setIsAuthLoaded(true);
         return;
       }
 
-      // Firebaseユーザーが存在する場合、IDトークンを取得してAPIクライアントに設定し、ユーザーデータを取得
-      setIsLoaded(false);
+      setIsAuthLoaded(false);
       try {
         setHcClient(await getIdToken(fbUser, true));
+        queryClient.removeQueries({ queryKey: ["current-user"] });
         setToken(fbUser);
-
-        // APIからユーザーデータを取得
-        const user = await hc.apiv1.user.me.$get();
-
-        if (user.status === 404) {
-          setUser(null);
-          raiseError("ユーザーデータが見つかりませんでした。");
-        } else if (!user.ok) {
-          setUser(null);
-          raiseError(
-            "ユーザーデータの取得に失敗しました。",
-            "error",
-            (await user.json()).message,
-          );
-        } else {
-          // ユーザーデータを状態に保存
-          const userData: UserProfile = await user.json();
-          const settings = getBrowserSettings();
-          const currentGroup =
-            userData.auth.memberships.find(
-              (membership) => membership.id === settings.currentGroupSlotId,
-            ) ??
-            userData.auth.memberships[0] ??
-            null;
-
-          setUser(userData);
-          setCurrentGroupState(currentGroup);
-          setBrowserSettings({
-            ...settings,
-            currentGroupSlotId: currentGroup?.id ?? null,
-          });
-        }
       } catch (e) {
-        setUser(null);
         raiseError("ユーザーデータの取得に失敗しました。", "error", String(e));
       } finally {
-        setIsLoaded(true);
+        setIsAuthLoaded(true);
       }
     });
     return () => unsubscribe();
   }, []);
+
+  const userQuery = useQuery({
+    queryKey: ["current-user", token?.uid],
+    enabled: !!token && isAuthLoaded,
+    queryFn: async (): Promise<UserProfileContext | null> => {
+      const response = await hc.apiv1.user.me.$get();
+      if (response.status === 404) return null;
+      return apiJson(response, "ユーザーデータの取得に失敗しました。");
+    },
+  });
+
+  const user = userQuery.data ?? null;
+
+  useEffect(() => {
+    if (!user) {
+      setCurrentGroupState(null);
+      return;
+    }
+
+    const settings = getBrowserSettings();
+    const nextCurrentGroup =
+      user.auth.memberships.find(
+        (membership) => membership.id === settings.currentGroupSlotId,
+      ) ??
+      user.auth.memberships[0] ??
+      null;
+
+    setCurrentGroupState(nextCurrentGroup);
+    setBrowserSettings({
+      ...settings,
+      currentGroupSlotId: nextCurrentGroup?.id ?? null,
+    });
+  }, [user]);
 
   /// 自動token更新
   useEffect(() => {
@@ -176,12 +178,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  if (!isLoaded) {
+  const refreshUser = async () => {
+    await userQuery.refetch();
+  };
+
+  if (!isAuthLoaded || (!!token && userQuery.isPending)) {
     return <LoadingSplash message="ユーザー情報を読み込み中..." />;
   } else {
     return (
       <AuthContext.Provider
-        value={{ user, token, currentGroup, setCurrentGroup }}
+        value={{ user, token, currentGroup, setCurrentGroup, refreshUser }}
       >
         {children}
       </AuthContext.Provider>

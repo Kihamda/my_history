@@ -1,59 +1,50 @@
 import { resetPassword, useAuthContext } from "@f/authContext";
 import { raiseError } from "@f/errorHandler";
-import { hc } from "@f/lib/api/api";
+import { apiJson, hc } from "@f/lib/api/api";
 import InputGroupUI from "@f/lib/style/imputGroupUI";
 import { deleteUser } from "firebase/auth";
 import { useState } from "react";
 import { Button, FormSelect } from "react-bootstrap";
+import { useMutation } from "@tanstack/react-query";
 
 const MainPage = () => {
-  const currentUserData = useAuthContext().user;
-  const currentUserToken = useAuthContext().token;
+  const {
+    user: currentUserData,
+    token: currentUserToken,
+    refreshUser,
+  } = useAuthContext();
   const [setting, setSetting] = useState(currentUserData);
-
-  const handleSave = async () => {
-    try {
-      const result = await hc.apiv1.user.updateProfile.$post({
-        json: {
-          displayName: setting.profile.displayName,
-          statusMessage: setting.profile.statusMessage,
-          acceptsInvite: setting.profile.acceptsInvite,
-        },
-      });
-      if (result.status === 200) {
-        raiseError("プロフィールを更新しました", "success");
-      } else {
-        raiseError("プロフィールの更新に失敗しました", "error");
-      }
-    } catch {
-      raiseError("プロフィールの更新に失敗しました");
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    try {
-      const result = await hc.apiv1.user.delete.$delete();
-      if (result.status === 200) {
-        try {
-          deleteUser(currentUserToken);
-          raiseError("アカウントを削除しました", "success");
-        } catch {
-          raiseError(
-            "アカウントは削除されましたが、認証情報の削除に失敗しました。管理者にお問い合わせください",
-            "error",
-          );
-        }
-      } else {
-        raiseError("アカウントの削除に失敗しました", "error");
-      }
-    } catch {
-      raiseError("アカウントの削除に失敗しました");
-    }
-  };
-
-  const handleReset = async () => {
-    await resetPassword(currentUserData.email);
-  };
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      return apiJson(
+        hc.apiv1.user.updateProfile.$post({
+          json: {
+            displayName: setting.profile.displayName,
+            statusMessage: setting.profile.statusMessage,
+            acceptsInvite: setting.profile.acceptsInvite,
+          },
+        }),
+        "プロフィールの更新に失敗しました",
+      );
+    },
+    onSuccess: async () => {
+      await refreshUser();
+      raiseError("プロフィールを更新しました", "success");
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      await apiJson(
+        hc.apiv1.user.delete.$delete(),
+        "アカウントの削除に失敗しました",
+      );
+      await deleteUser(currentUserToken);
+    },
+    onSuccess: () => raiseError("アカウントを削除しました", "success"),
+  });
+  const resetMutation = useMutation({
+    mutationFn: () => resetPassword(currentUserData.email),
+  });
 
   return (
     <>
@@ -130,11 +121,14 @@ const MainPage = () => {
                   "本当にアカウントを削除しますか？これが最後の確認です。あなたのプロフィールやスカウト記録などのデータはすべて削除されます。この操作は取り消せません。",
                 )
               ) {
-                handleDeleteAccount();
+                deleteMutation.mutate();
               }
             }}
+            disabled={deleteMutation.isPending}
           >
-            アカウントを削除する
+            {deleteMutation.isPending
+              ? "アカウントを削除中"
+              : "アカウントを削除する"}
           </Button>
         </div>
       </div>
@@ -145,15 +139,25 @@ const MainPage = () => {
           <p>
             パスワードを忘れた場合やセキュリティのためにパスワードを変更したい場合は、以下のボタンをクリックしてパスワードリセットメールを送信してください。メールに記載された手順に従って新しいパスワードを設定できます。
           </p>
-          <Button variant="warning" onClick={handleReset}>
-            パスワードリセットメールを送信
+          <Button
+            variant="warning"
+            disabled={resetMutation.isPending}
+            onClick={() => resetMutation.mutate()}
+          >
+            {resetMutation.isPending
+              ? "送信中"
+              : "パスワードリセットメールを送信"}
           </Button>
         </div>
       </div>
       <div className="card mb-3">
         <div className="card-body d-flex justify-content-end">
-          <Button variant="primary" onClick={handleSave}>
-            設定を保存
+          <Button
+            variant="primary"
+            disabled={saveMutation.isPending}
+            onClick={() => saveMutation.mutate()}
+          >
+            {saveMutation.isPending ? "保存中" : "設定を保存"}
           </Button>
           <Button
             variant="secondary"

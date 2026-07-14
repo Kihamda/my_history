@@ -189,6 +189,7 @@ const scoutRouter = new Hono<AppContext>()
 
       await createShareHandler(
         c.req.valid("param").id,
+        scout.belongGroupId,
         "VIEW",
         c.req.valid("json").targetUserId,
       );

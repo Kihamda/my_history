@@ -2,26 +2,19 @@ import { type FC } from "react";
 import { Alert, Button, Card } from "react-bootstrap";
 import { useAuthContext, sendVerificationEmail } from "@f/authContext";
 import { Navigate } from "react-router";
-
-/**
- * @fileoverview
- * `VerifyEmail`コンポーネントはメールアドレス認証画面を提供します。
- * ユーザーは認証メールを確認し、再送信ボタンを押すことができます。
- *
- * @component
- * @example
- * <VerifyEmail />
- *
- * @returns {FC} メールアドレス認証画面を含むReactコンポーネント
- *
- * @remarks
- * - `useState`フックを使用してフォームの入力値を管理します。
- * - `handleSubmit`関数でフォームの送信を処理します。
- * - `FormGroup`コンポーネントを使用して各入力フィールドをグループ化します。
- */
+import { useMutation } from "@tanstack/react-query";
 
 const VerifyEmail: FC = () => {
   const token = useAuthContext(false)?.token;
+  const resendMutation = useMutation({
+    mutationFn: sendVerificationEmail,
+  });
+  const checkMutation = useMutation({
+    mutationFn: async () => {
+      await token?.reload();
+      window.location.reload();
+    },
+  });
 
   if (!token) {
     return <Navigate to="/auth/login" />;
@@ -39,20 +32,18 @@ const VerifyEmail: FC = () => {
       <div className="d-grid gap-2">
         <Button
           size="lg"
-          onClick={async () => {
-            await sendVerificationEmail();
-          }}
+          disabled={resendMutation.isPending}
+          onClick={() => resendMutation.mutate()}
         >
-          認証メールの再送信
+          {resendMutation.isPending ? "送信中" : "認証メールの再送信"}
         </Button>
         <Button
           variant="secondary"
           size="lg"
-          onClick={async () => {
-            window.location.reload();
-          }}
+          disabled={checkMutation.isPending}
+          onClick={() => checkMutation.mutate()}
         >
-          認証の状態を確認
+          {checkMutation.isPending ? "確認中" : "認証の状態を確認"}
         </Button>
       </div>
       <p className="text-muted small mb-0 mt-3">

@@ -1,42 +1,27 @@
 import { useAuthContext } from "@f/authContext";
-import { raiseError } from "@f/errorHandler";
-import { hc, type ResType } from "@f/lib/api/api";
+import { apiJson, hc, type ResType } from "@f/lib/api/api";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import LoadingSplash from "@f/lib/style/loadingSplash";
-import { useEffect, useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 
 type ScoutSummary = ResType<typeof hc.apiv1.user.sharedScouts.$get>[number];
 
 const VisitorHome = () => {
   const { user } = useAuthContext();
-  const [result, setResult] = useState<ScoutSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const handleFetchScouts = async (offset: number) => {
-    setIsLoading(true);
-    const response = await hc.apiv1.user.sharedScouts.$get({
-      query: { offset: String(offset) },
-    });
-
-    if (response.ok) {
-      setResult(await response.json());
-    } else {
-      raiseError(
+  const sharedScoutsQuery = useQuery({
+    queryKey: ["shared-scouts"],
+    queryFn: (): Promise<ScoutSummary[]> =>
+      apiJson(
+        hc.apiv1.user.sharedScouts.$get({
+        query: { offset: "0" },
+        }),
         "スカウトの取得に失敗しました",
-        "error",
-        (await response.json()).message,
-      );
-    }
-    setIsLoading(false);
-  };
+      ),
+  });
 
-  useEffect(() => {
-    // 初回レンダリング時にデフォルトのスカウトを選択
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    handleFetchScouts(0);
-  }, []);
+  const result = sharedScoutsQuery.data || [];
 
   return (
     <>
@@ -66,7 +51,7 @@ const VisitorHome = () => {
           </Col>
         ))}
       </Row>
-      {isLoading && (
+      {sharedScoutsQuery.isPending && (
         <LoadingSplash
           fullScreen={false}
           message="スカウトの情報を読み込み中..."

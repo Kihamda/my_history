@@ -1,8 +1,14 @@
-import { hc, type ResType } from "@f/lib/api/api";
+import {
+  apiJson,
+  hc,
+  queryClient,
+  type ResType,
+} from "@f/lib/api/api";
 import { useState } from "react";
 import { raiseError } from "@f/errorHandler";
 import { Button, Col, Row } from "react-bootstrap";
 import InputGroupUI from "@f/lib/style/imputGroupUI";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 type GroupDataType = {
   id: string;
@@ -10,73 +16,73 @@ type GroupDataType = {
 };
 
 const GodGroupPage = () => {
-  const [results, setResults] = useState<GroupDataType[]>([]);
   const [editorSlot, setEditorSlot] = useState<GroupDataType | null>(null);
   const [openedTemp, setOpenedTemp] = useState("");
   const [inputId, setInputId] = useState<string>("");
   const [page, setPage] = useState<number>(1);
-
-  // 検索処理
-  const handleSearch = async () => {
-    if (inputId.length === 0) {
-      const data = await hc.apiv1.god.group.getAllGroups.$get({
-        query: {
-          page: page > 0 ? String(page) : "1",
-        },
-      });
-      if (data.status !== 200) {
-        raiseError("グループの検索に失敗しました。");
-        setResults([]);
-        return;
-      }
-      setResults(
-        (await data.json()).map((item) => ({
+  const [submittedQuery, setSubmittedQuery] = useState<{
+    inputId: string;
+    page: number;
+  } | null>(null);
+  const groupsQuery = useQuery({
+    queryKey: ["god-groups", submittedQuery],
+    enabled: submittedQuery !== null,
+    queryFn: async (): Promise<GroupDataType[]> => {
+      const query = submittedQuery!;
+      if (query.inputId.length === 0) {
+        const groups = await apiJson<
+          Array<GroupDataType["data"] & { doc_id: string }>
+        >(
+          hc.apiv1.god.group.getAllGroups.$get({
+            query: { page: String(Math.max(query.page, 1)) },
+          }),
+          "グループの検索に失敗しました。",
+        );
+        return groups.map((item) => ({
           id: item.doc_id,
           data: item,
-        })),
-      );
-      return;
-    }
-
-    const data = await hc.apiv1.god.group[":id"]["getGroupData"]["$get"]({
-      param: {
-        id: inputId.length > 0 ? inputId : undefined,
-      },
-    });
-    if (data.status !== 200) {
-      raiseError("グループの検索に失敗しました。");
-      setResults([]);
-      return;
-    }
-    setResults([{ data: await data.json(), id: inputId }]);
-  };
-
-  // 保存処理
-  const handleSave = async (data: GroupDataType) => {
-    if (!editorSlot) return;
-    const result = await hc.apiv1.god.group[":id"]["setGroupData"]["$post"]({
-      param: {
-        id: data.id,
-      },
-      json: {
-        userSettings: {
-          name: data.data.userSettings.name,
+        }));
+      }
+      return [
+        {
+          data: await apiJson<GroupDataType["data"]>(
+            hc.apiv1.god.group[":id"]["getGroupData"]["$get"]({
+              param: { id: query.inputId },
+            }),
+            "グループの検索に失敗しました。",
+          ),
+          id: query.inputId,
         },
-        adminTags: {
-          description: data.data.adminTags.description,
-        },
-      },
-    });
-    if (result.status == 200) {
-      raiseError("グループデータの保存に成功しました。", "success");
-    } else {
-      raiseError(
+      ];
+    },
+  });
+  const results = groupsQuery.data || [];
+  const saveMutation = useMutation({
+    mutationFn: async (data: GroupDataType) => {
+      return apiJson(
+        hc.apiv1.god.group[":id"]["setGroupData"]["$post"]({
+          param: {
+            id: data.id,
+          },
+          json: {
+            userSettings: {
+              ...data.data.userSettings
+            },
+            adminTags: {
+              ...data.data.adminTags
+            },
+          },
+        }),
         "グループデータの保存に失敗しました。",
-        "error",
-        (await result.json()).message,
       );
-    }
-  };
+    },
+    onSuccess: async () => {
+      raiseError("グループデータの保存に成功しました。", "success");
+      await queryClient.invalidateQueries({
+        queryKey: ["god-groups", submittedQuery],
+      });
+    },
+  });
 
   return (
     <>
@@ -100,7 +106,12 @@ const GodGroupPage = () => {
               </div>
             </div>
             <div className="card-footer text-end">
-              <Button onClick={handleSearch}>検索</Button>
+              <Button
+                disabled={groupsQuery.isFetching}
+                onClick={() => setSubmittedQuery({ inputId, page })}
+              >
+                {groupsQuery.isFetching ? "検索中" : "検索"}
+              </Button>
               <Button
                 variant="secondary"
                 className="ms-2"
@@ -109,8 +120,8 @@ const GodGroupPage = () => {
                     id: "placeholder",
                     data: {
                       userSettings: {
-                        allowInvite: false,
-                        allowShare: false,
+                        allowSendScout: false,
+                        allowShare: true,
                         name: "",
                       },
                       adminTags: {
@@ -179,10 +190,11 @@ const GodGroupPage = () => {
               <div className="card-footer text-end">
                 <Button
                   onClick={() => {
-                    handleSave(editorSlot);
+                    saveMutation.mutate(editorSlot);
                   }}
+                  disabled={saveMutation.isPending}
                 >
-                  保存
+                  {saveMutation.isPending ? "保存中" : "保存"}
                 </Button>
               </div>
             </div>

@@ -1,7 +1,7 @@
 import type { ScoutSearchRequest } from "@f/lib/api/apiTypes";
 import { ScoutUnitNameMap } from "@f/lib/clientCommons/scout";
 import UnitSelector from "@f/lib/components/unitSelector";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, FormControl, InputGroup } from "react-bootstrap";
 
 const SearchboxCard = ({
@@ -12,6 +12,10 @@ const SearchboxCard = ({
   SearchFunc: (query: ScoutSearchRequest) => void;
 }) => {
   const [SearchRequestInput, setSearchRequestInput] = useState(SearchRequest);
+
+  useEffect(() => {
+    setSearchRequestInput(SearchRequest);
+  }, [SearchRequest]);
 
   // 検索ボックスのコンポーネント
   // 検索クエリを更新するための関数を定義
@@ -68,7 +72,13 @@ const SearchboxCard = ({
   };
 
   return (
-    <Card>
+    <Card
+      as="form"
+      onSubmit={(event: React.FormEvent) => {
+        event.preventDefault();
+        handleSearch(SearchRequestInput);
+      }}
+    >
       <div className="card-body">
         <h3 className="card-title">スカウトを検索する</h3>
         <div className="row mt-3 mb-2">
@@ -125,14 +135,22 @@ const SearchboxCard = ({
           </div>
           <div className="col-12 col-md-3 d-flex justify-content-end align-items-center">
             <button
+              type="submit"
               className="btn btn-primary me-2 text-nowrap"
-              onClick={() => handleSearch(SearchRequestInput)}
             >
               検索
             </button>
             <button
+              type="button"
               className="btn btn-secondary text-nowrap"
-              onClick={() => setSearchRequestInput(SearchRequest)}
+              onClick={() =>
+                setSearchRequestInput({
+                  ...SearchRequest,
+                  name: "",
+                  scoutId: "",
+                  currentUnit: [],
+                })
+              }
             >
               リセット
             </button>

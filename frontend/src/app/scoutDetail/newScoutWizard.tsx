@@ -3,9 +3,10 @@ import { Navigate, useNavigate } from "react-router";
 import { raiseError } from "@f/errorHandler";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
 import InputGroupUI from "@f/lib/style/imputGroupUI";
-import { hc } from "@f/lib/api/api";
+import { apiJson, hc } from "@f/lib/api/api";
 import type { ScoutCreate } from "@f/lib/api/apiTypes";
 import { useAuthContext } from "@f/authContext";
+import { useMutation } from "@tanstack/react-query";
 
 const NewScoutWizard = () => {
   const nav = useNavigate();
@@ -14,30 +15,48 @@ const NewScoutWizard = () => {
   const [scoutData, setScoutData] = useState<ScoutCreate>({
     name: "",
     scoutId: "",
-    birthDate: new Date().toISOString().split("T")[0],
+    birthDate: "",
     belongGroupId: currentGroup?.id || "",
   });
 
+  const createMutation = useMutation({
+    mutationFn: (newScoutData: ScoutCreate) =>
+      apiJson<{ id: string }>(
+        hc.apiv1.scout.create.$post({
+          json: {
+            ...newScoutData,
+            name: newScoutData.name.trim(),
+            scoutId: newScoutData.scoutId.trim(),
+          },
+        }),
+        "スカウトデータの保存に失敗しました。",
+      ),
+    onSuccess: ({ id }) => {
+      nav(`/app/scouts/${id}/view`, {
+        replace: true,
+      });
+    },
+  });
+
+  const handleSave = () => {
+    if (!scoutData.name.trim()) {
+      raiseError("名前を入力してください。");
+      return;
+    }
+    if (!/^\d{9,12}$/.test(scoutData.scoutId.trim())) {
+      raiseError("登録番号は9〜12桁の数字で入力してください。");
+      return;
+    }
+    if (!scoutData.birthDate) {
+      raiseError("生年月日を入力してください。");
+      return;
+    }
+    createMutation.mutate(scoutData);
+  };
+
   if (!currentGroup || scoutData.belongGroupId == "") {
-    raiseError("グループに所属していないため、スカウトを作成できません。");
     return <Navigate to="/app/scouts" replace />;
   }
-
-  const handleSave = async (newScoutData: ScoutCreate) => {
-    const result = await hc.apiv1.scout.create.$post({
-      json: newScoutData,
-    });
-    if (result?.ok) {
-      // 保存成功時はスカウトの詳細ページにリダイレクト
-      nav(`/app/scouts/${(await result.json()).id}/view`, {
-        replace: true,
-        state: { scout: newScoutData },
-      });
-    } else {
-      // エラー処理
-      raiseError("スカウトデータの保存に失敗しました。");
-    }
-  };
 
   // 新規スカウト記録の作成ウィザードコンポーネント
   // スカウトの完全なpersonalデータとユニットデータ(入隊日時or経験くらい)までを入力するよう促す
@@ -85,11 +104,10 @@ const NewScoutWizard = () => {
         <div className="card-footer d-flex justify-content-center">
           <button
             className="btn btn-primary"
-            onClick={() => {
-              handleSave(scoutData);
-            }}
+            disabled={createMutation.isPending}
+            onClick={handleSave}
           >
-            記録を作成
+            {createMutation.isPending ? "作成中" : "記録を作成"}
           </button>
         </div>
       </div>

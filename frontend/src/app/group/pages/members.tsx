@@ -1,11 +1,12 @@
 import { useAuthContext } from "@f/authContext";
 import { raiseError } from "@f/errorHandler";
-import { hc, type ResType } from "@f/lib/api/api";
+import { apiJson, hc, queryClient, type ResType } from "@f/lib/api/api";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
 import LoadingSplash from "@f/lib/style/loadingSplash";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "react-bootstrap";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 
 type MembersResponse = ResType<
   (typeof hc.apiv1.group)[":id"]["members"]["$get"]
@@ -22,48 +23,45 @@ const MemberEditor = ({
 }) => {
   const { hidePopup } = usePopup();
   const [editor, setEditor] = useState<MembersResponse[number]>(editorSlot);
-
-  const handleSave = async () => {
-    if (!groupId) return;
-    const result = await hc.apiv1.group[":id"].members[":uid"].role.$put({
-      param: { id: groupId, uid: editor.uid },
-      json: {
-        role: editor.role,
-      },
-    });
-    if (result.status === 200) {
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (!groupId) throw new Error("グループが選択されていません。");
+      return apiJson(
+        hc.apiv1.group[":id"].members[":uid"].role.$put({
+          param: { id: groupId, uid: editor.uid },
+          json: { role: editor.role },
+        }),
+        "メンバー情報の保存に失敗しました。",
+      );
+    },
+    onSuccess: () => {
       raiseError("メンバー情報の保存に成功しました。", "success");
       setEditorSlot(editor);
+      queryClient.invalidateQueries({
+        queryKey: ["group-members", groupId],
+      });
       hidePopup();
-    } else {
-      raiseError(
-        "メンバー情報の保存に失敗しました。",
-        "error",
-        (await result.json()).message,
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: async (docId: string) => {
+      if (!groupId) throw new Error("グループが選択されていません。");
+      return apiJson(
+        hc.apiv1.group[":id"].members[":uid"].$delete({
+          param: { id: groupId, uid: docId },
+        }),
+        "メンバーの削除に失敗しました。",
       );
-    }
-  };
-
-  const handleDelete = async (docId: string) => {
-    if (!groupId) {
-      raiseError("グループが選択されていません。");
-      return;
-    }
-    const result = await hc.apiv1.group[":id"].members[":uid"].$delete({
-      param: { id: groupId, uid: docId },
-    });
-    if (result.status === 200) {
+    },
+    onSuccess: () => {
       raiseError("メンバーの削除に成功しました。", "success");
       setEditorSlot(null);
+      queryClient.invalidateQueries({
+        queryKey: ["group-members", groupId],
+      });
       hidePopup();
-    } else {
-      raiseError(
-        "メンバーの削除に失敗しました。",
-        "error",
-        (await result.json()).message,
-      );
-    }
-  };
+    },
+  });
 
   return (
     <PopupCard
@@ -93,15 +91,21 @@ const MemberEditor = ({
           <Button
             variant="danger"
             className="me-2"
-            onClick={() => handleDelete(editor.uid)}
+            disabled={deleteMutation.isPending}
+            onClick={() => deleteMutation.mutate(editor.uid)}
           >
             メンバー削除
           </Button>
           <Button variant="secondary" onClick={hidePopup}>
             閉じる
           </Button>
-          <Button variant="primary" className="ms-2" onClick={handleSave}>
-            保存
+          <Button
+            variant="primary"
+            className="ms-2"
+            disabled={saveMutation.isPending}
+            onClick={() => saveMutation.mutate()}
+          >
+            {saveMutation.isPending ? "保存中" : "保存"}
           </Button>
         </div>
       }
@@ -110,71 +114,36 @@ const MemberEditor = ({
 };
 
 const MembersPage = () => {
-  const [results, setResults] = useState<MembersResponse>([]);
   const groupId = useAuthContext().currentGroup?.id;
-
   const { showPopup } = usePopup();
-
-  const handleGetMembers = async (groupId?: string, offset?: number) => {
-    if (!groupId) {
-      raiseError("グループが選択されていません。");
-      return;
-    }
-
-    try {
-      const result = await hc.apiv1.group[":id"].members.$get({
-        param: { id: groupId },
-        query: {
-          offset: String(offset ?? 0),
-        },
-      });
-
-      if (result.status === 200) {
-        const data = (await result.json()).members;
-        if (offset === undefined) {
-          setResults(data);
-        } else {
-          if (data.length === 0) {
-            raiseError("これ以上メンバーはいません。", "info");
-            return;
-          }
-          setResults((prev) => [...prev, ...data]);
-        }
-      } else {
-        raiseError(
-          "メンバー一覧の取得に失敗しました。",
-          "error",
-          (await result.json()).message,
-        );
-      }
-    } catch (error) {
-      raiseError(
-        "メンバー一覧の取得中にエラーが発生しました。",
-        "error",
-        String(error),
+  const membersQuery = useInfiniteQuery({
+    queryKey: ["group-members", groupId],
+    enabled: !!groupId,
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }): Promise<MembersResponse> => {
+      const data = await apiJson<{ members: MembersResponse }>(
+        hc.apiv1.group[":id"].members.$get({
+          param: { id: groupId! },
+          query: { offset: String(pageParam) },
+        }),
+        "メンバー一覧の取得に失敗しました。",
       );
-    }
-  };
-
-  useEffect(() => {
-    (async () => {
-      await handleGetMembers(groupId);
-    })();
-  }, [groupId]);
+      return data.members;
+    },
+    getNextPageParam: (lastPage, pages) =>
+      lastPage.length === 0 ? undefined : pages.flat().length,
+  });
+  const results = membersQuery.data?.pages.flat() || [];
 
   const handleDetail = (member: MembersResponse[number]) => {
     // 詳細表示の処理をここに実装
     showPopup({
       content: (
         <MemberEditor
-          setEditorSlot={(data) => {
-            if (data === null) {
-              setResults((prev) => prev.filter((m) => m.uid !== member.uid));
-            } else {
-              setResults((prev) =>
-                prev.map((m) => (m.uid === data.uid ? data : m)),
-              );
-            }
+          setEditorSlot={() => {
+            queryClient.invalidateQueries({
+              queryKey: ["group-members", groupId],
+            });
           }}
           editorSlot={member}
           groupId={groupId}
@@ -188,8 +157,10 @@ const MembersPage = () => {
       <div className="card">
         <div className="card-body">
           <h3>メンバ一覧</h3>
-          {!results.length ? (
+          {membersQuery.isPending ? (
             <LoadingSplash fullScreen={false} />
+          ) : results.length === 0 ? (
+            <p>メンバーがいません。</p>
           ) : (
             <table className="table">
               <thead>
@@ -229,8 +200,18 @@ const MembersPage = () => {
           )}
         </div>
         <div className="card-footer text-end">
-          <Button onClick={() => handleGetMembers(groupId, results.length)}>
-            メンバーをもっと読み込む
+          <Button
+            disabled={
+              membersQuery.isFetchingNextPage ||
+              !membersQuery.hasNextPage
+            }
+            onClick={() => membersQuery.fetchNextPage()}
+          >
+            {membersQuery.isFetchingNextPage
+              ? "読み込み中"
+              : membersQuery.hasNextPage
+                ? "メンバーをもっと読み込む"
+                : "これ以上ありません"}
           </Button>
         </div>
       </div>
