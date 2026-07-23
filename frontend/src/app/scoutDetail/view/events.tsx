@@ -65,7 +65,7 @@ const Events = ({ events }: { events: Event[] }) => {
           eventList.map((event, index) => (
             <ShowData
               key={"event-" + index}
-              label={event.startDate}
+              label={event.name}
               value={`${event.startDate}～${event.endDate}`}
             />
           ))
