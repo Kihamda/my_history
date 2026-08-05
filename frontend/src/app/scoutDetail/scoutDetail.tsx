@@ -12,7 +12,7 @@ const ScoutDetail = (): React.ReactElement => {
   const id = useLocation().pathname.split("/")[3]; // /app/scouts/:id newになることはない。
   const mode = useLocation().pathname.split("/")[4];
 
-  const { currentGroup, user } = useAuthContext();
+  const { user } = useAuthContext();
   const scoutQuery = useQuery({
     queryKey: ["scout", id],
     queryFn: (): Promise<ScoutData> =>
@@ -34,9 +34,13 @@ const ScoutDetail = (): React.ReactElement => {
 
   if (scoutQuery.data) {
     const scoutData = scoutQuery.data;
-    const isEditable = currentGroup
-      ? currentGroup.role == "ADMIN" || currentGroup.role == "EDIT"
-      : user.auth.shares.find((s) => s.id == id)?.role == "EDIT";
+    const groupRole = user.auth.memberships.find(
+      (membership) => membership.id === scoutData.belongGroupId,
+    )?.role;
+    const isEditable =
+      groupRole === "ADMIN" ||
+      groupRole === "EDIT" ||
+      user.auth.shares.find((share) => share.id === id)?.role === "EDIT";
 
     if (mode === "view") {
       // ビューモードの処理

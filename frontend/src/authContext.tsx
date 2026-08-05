@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       if (!fbUser) {
         setToken(null);
         setHcClient();
-        queryClient.removeQueries({ queryKey: ["current-user"] });
+        queryClient.clear();
         setIsAuthLoaded(true);
         return;
       }
