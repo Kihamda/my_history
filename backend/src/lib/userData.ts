@@ -42,6 +42,7 @@ export const loadUserData = async (c: Context, next: () => Promise<void>) => {
   if (!userData) {
     return c.json("USER_DATA_NOT_FOUND", 404);
   }
+
   const groups = userData.auth.memberships.map((m) => {
     const { id, role } = IdWithGroupRoleParser(m);
     return { id, role };
