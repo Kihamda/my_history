@@ -17,12 +17,11 @@ export const createShareHandler = async (
     throw new HTTPException(400, { message: "すでに共有されています" });
   }
 
-
   const group = await db().groups.get(groupId);
   if (!group?.userSettings.allowShare) {
     throw new HTTPException(403, {
-      message:"このグループでは新規共有を作成できません"
-    })
+      message: "このグループでは新規共有を作成できません",
+    });
   }
 
   const newUser = {
