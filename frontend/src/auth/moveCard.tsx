@@ -1,7 +1,4 @@
 import { Link, useLocation } from "react-router";
-import BlurCard from "../lib/style/cardDesign";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * `MoveCard`コンポーネントは現在のURLを取得し、他の場所に誘導するリンクを表示します。
@@ -16,38 +13,28 @@ const MoveCard = () => {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  let links = [
-    { path: "/auth/login", text: "ログインはこちら" },
-    { path: "/auth/register", text: "登録はこちら" },
-    { path: "/auth/reset", text: "パスワードリセットはこちら" },
+  const links = [
+    { path: "/auth/login", text: "ログイン" },
+    { path: "/auth/register", text: "新規登録" },
+    { path: "/auth/reset", text: "再設定" },
   ];
 
-  // 現在のパスを除外
-  links = links.filter((link) => link.path !== currentPath);
+  if (!links.some((link) => link.path === currentPath)) {
+    return null;
+  }
 
   return (
-    <div className="position-absolute" style={{ bottom: "1%", right: "1%" }}>
+    <nav className="nav nav-pills nav-fill gap-2 mb-2" aria-label="認証画面">
       {links.map((link) => (
         <Link
           key={link.path}
           to={link.path}
-          style={{
-            textDecoration: "none",
-            display: "block",
-            marginBottom: "0.5rem",
-          }}
+          className={`nav-link ${link.path === currentPath ? "active" : ""}`}
         >
-          <BlurCard
-            style={{
-              padding: "0.5rem 1rem",
-            }}
-          >
-            <FontAwesomeIcon icon={faArrowRight} className="me-2" />
-            {link.text}
-          </BlurCard>
+          {link.text}
         </Link>
       ))}
-    </div>
+    </nav>
   );
 };
 

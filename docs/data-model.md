@@ -121,9 +121,9 @@
 ```ts
 {
   userSettings: {
-    allowInvite: boolean;          // 招待許可 (デフォルト: true)
-    allowShare: boolean;           // 共有許可 (デフォルト: true)
-    name: string;                  // グループ名
+    allowSendScout: boolean;       // 他グループからのデータ移管受入許可 (デフォルト: false)
+    allowShare: boolean;           // 新規共有作成許可 (デフォルト: true)
+    name: string;                  // グループ名 (最大100文字)
   };
   adminTags: {
     description: string;           // 管理者用メモ

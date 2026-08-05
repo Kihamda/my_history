@@ -6,7 +6,7 @@ import type { Context } from "../apiRotuer";
 export const authorize = async (c: Context, next: () => Promise<void>) => {
   const header = c.req.header("Authorization");
   if (header == undefined) {
-    return c.json({ message: "UNAUTHORIZED" }, 401);
+    return c.json({ message: "UNAUTHORIZED_NOHEADER" }, 401);
   }
   const token = await verifyJWT(header, c.env);
   if (token == null) {

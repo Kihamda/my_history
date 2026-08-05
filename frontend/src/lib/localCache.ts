@@ -1,21 +1,17 @@
-import type { ScoutSearchRequest, ScoutSearchResponse } from "./api/apiTypes";
+import type { ScoutSearchRequest } from "./api/apiTypes";
 
-export const getScoutsCache = (): ScoutSearchResponse[] | null => {
-  const data = sessionStorage.getItem("scoutsCache");
+export const getSearchQueryCache = (
+  groupId: string,
+): ScoutSearchRequest | null => {
+  const data = localStorage.getItem(`searchQueryCache:${groupId}`);
   return data ? JSON.parse(data) : null;
 };
 
-export const setScoutsCache = (data: ScoutSearchResponse[]): void => {
-  sessionStorage.setItem("scoutsCache", JSON.stringify(data));
-};
-
-export const getSearchQueryCache = (): ScoutSearchRequest | null => {
-  const data = localStorage.getItem("searchQueryCache");
-  return data ? JSON.parse(data) : null;
-};
-
-export const setSearchQueryCache = (data: ScoutSearchRequest): void => {
-  localStorage.setItem("searchQueryCache", JSON.stringify(data));
+export const setSearchQueryCache = (
+  groupId: string,
+  data: ScoutSearchRequest,
+): void => {
+  localStorage.setItem(`searchQueryCache:${groupId}`, JSON.stringify(data));
 };
 
 interface BrowserSettings {

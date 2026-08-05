@@ -1,52 +1,40 @@
 import { raiseError } from "@f/errorHandler";
-import { hc } from "@f/lib/api/api";
+import { apiJson, hc } from "@f/lib/api/api";
 import type { ScoutData } from "@f/lib/api/apiTypes";
 import { PopupCard } from "@f/lib/popupContext/popupCard";
 import InputGroupUI from "@f/lib/style/imputGroupUI";
 import { useState } from "react";
 import { Button } from "react-bootstrap";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 const ScoutTransfarPopup = ({ data, id }: { data: ScoutData; id: string }) => {
   const [sendID, setSendID] = useState("");
-  const [targetGroup, setTargetGroup] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-
-  const handleSearchGroup = async () => {
-    // ここで団体IDの存在確認を行う
-    try {
-      const response = await hc.apiv1.group[":id"].profile.$get({
-        param: { id: sendID },
-      });
-      if (response.status === 200) {
-        // 団体IDが存在する場合の処理
-        // 例えば、移管処理を実行するAPIを呼び出すなど
-        setTargetGroup({
-          id: sendID,
-          name: (await response.json()).name,
-        });
-      } else {
-        raiseError("指定された団体IDは存在しません。");
-      }
-    } catch {
-      raiseError("団体IDの確認に失敗しました。");
-    }
-  };
-
-  const handleTransfer = async (scoutID: string, targetGroupID: string) => {
-    try {
-      const response = await hc.apiv1.scout[":id"].transfer.$post({
-        param: { id: scoutID },
-        json: { targetGroupId: targetGroupID },
-      });
-      if (response.status === 200) {
-        raiseError("データの移管が完了しました。", "success");
-      }
-    } catch {
-      raiseError("データの移管に失敗しました。");
-    }
-  };
+  const [submittedId, setSubmittedId] = useState("");
+  const groupQuery = useQuery({
+    queryKey: ["group-profile", submittedId],
+    enabled: submittedId.length > 0,
+    queryFn: async (): Promise<{ id: string; name: string }> => {
+      const group = await apiJson<{ name: string }>(
+        hc.apiv1.group[":id"].profile.$get({
+          param: { id: submittedId },
+        }),
+        "指定された団体IDは存在しません。",
+      );
+      return { id: submittedId, name: group.name };
+    },
+  });
+  const transferMutation = useMutation({
+    mutationFn: (targetGroupID: string) =>
+      apiJson(
+        hc.apiv1.scout[":id"].transfer.$post({
+          param: { id },
+          json: { targetGroupId: targetGroupID },
+        }),
+        "データの移管に失敗しました。",
+      ),
+    onSuccess: () => raiseError("データの移管が完了しました。", "success"),
+  });
+  const targetGroup = groupQuery.data;
 
   return (
     <PopupCard title="スカウトデータの移管">
@@ -65,8 +53,12 @@ const ScoutTransfarPopup = ({ data, id }: { data: ScoutData; id: string }) => {
           }}
         />
         <div className="text-end">
-          <Button variant="primary" onClick={handleSearchGroup}>
-            移管先を検索
+          <Button
+            variant="primary"
+            disabled={!sendID || groupQuery.isFetching}
+            onClick={() => setSubmittedId(sendID)}
+          >
+            {groupQuery.isFetching ? "検索中" : "移管先を検索"}
           </Button>
         </div>
         {targetGroup && (
@@ -77,6 +69,7 @@ const ScoutTransfarPopup = ({ data, id }: { data: ScoutData; id: string }) => {
             <div className="text-end">
               <Button
                 variant="danger"
+                disabled={transferMutation.isPending}
                 onClick={() => {
                   if (
                     confirm(
@@ -84,11 +77,11 @@ const ScoutTransfarPopup = ({ data, id }: { data: ScoutData; id: string }) => {
                     )
                   ) {
                     // ここで移管処理を実行するAPIを呼び出すなど
-                    handleTransfer(id, targetGroup.id);
+                    transferMutation.mutate(targetGroup.id);
                   }
                 }}
               >
-                データを移管する
+                {transferMutation.isPending ? "移管中" : "データを移管する"}
               </Button>
             </div>
           </div>

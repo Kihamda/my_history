@@ -1,30 +1,28 @@
 import Profile from "./edit/profile";
 import Units from "./edit/units";
 import FullWidthCardHeader from "@f/lib/style/fullWidthCardHeader";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { Button } from "react-bootstrap";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GinoshoList from "./edit/ginosho";
 import Events from "./edit/events";
 import type { ScoutData, ScoutUpdate } from "@f/lib/api/apiTypes";
-import { hc } from "@f/lib/api/api";
+import { apiJson, hc, queryClient } from "@f/lib/api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareNodes } from "@fortawesome/free-solid-svg-icons";
 import { usePopup } from "@f/lib/popupContext/fullscreanPopup";
 import ShareBoxPopupCard from "@f/lib/popupContext/shares";
 import { raiseError } from "@f/errorHandler";
 import ScoutTransfarPopup from "./edit/scoutTransfar";
+import { useMutation } from "@tanstack/react-query";
 
 const ScoutDetailEditor = ({
   scoutData,
-  setScoutData,
   scoutID,
 }: {
   scoutData: ScoutData;
-  setScoutData: (param: ScoutData) => void;
   scoutID: string;
 }): React.ReactElement => {
-  // TMP置き場
   const [scoutDataPersonal, setScoutDataPersonal] = useState<
     ScoutData["personal"]
   >(scoutData.personal);
@@ -41,56 +39,92 @@ const ScoutDetailEditor = ({
     scoutData.event,
   );
 
-  // 保存時遷移用
   const nav = useNavigate();
-
-  // ポップアップ
   const { showPopup } = usePopup();
 
-  // 保存時にプロファイルの変更をローカルで反映させるための関数
-  const handleProfileChange = async () => {
-    const updatedData: ScoutUpdate = {
-      json: {
-        data: {
-          personal: scoutDataPersonal,
-          unit: scoutDataUnit,
-          ginosho: scoutDataGinosho,
-          event: scoutDataEvents,
-          last_Edited: new Date().toISOString().split("T")[0],
-        },
-      },
-      param: { id: scoutID },
+  const updatedScoutData: ScoutData = {
+    belongGroupId: scoutData.belongGroupId,
+    personal: scoutDataPersonal,
+    unit: scoutDataUnit,
+    ginosho: scoutDataGinosho,
+    event: scoutDataEvents,
+    last_Edited: new Date().toISOString().split("T")[0],
+  };
+  const isDirty =
+    JSON.stringify([
+      scoutDataPersonal,
+      scoutDataUnit,
+      scoutDataGinosho,
+      scoutDataEvents,
+    ]) !==
+    JSON.stringify([
+      scoutData.personal,
+      scoutData.unit,
+      scoutData.ginosho,
+      scoutData.event,
+    ]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const preventLinkNavigation = (event: MouseEvent) => {
+      const anchor = (event.target as Element | null)?.closest("a[href]");
+      if (!anchor || anchor.getAttribute("target") === "_blank") return;
+      if (!confirm("未保存の変更があります。変更を破棄して移動しますか？")) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
     };
 
-    const result = await hc.apiv1.scout[":id"].$put(updatedData);
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", preventLinkNavigation, true);
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+      document.removeEventListener("click", preventLinkNavigation, true);
+    };
+  }, [isDirty]);
 
-    if (result.status === 200) {
-      setScoutData({
-        belongGroupId: scoutData.belongGroupId,
-        personal: scoutDataPersonal,
-        unit: scoutDataUnit,
-        ginosho: scoutDataGinosho,
-        event: scoutDataEvents,
-        last_Edited: new Date().toISOString().split("T")[0],
-      });
+  const saveMutation = useMutation({
+    mutationFn: () =>
+      apiJson(
+        hc.apiv1.scout[":id"].$put({
+          json: {
+            data: updatedScoutData,
+          },
+          param: { id: scoutID },
+        } satisfies ScoutUpdate),
+        "スカウトデータの保存に失敗しました。",
+      ),
+    onSuccess: () => {
+      queryClient.setQueryData(["scout", scoutID], updatedScoutData);
       raiseError("スカウトデータの保存に成功しました。", "success");
       nav(`/app/scouts/${scoutID}/view`);
-    }
-  };
+    },
+  });
 
-  const handleDelete = async () => {
-    const result = await hc.apiv1.scout[":id"].$delete({
-      param: { id: scoutID },
-    });
-    if (result.status === 200) {
-      raiseError("スカウトデータの削除に成功しました。", "success");
-      nav(`/app/scouts`);
-    } else {
-      raiseError(
+  const deleteMutation = useMutation({
+    mutationFn: () =>
+      apiJson(
+        hc.apiv1.scout[":id"].$delete({ param: { id: scoutID } }),
         "スカウトデータの削除に失敗しました。",
-        "error",
-        (await result.json()).message,
-      );
+      ),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ["scout", scoutID] });
+      raiseError("スカウトデータの削除に成功しました。", "success");
+      nav("/app/scouts");
+    },
+  });
+
+  const handleCancel = () => {
+    if (
+      !isDirty ||
+      confirm("未保存の変更があります。変更を破棄して戻りますか？")
+    ) {
+      nav(`/app/scouts/${scoutID}/view`);
     }
   };
 
@@ -112,18 +146,18 @@ const ScoutDetailEditor = ({
             >
               <FontAwesomeIcon icon={faShareNodes} />
             </Button>
-            <Link
-              to={`/app/scouts/${scoutID}/view`}
+            <Button
+              variant="outline-secondary"
               className="btn btn-outline-secondary me-2"
+              onClick={handleCancel}
             >
               キャンセルして戻る
-            </Link>
+            </Button>
             <Button
-              onClick={() => {
-                handleProfileChange();
-              }}
+              disabled={saveMutation.isPending}
+              onClick={() => saveMutation.mutate()}
             >
-              保存して戻る
+              {saveMutation.isPending ? "保存中" : "保存して戻る"}
             </Button>
           </>
         }
@@ -181,8 +215,9 @@ const ScoutDetailEditor = ({
                         "さんのデータは完全に抹消されます。この操作は取り消せません。",
                     )
                   )
-                    handleDelete();
+                    deleteMutation.mutate();
                 }}
+                disabled={deleteMutation.isPending}
               >
                 スカウトデータを削除する
               </Button>
@@ -211,6 +246,21 @@ const ScoutDetailEditor = ({
             </>
           }
         />
+      </div>
+      <div className="sticky-bottom bg-body border rounded p-2 mt-3 text-end">
+        <Button
+          variant="outline-secondary"
+          className="me-2"
+          onClick={handleCancel}
+        >
+          キャンセル
+        </Button>
+        <Button
+          disabled={!isDirty || saveMutation.isPending}
+          onClick={() => saveMutation.mutate()}
+        >
+          {saveMutation.isPending ? "保存中" : "変更を保存"}
+        </Button>
       </div>
     </>
   );

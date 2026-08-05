@@ -1,0 +1,5 @@
+# Project-local Codex settings for My History of Scouting.
+# Durable codebase rules live in ../AGENTS.md, which Codex loads automatically.
+
+# Keep enough room for the repository guide plus any future nested guidance.
+project_doc_max_bytes = 65536

@@ -45,13 +45,27 @@ export const transferScout = async (
   // 過去のデータを参照
   const existingScout = await db().scouts.get(id);
   if (!existingScout) {
-    throw new HTTPException(404, { message: "Scout not found" });
+    throw new HTTPException(404, { message: "スカウトが見つかりません" });
   }
 
   // 認可処理
   if (!c.var.user.fn.isInRoleOnGroup(existingScout.belongGroupId, ["ADMIN"])) {
     throw new HTTPException(403, {
-      message: "You do not have permission to update this scout",
+      message: "あなたはこのスカウトを転送する権限を持っていません",
+    });
+  }
+
+  const targetGroup = await db().groups.get(targetGroupId);
+
+  if (!targetGroup) {
+    throw new HTTPException(404, {
+      message: "対象のグループが見つかりません",
+    });
+  }
+
+  if (!targetGroup.userSettings.allowSendScout) {
+    throw new HTTPException(403, {
+      message: "対象のグループはスカウトの送信を許可していません",
     });
   }
 
@@ -64,6 +78,6 @@ export const transferScout = async (
 
   // 成功レスポンスを返却
   return {
-    message: "Scout transferred successfully",
+    message: "スカウトが正常に転送されました",
   };
 };

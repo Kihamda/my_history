@@ -62,9 +62,7 @@ export const updateScout = async (
       "ADMIN",
       "EDIT",
     ]) ||
-    shares.find(
-      (s) => s.id === existingScout.belongGroupId && s.role == "EDIT",
-    );
+    shares.find((s) => s.id === id && s.role == "EDIT");
 
   if (!hasAccess) {
     throw new HTTPException(403, {

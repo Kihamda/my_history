@@ -4,14 +4,13 @@ import { logout } from "@f/authContext";
 import type { FC } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { useMutation } from "@tanstack/react-query";
 
 const UserDropdown: FC<{ name: string; showTop?: boolean }> = ({
   name,
   showTop = false,
 }) => {
-  const handleLogout = () => {
-    logout();
-  };
+  const logoutMutation = useMutation({ mutationFn: logout });
 
   return (
     <div className="dropdown">
@@ -36,9 +35,14 @@ const UserDropdown: FC<{ name: string; showTop?: boolean }> = ({
           <hr className="dropdown-divider" />
         </li>
         <li>
-          <a className="dropdown-item" onClick={handleLogout}>
+          <button
+            type="button"
+            className="dropdown-item"
+            disabled={logoutMutation.isPending}
+            onClick={() => logoutMutation.mutate()}
+          >
             ログアウト
-          </a>
+          </button>
         </li>
       </ul>
     </div>

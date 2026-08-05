@@ -12,7 +12,13 @@ const LeaderHome = () => {
       style={{ height: "calc(100dvh - 6rem)" }}
     >
       <div className="d-flex flex-column align-items-center justify-content-center w-100 flex-grow-1">
-        <div className="row w-100 justify-content-center">
+        <form
+          className="row w-100 justify-content-center"
+          onSubmit={(event) => {
+            event.preventDefault();
+            nav("/app/scouts", { state: { searchName: searchBox } });
+          }}
+        >
           <img
             src="/logos/fulllogo.svg"
             alt="My History"
@@ -27,21 +33,20 @@ const LeaderHome = () => {
           />
           <div className="d-flex justify-content-center">
             <button
+              type="submit"
               className="btn btn-primary mt-3"
-              onClick={() =>
-                nav("/app/scouts", { state: { searchName: searchBox } })
-              }
             >
               検索
             </button>
             <button
+              type="button"
               className="btn btn-outline-secondary mt-3 ms-2"
               onClick={() => nav("/app/scouts")}
             >
               より詳細な検索をする
             </button>
           </div>
-        </div>
+        </form>
       </div>
       <div className="d-flex flex-column align-items-center justify-self-bottom ">
         <button

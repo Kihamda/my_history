@@ -277,9 +277,9 @@ export type UserRecordSchemaType = z.infer<typeof UserRecordSchema>;
 // ========================================
 
 const GroupUserSettingsSchema = z.object({
-  allowInvite: z.boolean().default(true),
+  allowSendScout: z.boolean().default(false),
   allowShare: z.boolean().default(true),
-  name: z.string(),
+  name: z.string().max(100).default("団名"),
 });
 
 const GroupAdminTagsSchema = z.object({

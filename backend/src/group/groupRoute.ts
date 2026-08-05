@@ -31,6 +31,7 @@ import {
   updateGroupProfileData,
 } from "./handler";
 import { genIdSchema } from "@b/lib/randomId";
+import { GroupRecordSchema } from "@b/lib/firestore/schemas";
 
 const CreateGroupInviteSchema = z.object({
   targetUid: genIdSchema,
@@ -60,11 +61,11 @@ const groupRouter = new Hono<AppContext>()
   .post(
     "/:id/profile",
     zValidator("param", z.object({ id: z.string() })),
-    zValidator("json", z.object({ name: z.string().max(100) })),
+    zValidator("json",GroupRecordSchema.shape.userSettings.required()),
     async (c) => {
       const id = c.req.param("id");
-      const { name } = c.req.valid("json");
-      const group = await updateGroupProfileData(c, id, { name });
+      const data = c.req.valid("json");
+      const group = await updateGroupProfileData(c, id, data);
       return c.json(group);
     },
   )
