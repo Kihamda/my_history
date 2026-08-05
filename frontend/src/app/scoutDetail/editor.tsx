@@ -51,14 +51,25 @@ const ScoutDetailEditor = ({
     last_Edited: new Date().toISOString().split("T")[0],
   };
   const isDirty =
-    JSON.stringify([scoutDataPersonal, scoutDataUnit, scoutDataGinosho, scoutDataEvents]) !==
-    JSON.stringify([scoutData.personal, scoutData.unit, scoutData.ginosho, scoutData.event]);
+    JSON.stringify([
+      scoutDataPersonal,
+      scoutDataUnit,
+      scoutDataGinosho,
+      scoutDataEvents,
+    ]) !==
+    JSON.stringify([
+      scoutData.personal,
+      scoutData.unit,
+      scoutData.ginosho,
+      scoutData.event,
+    ]);
 
   useEffect(() => {
     if (!isDirty) return;
 
     const beforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
+      event.returnValue = "";
     };
     const preventLinkNavigation = (event: MouseEvent) => {
       const anchor = (event.target as Element | null)?.closest("a[href]");
@@ -81,10 +92,10 @@ const ScoutDetailEditor = ({
     mutationFn: () =>
       apiJson(
         hc.apiv1.scout[":id"].$put({
-        json: {
-          data: updatedScoutData,
-        },
-        param: { id: scoutID },
+          json: {
+            data: updatedScoutData,
+          },
+          param: { id: scoutID },
         } satisfies ScoutUpdate),
         "スカウトデータの保存に失敗しました。",
       ),

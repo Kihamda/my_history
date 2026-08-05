@@ -55,8 +55,15 @@ export const transferScout = async (
     });
   }
 
-  const targetGroup = await db().groups.get(targetGroupId)
-  if (!targetGroup?.userSettings.allowSendScout) {
+  const targetGroup = await db().groups.get(targetGroupId);
+
+  if (!targetGroup) {
+    throw new HTTPException(404, {
+      message: "対象のグループが見つかりません",
+    });
+  }
+
+  if (!targetGroup.userSettings.allowSendScout) {
     throw new HTTPException(403, {
       message: "対象のグループはスカウトの送信を許可していません",
     });
