@@ -1,79 +1,42 @@
-# My History Backend
+# My History of Scouting Backend
 
-ボーイスカウトの活動履歴を管理するバックエンド API
+Cloudflare Workers、Hono、Cloud Firestore で構成する My History of Scouting の API と静的配信です。
 
-## 概要
+## 担当範囲
 
-Cloudflare Workers + Hono + Firebase Firestore + TypeScript で構築された、スカウト活動履歴管理システムのバックエンド
+- `/apiv1/*` の認証付き JSON API
+- Firebase ID トークンの検証
+- Service Account による Firestore REST API への接続
+- `backend/buildTmp/` に結合されたランディングページ、ヘルプ、SPA の配信
 
-**主な機能:**
+## 開発コマンド
 
-- スカウト活動履歴の管理(進級・技能章・行事章)
-- グループ(団)管理とメンバー権限管理
-- ユーザープロファイル管理
-
-## クイックスタート
-
-```bash
-# 依存関係のインストール
+```powershell
 npm install
-
-# ローカル開発サーバー起動
+npm run typecheck
+npm run dry-run
 npm run dev
-
-# デプロイ
-npm run deploy
 ```
 
-## ドキュメント
+`npm run dev` は `wrangler dev --env=dev`、`npm run deploy` は本番 Worker へのデプロイです。
+静的成果物を含む全体ビルドは、リポジトリルートの `build.bat` を使います。
 
-詳細な仕様書とガイドは [`docs/`](./docs/) ディレクトリを参照
+## 構成
 
-### 基本ドキュメント
+- `src/index.ts`：エラー処理、CORS、静的配信
+- `src/apiRotuer.ts`：共通ミドルウェアと API ルート
+- `src/user/`：User、招待、所属、共有一覧
+- `src/scout/`：Scout の検索、CRUD、移管、共有
+- `src/group/`：グループ設定、メンバー、招待
+- `src/god/`：管理者向け直接操作
+- `src/lib/firestore/`：Firestore クライアント、操作層、Zod スキーマ
 
-- [プロジェクト概要](./docs/00-overview.md) - 技術スタックと主要機能
-- [アーキテクチャ設計](./docs/01-architecture.md) - 3 層アーキテクチャの詳細
-- [セットアップとデプロイ](./docs/02-setup.md) - 環境構築手順
-- [開発ガイドライン](./docs/03-development.md) - コーディング規約
+## 文書
 
-### API 仕様
+- [バックエンド設計](../docs/backend.md)
+- [API 仕様](../docs/api.md)
+- [データモデル](../docs/data-model.md)
+- [セキュリティと権限](../docs/security.md)
+- [セットアップ](../docs/setup.md)
 
-- [Scout API](./docs/api/scout.md) - スカウト管理 API
-- [User API](./docs/api/user.md) - ユーザー管理 API
-- [Group API](./docs/api/group.md) - グループ管理 API
-
-### モジュール仕様
-
-- [Scout モジュール](./docs/modules/scout.md) - 内部実装詳細
-- [User モジュール](./docs/modules/user.md) - 内部実装詳細
-- [Group モジュール](./docs/modules/group.md) - 内部実装詳細
-- [Lib モジュール](./docs/modules/lib.md) - ライブラリ層詳細
-
-## 技術スタック
-
-| 項目               | 技術                            |
-| ------------------ | ------------------------------- |
-| **ランタイム**     | Cloudflare Workers              |
-| **フレームワーク** | Hono v4                         |
-| **データベース**   | Cloud Firestore (REST API 経由) |
-| **認証**           | Firebase Authentication         |
-| **バリデーション** | Zod                             |
-| **言語**           | TypeScript                      |
-
-## アーキテクチャ
-
-3 層アーキテクチャを採用し関心の分離を実現
-
-```
-API処理層 (Route Handlers)
-    ↓
-ビジネスロジック層 (Services + Permissions)
-    ↓
-Firestore操作層 (Data Access)
-```
-
-詳細は [アーキテクチャ設計](./docs/01-architecture.md) を参照
-
-## ライセンス
-
-(ライセンス情報を記載)
+仕様と文書が異なる場合は、ルート、スキーマ、`wrangler.jsonc` を一次資料として文書を更新します。

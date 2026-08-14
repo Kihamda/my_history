@@ -1,159 +1,63 @@
-# 開発ガイドライン
+# 開発ガイド
 
-## 基本方針
+最終更新：2026-08-14
 
-- 型安全性を最優先
-- ルートでバリデーションを完結
-- 直接 Firestore を触る処理は `db()` に統一
-- エラーは `HTTPException` に寄せる
+実装を変更するときは、近くのコードと設定を一次資料にし、既存の公開パス、保存形式、UI 基盤を保ちます。
 
-## バックエンド実装パターン
+## 作業単位
 
-### 1. Zod スキーマを先に定義
+三つのプロジェクトは独立しているため、変更した範囲に応じて検証します。
 
-```typescript
-// Firestore スキーマ
-import { ScoutRecordSchema } from "@b/lib/firestore/schemas"
+| 変更範囲 | 最低限の検証 |
+| --- | --- |
+| `frontend/` | `npm run build` |
+| `backend/` | `npm run typecheck` と `npm run dry-run` |
+| `staticSiteMarger/` | `npm run test` |
+| 配信成果物または複数領域 | ルートの `build.bat` |
 
-// API 固有スキーマ
-const CreateRequestSchema = z.object({
-  name: z.string().min(1).max(100),
-  scoutId: z.string().min(1).max(100),
-  belongGroupId: genIdSchema,
-})
-```
+フロントエンドの `build` は TypeScript project build、ESLint、Vite build を順に実行します。
+検証基盤の改善予定は [roadmap.md](roadmap.md) で管理します。
 
-- Firestore スキーマは [backend/src/lib/firestore/schemas.ts](../backend/src/lib/firestore/schemas.ts)
-- API スキーマはハンドラーかルートで定義
+## バックエンドの実装
 
-### 2. ルートでバリデーション
+API 入力はルートで `zValidator` を使って検証し、検証済みの値を `c.req.valid()` から取得します。
+永続データの構造は `backend/src/lib/firestore/schemas.ts`、HTTP 固有の構造は各ルートまたはハンドラーに定義します。
 
-```typescript
-.post(
-  "/create",
-  zValidator("json", CreateRequestSchema),
-  zValidator("param", z.object({ id: genIdSchema })),
-  async (c) => {
-    const body = c.req.valid("json")
-    const { id } = c.req.valid("param")
-    // ...
-  }
-)
-```
+認可はデータ取得後の所属先を基準に確認します。
+要求パラメーターのグループ ID だけで判断せず、Scout の `belongGroupId` や対象 User の保存値と照合します。
 
-- `zValidator` を使用
-- 受け取る値は `c.req.valid()` から取り出す (型安全)
+想定内の失敗は `HTTPException` で表し、クライアントへ返すメッセージを指定します。
+Firestore は `db().users`、`db().groups`、`db().scouts` を通して操作します。
 
-### 3. ハンドラーで権限と処理
+`set` は全体置換です。
+既存値を展開して一部だけ変える処理では、同時更新による上書きが許容できるかを確認し、許容できない配列更新にはトランザクションまたは原子的な更新方法を選びます。
 
-```typescript
-// 権限チェック
-if (!c.var.user.fn.isInRoleOnGroup(groupId, ["ADMIN", "EDIT"])) {
-  throw new HTTPException(403, { message: "Forbidden" })
-}
+非同期の繰り返しでは、応答前に必要な処理をすべて待機し、失敗を呼び出し元へ返します。
 
-// Firestore 操作
-const scout = await db().scouts.get(id)
-await db().scouts.set(id, data)
-```
+## フロントエンドの実装
 
-- `c.var.user` でロールと招待を参照
-- `db()` で Firestore を操作
+サーバーから取得する状態と変更処理には React Query を使います。
+クエリキーには、結果を変える ID、検索条件、ユーザー境界を含めます。
+ログアウトでは全キャッシュを消去し、更新後は影響するキーだけを無効化または削除します。
 
-### 4. 例外は `HTTPException` に寄せる
+HTTP 呼び出しは `frontend/src/lib/api/api.ts` の Hono クライアントと `apiJson` を使います。
+API エラーは QueryClient の共通ハンドラーが利用者へ通知します。
 
-```typescript
-import { HTTPException } from "hono/http-exception"
+通常画面は Bootstrap と react-bootstrap の部品を使います。
+ボタンやフォームを独自の色、角丸、余白で別のデザイン体系に置き換えません。
 
-throw new HTTPException(404, { message: "Scout not found" })
-throw new HTTPException(403, { message: "Forbidden" })
-throw new HTTPException(409, { message: "User already a member" })
-```
+## パスと命名
 
-## フロントエンド実装パターン
+バックエンドは `@b/*`、フロントエンドは `@f/*` と `@b/*` を使います。
+長い相対 import を追加しません。
 
-### 認証
+`staticSiteMarger`、`apiRotuer.ts`、`fullscreanPopup`、`imputGroupUI`、`scoutTransfar` は既存参照を持つ名称です。
+改名する場合は、参照、公開パス、文書を同じ変更で更新します。
 
-```typescript
-// 安全にコンテキストを取得 (未認証時はリダイレクト)
-const { user, token } = useAuthContext(true)
+## 文書の更新
 
-// null チェックあり
-const context = useAuthContext(false)
-if (!context.user) { /* 未ログイン処理 */ }
+API、データ、認可の変更は、コードだけで完結しません。
+変更した契約に対応する [api.md](api.md)、[data-model.md](data-model.md)、[security.md](security.md) を同じ作業で更新します。
 
-// 現在のグループ (必須)
-const group = useCurrentGroup()
-```
-
-- `AuthProvider` を通して `token` と `user` を利用
-- `useAuthContext(true)` で安全に参照 (null なら /auth にリダイレクト)
-
-### API
-
-```typescript
-import { hc } from "@f/lib/api/api"
-
-// 型安全な API 呼び出し
-const res = await hc.apiv1.scout[":id"].$get({
-  param: { id: scoutId }
-})
-if (!res.ok) throw new Error(await res.text())
-const data = await res.json()
-```
-
-- `hc` を経由して型付きのリクエストを発行
-- ログイン状態に応じて `setHcClient` を更新
-
-### エラー通知
-
-```typescript
-import { raiseError } from "@f/errorHandler"
-
-try {
-  await someApiCall()
-} catch (e) {
-  raiseError("操作に失敗しました", "error", e.stack)
-}
-```
-
-## コーディング規約
-
-- ファイル名は `camelCase` を基準
-- ルーティングの追加は `Routes` に集約
-- 役割の混在を避ける (ハンドラーとルート定義を分離)
-- パスエイリアスを活用 (`@b/*`, `@f`)
-
-## パスエイリアス
-
-### バックエンド
-
-```json
-// backend/tsconfig.json
-{
-  "paths": {
-    "@b/*": ["./src/*"]
-  }
-}
-```
-
-### フロントエンド
-
-```typescript
-// frontend/vite.config.ts
-resolve: {
-  alias: {
-    "@f": path.resolve(__dirname, "src"),
-    "@b": path.resolve(__dirname, "../backend/src"),
-  }
-}
-```
-
-## ドキュメント更新
-
-変更が入ったら [docs/README.md](README.md) の更新ルールに従う
-
-1. [data-model.md](data-model.md)
-2. [api.md](api.md)
-3. [frontend.md](frontend.md) または [backend.md](backend.md)
-4. [changelog.md](changelog.md)
+依存関係を更新した場合は、各 lockfile の解決値を [tech-stack.md](tech-stack.md) へ反映します。
+利用者の操作や表示が変わる場合は、`staticSiteMarger/help/pages/` のヘルプも更新します。

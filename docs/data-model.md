@@ -1,160 +1,146 @@
 # データモデル
 
-実装は [backend/src/lib/firestore/schemas.ts](../backend/src/lib/firestore/schemas.ts) を参照
+最終更新：2026-08-14
+
+永続データは Cloud Firestore の `scouts`、`users`、`groups` に保存します。
+型と実行時検証の一次資料は `backend/src/lib/firestore/schemas.ts` です。
 
 ## Scouts コレクション
 
 ```ts
 {
-  belongGroupId: string;           // 所属グループID (変更不可)
+  belongGroupId: string;
   personal: {
-    name: string;                  // 1-100文字
-    scoutId: string;               // 1-100文字
-    birthDate: string;             // YYYY-MM-DD または空文字
-    joinedDate: string;            // YYYY-MM-DD または空文字
+    name: string;
+    scoutId: string;
+    birthDate: YMD;
+    joinedDate: YMD;
     currentUnitId: "bvs" | "cs" | "bs" | "vs" | "rs" | "ob";
     memo: string;
-    declare: {                     // ちかい
-      date: string | null;
-      place: string;
-      done: boolean;
-    };
-    religion: {                    // 信仰奨励
-      date: string | null;
-      type: string;
-      done: boolean;
-    };
-    faith: {                       // 信仰章
-      date: string | null;
-      done: boolean;
-    };
+    declare: { date: YMD; place: string; done: boolean };
+    religion: { date: YMD; type: string; done: boolean };
+    faith: { date: YMD; done: boolean };
   };
-  unit: {                          // 部門別データ
-    bvs: UnitData;                 // ビーバー
-    cs: UnitData;                  // カブ
-    bs: UnitData;                  // ボーイ
-    vs: UnitData;                  // ベンチャー
-    rs: UnitData;                  // ローバー
+  unit: {
+    bvs: UnitData;
+    cs: UnitData;
+    bs: UnitData;
+    vs: UnitData;
+    rs: UnitData;
   };
-  ginosho: Ginosho[];              // 技能章
-  event: ScoutEvent[];             // イベント
-  last_Edited: string;             // YYYY-MM-DD
+  ginosho: Ginosho[];
+  event: ScoutEvent[];
+  last_Edited: YMD;
 }
 ```
 
-### UnitData
+`belongGroupId` は通常の更新 API では変更できず、移管 API だけが変更します。
+`last_Edited` は既存の公開フィールド名を維持しており、更新と移管の際にサーバーが当日の日付を設定します。
 
 ```ts
-{
-  experienced: boolean;            // 経験あり
-  joinedDate: string;              // YYYY-MM-DD または空文字
-  work: {                          // 役務
+type YMD = string; // 空文字または実在する YYYY-MM-DD
+
+type Detail = {
+  achievedDate: YMD | null;
+  done: boolean;
+};
+
+type UnitData = {
+  experienced: boolean;
+  joinedDate: YMD;
+  work: {
     name: string;
-    begin: string;                 // YYYY-MM-DD
-    end: string | null;
+    begin: YMD;
+    end: YMD | null;
   }[];
-  grade: {                         // 進歩
+  grade: {
     uniqueId: string;
-    completedDate: string;         // YYYY-MM-DD
+    completedDate: YMD;
     completed: boolean;
-    details: {
-      achievedDate: string | null;
-      done: boolean;
-    }[];
+    details: Detail[];
   }[];
-}
-```
+};
 
-### Ginosho (技能章)
-
-```ts
-{
+type Ginosho = {
   uniqueId: string;
-  certBy: string;                  // 認定者
-  achievedDate: string | null;     // YYYY-MM-DD
-  details: {
-    achievedDate: string | null;
-    done: boolean;
-  }[];
-}
-```
+  certBy: string;
+  achievedDate: YMD | null;
+  details: Detail[];
+};
 
-### ScoutEvent
-
-```ts
-{
+type ScoutEvent = {
   name: string;
   type: "camp" | "volunteer" | "training" | "overseas" | "award" | "other";
-  startDate: string;               // YYYY-MM-DD
-  endDate: string;                 // YYYY-MM-DD
+  startDate: YMD;
+  endDate: YMD;
   description: string;
-}
+};
 ```
+
+永続スキーマの `YMD` は空文字または実在する `YYYY-MM-DD` を許可します。
+配列の `null` は読み取り時に空配列へ変換します。
 
 ## Users コレクション
 
 ```ts
 {
-  email: string;                   // RFC 5322
+  email: string;
   profile: {
     displayName: string;
     statusMessage: string;
+    acceptsInvite: boolean;
   };
   auth: {
-    memberships: string[];         // "ROLE;groupId" 形式 (最大10件)
-    invites: string[];             // "ROLE;groupId" 形式 (最大10件)
-    shares: string[];              // "scoutId" 形式 (最大10件)
-    acceptsInvite: boolean;        // 招待受付フラグ
-    isGod: boolean;                // 管理者フラグ
+    memberships: GroupRoleAndId[];
+    invites: GroupRoleAndId[];
+    shares: ShareRoleAndId[];
+    isGod: boolean;
   };
 }
 ```
 
-### メンバーシップ形式
+Firestore では、所属、招待、共有を文字列として保存します。
 
-- `"ADMIN;group123"` - ADMIN ロールで group123 に所属
-- `"EDIT;group456"` - EDIT ロールで group456 に所属
-- `"VIEW;group789"` - VIEW ロールで group789 に所属
+```ts
+type GroupRoleAndId = `${"ADMIN" | "EDIT" | "VIEW"};${groupId}`;
+type ShareRoleAndId = `${"EDIT" | "VIEW"};${scoutId}`;
+```
+
+たとえば、`ADMIN;group123` は group123 の ADMIN、`VIEW;scout456` は scout456 の閲覧共有です。
+各配列の上限は 10 件です。
 
 ## Groups コレクション
 
 ```ts
 {
   userSettings: {
-    allowSendScout: boolean;       // 他グループからのデータ移管受入許可 (デフォルト: false)
-    allowShare: boolean;           // 新規共有作成許可 (デフォルト: true)
-    name: string;                  // グループ名 (最大100文字)
+    allowSendScout: boolean;
+    allowShare: boolean;
+    name: string;
   };
   adminTags: {
-    description: string;           // 管理者用メモ
+    description: string;
   };
 }
 ```
 
-## データ関係図
+`allowSendScout` は他グループからの移管受け入れ、`allowShare` は新しいスカウト共有の作成を制御します。
+既定値は順に `false`、`true`、`"団名"` です。
+`adminTags` は God API が扱う管理データで、通常の Group API は返しません。
 
-```
-Scout ドキュメント
-  │
-  └─ belongGroupId → Group ドキュメント
-                       │
-                       └─ User.auth.memberships で参照
+## 参照関係
 
-User ドキュメント
-  ├─ auth.memberships → Group への所属
-  ├─ auth.invites → 保留中の招待
-  └─ auth.shares → 共有されたスカウトID
-
-Group ドキュメント
-  └─ メンバー情報は User.auth.memberships に分散保持
+```text
+Scout.belongGroupId -------------> Group
+User.auth.memberships -----------> Group
+User.auth.invites ---------------> Group
+User.auth.shares ----------------> Scout
 ```
 
-## 日付形式
+Group から User へのメンバー配列はありません。
+メンバーと招待の一覧は、User コレクションの配列を検索して組み立てます。
 
-すべての日付フィールドは `YYYY-MM-DD` 形式 (ISO 8601) を使用。
-空の日付は空文字 `""` または `null` (フィールドによる)。
+## ID の扱い
 
-## ID 形式
-
-- ドキュメントID: `[A-Za-z0-9_-]+` (1-100文字)
-- 自動生成ID: 30文字の英数字
+自動生成する Scout ID は既定で 30 文字の英数字です。
+API パスの ID には、1 文字以上 100 文字以下の英数字、ハイフン、アンダースコアという共通制約を使います。

@@ -1,122 +1,78 @@
 # フロントエンド
 
-## エントリーポイント
+最終更新：2026-08-14
 
-- [frontend/src/main.tsx](../frontend/src/main.tsx) - React アプリ起動
-- [frontend/src/App.tsx](../frontend/src/App.tsx) - ルートコンポーネント
+フロントエンドは React、React Router、Bootstrap、TanStack React Query で構成する SPA です。
+`frontend/src/main.tsx` が共通 Provider を組み立て、`frontend/src/App.tsx` が認証、通常画面、God モードを振り分けます。
 
-`main.tsx` が `BrowserRouter` でラップし、`App.tsx` がルーティングを担う
+## Provider の構成
 
-## ルーティング構成
+```text
+StrictMode
+  -> QueryClientProvider
+  -> BrowserRouter
+  -> ErrorProvider
+  -> AuthProvider
+  -> PopupProvider
+  -> Routes
+```
 
-| パス      | 役割           | コンポーネント       | 備考                           |
-| --------- | -------------- | -------------------- | ------------------------------ |
-| `/`       | リロード誘導   | `Reload`             | レース条件回避                 |
-| `/auth/*` | 認証領域       | `Auth`               | login, register, verify, setup |
-| `/app/*`  | メインアプリ   | `AppPage`            | スカウト管理、設定             |
-| `/god/*`  | 管理者領域     | `GodMode`            | isGod ユーザーのみ             |
-| `*`       | 404            | `NotFound`           |                                |
+`ErrorProvider` は通知を表示し、`AuthProvider` は Firebase ユーザー、API トークン、User API の結果、選択中グループを管理します。
+`PopupProvider` は共有ユーザー検索などの全画面ポップアップを管理します。
 
-詳細は [frontend/src/App.tsx](../frontend/src/App.tsx) を参照
+## ルーティング
 
-## 認証フロー
+| パス | 役割 |
+| --- | --- |
+| `/auth/login` | ログイン |
+| `/auth/register` | アカウント作成 |
+| `/auth/reset` | パスワード再設定 |
+| `/auth/verify` | メール確認 |
+| `/auth/setup` | 初期プロフィール作成 |
+| `/app/home` | 所属中ユーザーまたは共有のみのユーザーのホーム |
+| `/app/scouts` | 所属グループ内のスカウト検索 |
+| `/app/scouts/new` | スカウト作成 |
+| `/app/scouts/:id` | スカウト表示と編集 |
+| `/app/group/*` | グループ設定、メンバー、招待 |
+| `/app/setting/*` | プロフィール、所属、受信中の招待 |
+| `/god/home` | God モードの環境表示 |
+| `/god/scouts` | 全スカウトの検索と直接編集 |
+| `/god/scouts-batch` | スカウトの一括登録 |
+| `/god/group` | 全グループの検索と直接編集 |
+| `/god/user` | 全ユーザーの検索と直接編集 |
 
-1. `AuthProvider` が Firebase Auth を `onAuthStateChanged` で監視
-2. ログイン検出で ID トークンを取得 (`getIdToken`)
-3. `setHcClient(token)` で API クライアントを設定
-4. `GET /apiv1/user/me` でユーザープロファイルを取得
-5. メール未認証なら `/auth/verify` に誘導
-6. プロファイル未作成なら `/auth/setup` に誘導
-7. トークンは 10 分ごとに自動更新
+Workers は `/app/*`、`/auth/*`、`/god/*` に同じ `spa.html` を返し、その後の画面遷移を React Router が処理します。
 
-実装は [frontend/src/authContext.tsx](../frontend/src/authContext.tsx)
+## 認証状態
 
-### Firebase Auth メソッド
+`AuthProvider` は `onAuthStateChanged` で Firebase Authentication を監視します。
+ログイン時は強制更新した ID トークンで Hono クライアントを作り、`["current-user", uid]` のクエリで `GET /apiv1/user/me` を呼びます。
+ログアウト時は API クライアントからトークンを外し、React Query の全キャッシュを消去します。
 
-- `createUserWithEmailAndPassword` - 新規登録
-- `signInWithEmailAndPassword` - ログイン
-- `signOut` - ログアウト
-- `sendEmailVerification` - メール認証送信
-- `sendPasswordResetEmail` - パスワードリセット
-- `getIdToken` - トークン取得
+トークンは 10 分ごとに取り直します。
+メール未確認の利用者は認証画面、User ドキュメントが未作成の利用者は初期設定画面へ誘導されます。
 
-## API クライアント
+## API とサーバー状態
 
-- バックエンドの Hono 型クライアント (`hc`) を利用
-- ベース URL は `VITE_API_URL` (デフォルト: `/`)
-- `@b/client` からインポートして型安全に呼び出し
+`frontend/src/lib/api/api.ts` は、`backend/src/client.ts` から生成した Hono の型付きクライアントを公開します。
+API の基準 URL は `VITE_API_URL` で、未指定時は `/` です。
 
-実装は [frontend/src/lib/api/api.ts](../frontend/src/lib/api/api.ts)
+React Query はユーザー、共有スカウト、検索結果、スカウト詳細、グループ設定、メンバー、招待、God モードの検索結果を保持します。
+既定値は再試行なし、`staleTime` 30 秒、ウィンドウフォーカス時の再取得なしです。
 
-## 画面構成
+## ブラウザ保存
 
-### Auth 領域 (`/auth/*`)
+`frontend/src/lib/localCache.ts` は `localStorage` に次の値を保存します。
 
-| ルート    | コンポーネント | 機能               |
-| --------- | -------------- | ------------------ |
-| `/login`  | `Signin`       | ログイン           |
-| `/register` | `Register`   | 新規登録           |
-| `/verify` | `VerifyEmail`  | メール認証待ち     |
-| `/setup`  | `Setup`        | 初期プロファイル、招待検索への表示設定 |
-| `/reset`  | `Reset`        | パスワードリセット |
+- `currentGroupSlotId`：現在選択しているグループ
+- `darkMode`：画面設定として残っている値
+- `searchQueryCache:<groupId>`：グループ別の検索条件
 
-実装は [frontend/src/auth/](../frontend/src/auth/)
+現在の実装は `sessionStorage` を使っていません。
+サーバーから取得したデータは React Query に置き、ログアウト時に破棄します。
 
-### App 領域 (`/app/*`)
+## UI の方針
 
-| ルート          | コンポーネント    | 機能               |
-| --------------- | ----------------- | ------------------ |
-| `/home`         | `LeaderHome`/`VisitorHome` | ホーム (ロール別) |
-| `/scouts`       | `ScoutsPage`      | スカウト検索       |
-| `/scouts/:id`   | `ScoutDetail`     | スカウト詳細/編集  |
-| `/scouts/new`   | `NewScoutWizard`  | 新規スカウト作成   |
-| `/group/*`      | `GroupPage`       | グループ管理       |
-| `/setting/*`    | `SettingPage`     | ユーザー設定       |
-
-実装は [frontend/src/app/](../frontend/src/app/)
-
-### God 領域 (`/god/*`)
-
-| ルート          | コンポーネント | 機能               |
-| --------------- | -------------- | ------------------ |
-| `/home`         | `GodHome`      | 管理者ダッシュボード |
-| `/scouts`       | `ScoutPage`    | スカウト検索/編集  |
-| `/scouts-batch` | `CreateScoutBatPage` | 一括作成     |
-| `/group`        | `GroupPage`    | グループ管理       |
-| `/user`         | `UserPage`     | ユーザー検索       |
-
-実装は [frontend/src/god/](../frontend/src/god/)
-
-## 状態管理
-
-### Context API
-
-- `AuthContext` - 認証状態、ユーザー情報、現在のグループ
-- `PopupContext` - フルスクリーンポップアップ制御
-- `ErrorProvider` - エラー通知
-
-### ブラウザストレージ
-
-- `localStorage`
-  - `darkMode` - ダークモード設定
-  - `currentGroupSlotId` - 選択中のグループ
-  - 検索クエリキャッシュ
-- `sessionStorage`
-  - 検索結果キャッシュ
-
-実装は [frontend/src/lib/localCache.ts](../frontend/src/lib/localCache.ts)
-
-## コード分割
-
-- すべてのルートコンポーネントは `React.lazy()` で遅延読み込み
-- `Suspense` でローディング表示
-- バンドル分割: react, react-router, firebase, vendor
-
-## エラーハンドリング
-
-- `raiseError(message, level, trace)` で通知を発火
-- `ErrorProvider` が `CustomEvent` をリッスンして Toast 表示
-- 開発モードではスタックトレースを表示
-- 5 秒後に自動消去
-
-実装は [frontend/src/errorHandler.tsx](../frontend/src/errorHandler.tsx)
+通常画面は Bootstrap と react-bootstrap を基盤にします。
+ボタン、フォーム、カードは Bootstrap の標準部品を使い、独自 CSS は配置や既存画面固有の表現に限定します。
+ルート単位の主要コンポーネントは `React.lazy` と `Suspense` で遅延読み込みします。

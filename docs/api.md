@@ -1,194 +1,150 @@
 # API 仕様
 
-## 認証
+最終更新：2026-08-14
 
-- すべての `/apiv1/*` は Firebase ID トークンが必須
-- `Authorization: Bearer <token>` を付与
-- メール認証済みのトークンのみ許可 (`email_verified: true`)
-- 未認証: 401、メール未認証: 403 (`EMAIL_VERIFY_MISSING`)
+API の基準パスは `/apiv1` です。
+現在のルート定義には、API ルート自身を含めて 39 エンドポイントがあります。
+
+## 共通認証
+
+すべての API は `Authorization: Bearer <Firebase ID token>` を要求します。
+トークンがない場合または検証できない場合は `401`、メール未確認の場合は `403` を返します。
+
+`POST /user/createUser` は Firebase Authentication の利用者に対応する User ドキュメントを作るため、既存の User ドキュメントを要求しません。
+それ以外の User、Scout、Group、God API は User ドキュメントを読み込んでから処理します。
+
+通常のエラーは次の形式です。
+
+```json
+{ "message": "エラー内容" }
+```
+
+## API ルート
+
+| メソッド | パス | 説明 | 追加条件 |
+| --- | --- | --- | --- |
+| GET | `/apiv1/` | API の案内 | なし |
 
 ## User API
 
-ベースパス: `/apiv1/user`
+| メソッド | パス | 説明 | 追加条件 |
+| --- | --- | --- | --- |
+| POST | `/apiv1/user/createUser` | User ドキュメント作成 | User ドキュメント未作成 |
+| GET | `/apiv1/user/me` | 自分のプロフィール、所属、招待、共有を取得 | なし |
+| POST | `/apiv1/user/lookupByEmail` | 招待を受け付ける利用者をメールで検索 | なし |
+| GET | `/apiv1/user/sharedScouts` | 共有されたスカウトを取得 | `offset`、20 件単位 |
+| POST | `/apiv1/user/updateProfile` | 自分のプロフィールを更新 | なし |
+| DELETE | `/apiv1/user/delete` | 自分の User ドキュメントを削除 | 各所属に別の ADMIN が必要 |
+| POST | `/apiv1/user/auth/acceptInvite/:groupCode` | 招待を受諾 | 対応する招待が必要 |
+| POST | `/apiv1/user/auth/denyInvite/:groupCode` | 招待を拒否 | 対応する招待が必要 |
+| POST | `/apiv1/user/auth/leaveGroup/:groupId` | グループから脱退 | 最後の ADMIN は不可 |
+| POST | `/apiv1/user/auth/leaveSharedBy/:sharedById` | スカウト共有を解除 | 対応する共有が必要 |
 
-| メソッド | パス                          | 説明                       | 認証後 loadUserData |
-| -------- | ----------------------------- | -------------------------- | ------------------- |
-| POST     | `/createUser`                 | Firestore のユーザー作成   | 不要                |
-| GET      | `/me`                         | 自分のプロファイル取得     | 必要                |
-| POST     | `/lookupByEmail`              | メールでユーザー検索       | 不要                |
-| GET      | `/sharedScouts`               | 共有されたスカウト一覧     | 必要                |
-| POST     | `/updateProfile`              | プロファイル更新           | 必要                |
-| DELETE   | `/delete`                     | ユーザー削除               | 必要                |
-| POST     | `/auth/acceptInvite/:groupCode` | 招待受諾                 | 必要                |
-| POST     | `/auth/denyInvite/:groupCode`   | 招待拒否                 | 必要                |
-| POST     | `/auth/leaveGroup/:groupId`     | グループ脱退             | 必要                |
-| POST     | `/auth/leaveSharedBy/:sharedById` | 共有解除               | 必要                |
-
-### プロファイル (GET /me レスポンス)
+作成とプロフィール更新の JSON は同じ構造です。
 
 ```ts
 {
-  uid: string;
-  email: string;
-  profile: {
-    displayName: string;
-    statusMessage: string;
-  };
-  auth: {
-    memberships: {
-      id: string;
-      name: string;
-      role: "ADMIN" | "EDIT" | "VIEW";
-    }[];
-    invites: {
-      id: string;
-      name: string;
-      role: "ADMIN" | "EDIT" | "VIEW";
-    }[];
-    shares: {
-      id: string;
-      name: string;
-      role: "EDIT" | "VIEW";
-    }[];
-    acceptsInvite: boolean;
-    isGod: boolean;
-  };
+  displayName: string;
+  statusMessage: string;
+  acceptsInvite: boolean;
 }
 ```
+
+`lookupByEmail` は `{ email: string }` を受け取ります。
 
 ## Scout API
 
-ベースパス: `/apiv1/scout`
+| メソッド | パス | 説明 | 追加条件 |
+| --- | --- | --- | --- |
+| POST | `/apiv1/scout/search` | 所属グループ内を検索 | そのグループのメンバー |
+| POST | `/apiv1/scout/create` | スカウト作成 | 対象グループの ADMIN または EDIT |
+| GET | `/apiv1/scout/:id` | スカウト取得 | 所属グループのメンバーまたは共有先 |
+| PUT | `/apiv1/scout/:id` | スカウト全体を更新 | 所属グループの ADMIN、EDIT または共有 EDIT |
+| DELETE | `/apiv1/scout/:id` | スカウト削除 | 所属グループの ADMIN |
+| POST | `/apiv1/scout/:id/transfer` | 所属グループを変更 | 移管元の ADMIN、移管先が受入許可 |
+| POST | `/apiv1/scout/:id/share` | VIEW 共有を追加 | 所属グループの ADMIN または EDIT、グループが共有許可 |
+| DELETE | `/apiv1/scout/:id/share` | 共有を削除 | 所属グループの ADMIN または EDIT |
+| GET | `/apiv1/scout/:id/share` | 共有先一覧を取得 | 所属グループの ADMIN または EDIT |
 
-| メソッド | パス            | 説明           | 権限                                 |
-| -------- | --------------- | -------------- | ------------------------------------ |
-| POST     | `/search`       | 検索           | グループメンバー                     |
-| POST     | `/create`       | 作成           | グループ ADMIN または EDIT           |
-| GET      | `/:id`          | 取得           | グループメンバー または share        |
-| PUT      | `/:id`          | 更新           | グループ EDIT 以上 または share EDIT |
-| DELETE   | `/:id`          | 削除           | グループ ADMIN                       |
-| POST     | `/:id/transfer` | グループ移動   | グループ ADMIN                       |
-| POST     | `/:id/share`    | 共有追加       | グループ EDIT 以上                   |
-| DELETE   | `/:id/share`    | 共有削除       | グループ EDIT 以上                   |
-| GET      | `/:id/share`    | 共有者一覧     | グループ EDIT 以上                   |
-
-### 検索リクエスト (POST /search)
+検索リクエストは次の構造です。
 
 ```ts
 {
-  name?: string;           // 部分一致
-  scoutId?: string;        // 完全一致
+  name?: string;
+  scoutId?: string;
   currentUnit?: ("bvs" | "cs" | "bs" | "vs" | "rs" | "ob")[];
-  page: number;            // 1-indexed
-  belongGroupId: string;   // 必須
-}
-```
-
-### 作成リクエスト (POST /create)
-
-```ts
-{
-  name: string;
-  scoutId: string;
-  birthDate: string;        // YYYY-MM-DD または空文字
+  page?: number;
   belongGroupId: string;
 }
 ```
 
-### 更新リクエスト (PUT /:id)
+1 ページは 20 件です。
+名前は前方一致、登録番号は完全一致で検索します。
+
+作成リクエストは次の構造です。
 
 ```ts
 {
-  data: ScoutRecord;        // belongGroupId を除く
+  name: string;
+  scoutId: string;       // 9 文字以上 12 文字以下の数字
+  birthDate: string;     // YYYY-MM-DD、空文字は不可
+  belongGroupId: string;
 }
 ```
 
+同じグループ内に同じ登録番号がある場合は `409` を返します。
+更新は `{ data: ScoutRecordWithoutBelongGroupId }` を受け取り、部分更新ではなくレコード全体を置き換えます。
+共有の追加と削除は `{ targetUserId: string }`、移管は `{ targetGroupId: string }` を受け取ります。
+
 ## Group API
 
-ベースパス: `/apiv1/group`
+| メソッド | パス | 説明 | 追加条件 |
+| --- | --- | --- | --- |
+| GET | `/apiv1/group/:id/profile` | グループの利用者向け設定を取得 | 認証済み User |
+| POST | `/apiv1/group/:id/profile` | グループの利用者向け設定を更新 | 対象グループの ADMIN |
+| POST | `/apiv1/group/:id/invites/create` | 利用者を招待 | 対象グループの ADMIN |
+| GET | `/apiv1/group/:id/invites` | 招待中の利用者を取得 | 対象グループの ADMIN、20 件単位 |
+| GET | `/apiv1/group/:id/members` | メンバーを取得 | 対象グループの ADMIN、20 件単位 |
+| DELETE | `/apiv1/group/:id/members/:uid` | メンバーを削除 | 対象グループの ADMIN、自分自身は不可 |
+| PUT | `/apiv1/group/:id/members/:uid/role` | メンバーのロールを変更 | 対象グループの ADMIN、自分自身は不可 |
 
-| メソッド | パス                     | 説明           | 権限  |
-| -------- | ------------------------ | -------------- | ----- |
-| GET      | `/:id/profile`           | グループ情報   | メンバー |
-| POST     | `/:id/invites/create`    | 招待追加       | ADMIN |
-| GET      | `/:id/invites`           | 招待一覧       | ADMIN |
-| GET      | `/:id/members`           | メンバー一覧   | ADMIN |
-| DELETE   | `/:id/members/:uid`      | メンバー削除   | ADMIN |
-| PUT      | `/:id/members/:uid/role` | ロール更新     | ADMIN |
-
-### メンバー取得レスポンス
+グループ設定の更新は次の全項目を受け取ります。
 
 ```ts
 {
-  uid: string;
-  role: "ADMIN" | "EDIT" | "VIEW";
-  email: string;
-  displayName: string;
-  statusMessage: string;
-}[]
+  allowSendScout: boolean;
+  allowShare: boolean;
+  name: string;
+}
 ```
 
-### 招待作成リクエスト
+招待作成はメールアドレスではなく、先に `lookupByEmail` で得た利用者 ID を使います。
 
 ```ts
 {
-  email: string;           // RFC 5322
+  targetUid: string;
   role: "ADMIN" | "EDIT" | "VIEW";
 }
 ```
 
 ## God API
 
-ベースパス: `/apiv1/god`
+God API は `auth.isGod` が `true` の利用者だけが使えます。
+通常のグループ認可を通さず、三コレクションを直接検索、置換、削除できます。
 
-`auth.isGod === true` のユーザーのみ利用可能
+| メソッド | パス | 説明 |
+| --- | --- | --- |
+| GET | `/apiv1/god/` | 開発環境かどうかを取得 |
+| GET | `/apiv1/god/scout/getScoutData` | スカウト検索 |
+| POST | `/apiv1/god/scout/batchSetScoutData` | スカウト一括登録または置換 |
+| POST | `/apiv1/god/scout/:id/setScoutData` | スカウト置換 |
+| DELETE | `/apiv1/god/scout/:id/deleteScoutData` | スカウト削除 |
+| GET | `/apiv1/god/group/getAllGroups` | 全グループを 50 件単位で取得 |
+| GET | `/apiv1/god/group/:id/getGroupData` | グループ取得 |
+| POST | `/apiv1/god/group/:id/setGroupData` | グループ置換 |
+| DELETE | `/apiv1/god/group/:id/deleteGroupData` | グループ削除 |
+| GET | `/apiv1/god/user/getUserData` | User 検索 |
+| POST | `/apiv1/god/user/:id/setUserData` | User 置換 |
+| DELETE | `/apiv1/god/user/:id/deleteUserData` | User 削除 |
 
-### Index
-
-| メソッド | パス | 説明         |
-| -------- | ---- | ------------ |
-| GET      | `/`  | 環境情報取得 |
-
-### Scout
-
-| メソッド | パス                      | 説明               |
-| -------- | ------------------------- | ------------------ |
-| GET      | `/scout/getScoutData`     | スカウト検索       |
-| POST     | `/scout/:id/setScoutData` | スカウト作成/更新  |
-| DELETE   | `/scout/:id/deleteScoutData` | スカウト削除    |
-
-### Group
-
-| メソッド | パス                          | 説明           |
-| -------- | ----------------------------- | -------------- |
-| GET      | `/group/getAllGroups`         | 全グループ一覧 |
-| GET      | `/group/:id/getGroupData`     | グループ取得   |
-| POST     | `/group/:id/setGroupData`     | グループ更新   |
-| DELETE   | `/group/:id/deleteGroupData`  | グループ削除   |
-
-### User
-
-| メソッド | パス                        | 説明         |
-| -------- | --------------------------- | ------------ |
-| GET      | `/user/getUserData`         | ユーザー検索 |
-| POST     | `/user/:id/setUserData`     | ユーザー更新 |
-| DELETE   | `/user/:id/deleteUserData`  | ユーザー削除 |
-
-## エラーレスポンス
-
-共通形式:
-
-```ts
-{
-  message: string;
-}
-```
-
-主なステータスコード:
-
-- 400: 不正なリクエスト
-- 401: 認証なし (`UNAUTHORIZED`)
-- 403: 認可なし / メール未認証 (`EMAIL_VERIFY_MISSING`)
-- 404: リソースが見つからない
-- 409: 重複 / 上限到達 (招待上限 10 件など)
-- 500: サーバーエラー
+一括登録は `{ id?: string, data: ScoutRecord }[]` を受け取ります。

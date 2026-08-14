@@ -1,229 +1,134 @@
-# セットアップ
+# セットアップとデプロイ
 
-## 前提
+最終更新：2026-08-14
 
-- Node.js 18 以上
-- Cloudflare アカウント
-- Firebase プロジェクト (production / development で分離)
+ローカルと CI の基準は Node.js 22 です。
+Cloudflare Workers と Firebase の本番用、開発用プロジェクトを別に用意します。
 
-## バックエンド
+## 依存関係のインストール
 
-### Wrangler 設定
+三つのプロジェクトは依存関係を共有しません。
 
-設定は [backend/wrangler.jsonc](../backend/wrangler.jsonc) を参照
-
-```jsonc
-{
-  "name": "my-history-backend",
-  "main": "src/index.ts",
-  "vars": {
-    "PROJECT_ID": "my-history-v2",
-    "PUBLIC_JWK_CACHE_KEY": "my-history-public-jwk",
-  },
-  "assets": {
-    "directory": "./buildTmp",
-    "binding": "ASSETS",
-  },
-  "kv_namespaces": [
-    {
-      "binding": "MY_HISTORY_KV_CACHE",
-      "id": "<production_kv_id>",
-    },
-  ],
-  "env": {
-    "dev": {
-      "name": "my-history-dev",
-      "vars": {
-        "PROJECT_ID": "my-history-dev",
-        "PUBLIC_JWK_CACHE_KEY": "my-history-dev-jwk",
-        "IS_DEV": "TRUE",
-      },
-      "kv_namespaces": [
-        {
-          "binding": "MY_HISTORY_KV_CACHE",
-          "id": "<development_kv_id>",
-        },
-      ],
-    },
-  },
-}
-```
-
-> 注意: `binding` 名はコード側参照 (`MY_HISTORY_KV_CACHE`) と一致させる必要があるため、環境ごとに変えるのは `id` のみ
-
-### 環境変数 (Workers)
-
-| 変数名                         | 種類    | 説明                         |
-| ------------------------------ | ------- | ---------------------------- |
-| `PROJECT_ID`                   | var     | Firebase プロジェクトID      |
-| `PUBLIC_JWK_CACHE_KEY`         | var     | KV キャッシュキー            |
-| `IS_DEV`                       | var     | 開発モード (`"TRUE"` で有効) |
-| `MY_HISTORY_KV_CACHE`          | binding | KV Namespace                 |
-| `FIREBASE_SERVICE_ACCOUNT_KEY` | secret  | Service Account JSON         |
-| `FIREBASE_CLIENT_EMAIL`        | secret  | SA クライアントメール        |
-| `FIREBASE_PROJECT_ID`          | secret  | Firebase プロジェクトID      |
-
-### Secret 設定 (Workers)
-
-production (トップレベル環境)
-
-```bash
-cd backend
-npx wrangler secret put FIREBASE_SERVICE_ACCOUNT_KEY
-npx wrangler secret put FIREBASE_CLIENT_EMAIL
-npx wrangler secret put FIREBASE_PROJECT_ID
-```
-
-development (`env.dev`)
-
-```bash
-cd backend
-npx wrangler secret put FIREBASE_SERVICE_ACCOUNT_KEY --env dev
-npx wrangler secret put FIREBASE_CLIENT_EMAIL --env dev
-npx wrangler secret put FIREBASE_PROJECT_ID --env dev
-```
-
-### ローカル開発
-
-```bash
-cd backend
+```powershell
+Set-Location frontend
 npm install
+Set-Location ../backend
+npm install
+Set-Location ../staticSiteMarger
+npm install
+```
+
+CI と同じ固定バージョンを使う場合は、それぞれのディレクトリで `npm ci` を実行します。
+
+## フロントエンド設定
+
+フロントエンドが現在参照する任意の環境変数は二つです。
+
+| 変数 | 用途 | 既定値 |
+| --- | --- | --- |
+| `VITE_API_URL` | Hono API の基準 URL | `/` |
+| `VITE_IS_DEV` | `TRUE` の場合に開発用 Firebase 設定を選択 | 未設定 |
+
+Firebase の Web 設定は現在 `frontend/src/firebase.ts` に本番用と開発用が記述されています。
+以前の文書にあった `VITE_FIREBASE_*` は、現在のコードでは参照しません。
+
+ローカルで開発用 Firebase を選ぶ場合は、`frontend/.env.development.local` などに次を設定します。
+
+```dotenv
+VITE_IS_DEV=TRUE
+```
+
+```powershell
+Set-Location frontend
 npm run dev
 ```
 
-### デプロイ
+## Workers 設定
 
-production
+`backend/wrangler.jsonc` は、本番と `dev` の Worker 名、Firebase プロジェクト ID、KV、ASSETS を定義します。
 
-```bash
-cd backend
+| バインディング | 種類 | 用途 |
+| --- | --- | --- |
+| `PROJECT_ID` | var | Firebase プロジェクト ID |
+| `PUBLIC_JWK_CACHE_KEY` | var | Firebase 公開鍵の KV キー |
+| `IS_DEV` | var | `dev` だけが `TRUE` |
+| `MY_HISTORY_KV_CACHE` | KV | Firebase 公開鍵キャッシュ |
+| `ASSETS` | assets | `backend/buildTmp/` の配信 |
+| `FIREBASE_CLIENT_EMAIL` | secret | Service Account の client email |
+| `FIREBASE_SERVICE_ACCOUNT_KEY` | secret | Service Account の private key |
+
+`FIREBASE_SERVICE_ACCOUNT_KEY` には Service Account JSON 全体ではなく、`private_key` の値を設定します。
+
+```powershell
+Set-Location backend
+npx wrangler secret put FIREBASE_CLIENT_EMAIL
+npx wrangler secret put FIREBASE_SERVICE_ACCOUNT_KEY
+npx wrangler secret put FIREBASE_CLIENT_EMAIL --env dev
+npx wrangler secret put FIREBASE_SERVICE_ACCOUNT_KEY --env dev
+```
+
+KV の ID と公開可能な環境変数は `wrangler.jsonc` にあります。
+Secret はリポジトリへ保存しません。
+
+## ローカル検証
+
+フロントエンドだけを検証します。
+
+```powershell
+Set-Location frontend
+npm run build
+```
+
+バックエンドの型と Worker バンドルを検証します。
+
+```powershell
+Set-Location backend
+npm run typecheck
+npm run dry-run
+```
+
+静的ページだけを生成し、他プロジェクトへコピーしない場合は次を使います。
+
+```powershell
+Set-Location staticSiteMarger
+npm run test
+```
+
+リポジトリ全体の成果物を作る場合は、ルートで `build.bat` を実行します。
+このバッチは frontend のビルド、静的ページの生成と結合、Wrangler dry-run を順に行います。
+
+## ローカル API
+
+```powershell
+Set-Location backend
+npm run dev
+```
+
+`npm run dev` は `wrangler dev --env=dev` を実行します。
+フロントエンドから別オリジンの Worker へ接続する場合は、`VITE_API_URL` にその URL を設定します。
+
+## デプロイ
+
+本番は次のコマンドを使います。
+
+```powershell
+Set-Location backend
 npm run deploy
 ```
 
-development
+開発環境は次のコマンドを使います。
 
-```bash
-cd backend
+```powershell
+Set-Location backend
 npx wrangler deploy --env=dev --minify
 ```
 
-### CI/CD (GitHub Actions)
+手動デプロイの前に、`frontend`、`staticSiteMarger` の順で成果物を生成し、`backend/buildTmp/` を最新にします。
 
-`.github/workflows/cloudflare-deploy.yml` は 1 つの workflow でブランチにより環境を分岐する
+## GitHub Actions
 
-| ブランチ | GitHub Environment | Wrangler コマンド                        |
-| -------- | ------------------ | ---------------------------------------- |
-| `main`   | `production`       | `npx wrangler deploy --minify`           |
-| `dev`    | `development`      | `npx wrangler deploy --env=dev --minify` |
+Pull Request では Node.js 22 を使い、三プロジェクトの `npm ci`、フロントエンドビルド、静的生成、Wrangler dry-run を実行します。
+`dev` への push は GitHub Environment `development` から開発 Worker、`main` への push は `production` から本番 Workerへデプロイします。
 
-GitHub Environment (`production` / `development`) には次を設定する
-
-- secret: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
-- secret: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID`, `VITE_FIREBASE_MEASUREMENT_ID`
-- variable (任意): `VITE_API_URL`
-
-### 型チェック
-
-```bash
-cd backend
-npm run typecheck
-```
-
-## フロントエンド
-
-### 環境変数
-
-| 変数名                              | 説明                              | 例                                  |
-| ----------------------------------- | --------------------------------- | ----------------------------------- |
-| `VITE_API_URL`                      | API ベース URL                    | `/`                                 |
-| `VITE_FIREBASE_API_KEY`             | Firebase API キー                 | `AIza...`                           |
-| `VITE_FIREBASE_AUTH_DOMAIN`         | Firebase Auth ドメイン            | `my-history-v2.firebaseapp.com`     |
-| `VITE_FIREBASE_PROJECT_ID`          | Firebase プロジェクトID           | `my-history-v2`                     |
-| `VITE_FIREBASE_STORAGE_BUCKET`      | Firebase Storage バケット         | `my-history-v2.firebasestorage.app` |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Messaging Sender ID      | `1015...`                           |
-| `VITE_FIREBASE_APP_ID`              | Firebase App ID                   | `1:...:web:...`                     |
-| `VITE_FIREBASE_MEASUREMENT_ID`      | Firebase Analytics Measurement ID | `G-...`                             |
-
-上記の環境変数一覧をもとに、ローカル用の env ファイルを作成する
-
-- `frontend/.env.development`
-- `frontend/.env.production`
-
-### ローカル開発
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### ビルド
-
-production
-
-```bash
-cd frontend
-npm run build
-```
-
-development モードでビルド
-
-```bash
-cd frontend
-npm run build -- --mode development
-```
-
-### Lint
-
-```bash
-cd frontend
-npm run lint
-```
-
-## 静的サイト生成
-
-Landing と Help の静的生成を行う
-
-```bash
-cd staticSiteMarger
-npm install
-npm run build
-```
-
-### 出力先
-
-1. `staticSiteMarger/dist/` - 生成物
-2. `frontend/dist/` - SPA とマージ (index.html → spa.html に退避)
-3. `backend/buildTmp/` - Workers で配信
-
-## 一括ビルド
-
-```bash
-# build.bat (Windows)
-cd frontend && npm run build
-cd ../staticSiteMarger && npm run build
-cd ../backend && npm run dev
-```
-
-## Firebase 設定
-
-### プロジェクト
-
-- production
-  - プロジェクトID: `my-history-v2`
-  - 認証ドメイン: `my-history-v2.firebaseapp.com`
-- development
-  - プロジェクトID: `my-history-dev` (例)
-  - 認証ドメイン: `my-history-dev.firebaseapp.com` (例)
-
-### 必要なサービス
-
-1. **Firebase Authentication** - メール/パスワード認証を有効化
-2. **Cloud Firestore** - データベース作成
-3. **Service Account** - バックエンド用の認証情報
-
-### Service Account 設定
-
-1. Firebase Console → プロジェクト設定 → サービスアカウント
-2. 新しい秘密鍵を生成
-3. JSON を Cloudflare Workers の Secret に設定
+各 Environment には `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` が必要です。
+開発デプロイで開発用 Firebase 設定をフロントエンドへ組み込む場合は、Environment variable `VITE_IS_DEV=TRUE` を設定します。

@@ -1,84 +1,82 @@
 # アーキテクチャ
 
-## 全体構成
+最終更新：2026-08-14
 
-本番構成は 3 つの主要コンポーネントで成り立つ
+My History of Scouting は、ボーイスカウト活動の進歩、技能章、行事、所属と共有権限を管理する Web アプリケーションです。
+一つの Cloudflare Worker が API、静的ページ、SPA の配信を担当し、永続データは Cloud Firestore、利用者認証は Firebase Authentication が担当します。
 
-1. フロントエンド SPA (React 19 + React Router 7)
-2. バックエンド API + 静的配信 (Cloudflare Workers + Hono)
-3. 静的サイト生成ツール (React SSR)
+## 三つのデプロイ対象
 
+```text
+ブラウザ
+  |
+  | HTTPS
+  v
+Cloudflare Workers + Hono
+  |-- /apiv1/*   JSON API
+  |-- /          静的ランディングページ
+  |-- /help/*    静的ヘルプ
+  |-- /app/*     React SPA
+  |-- /auth/*    React SPA
+  `-- /god/*     React SPA
+  |
+  |-- Firebase ID token の検証
+  `-- Firestore REST API
 ```
-[Browser]
-  ↓ HTTPS
-[Cloudflare Workers + Hono]
-  ├─ /apiv1/*   API (32 エンドポイント)
-  ├─ /          Landing HTML (静的生成)
-  ├─ /help/*    Help HTML (静的生成)
-  ├─ /app/*     SPA (spa.html)
-  ├─ /auth/*    SPA (spa.html)
-  └─ /god/*     SPA (spa.html)
 
-Firestore ← firebase-rest-firestore (Service Account)
-Firebase Auth ← firebase-auth-cloudflare-workers (ID Token 検証)
+リポジトリには、次の三つの Node.js プロジェクトがあります。
+
+| ディレクトリ | 責務 | 主な出力 |
+| --- | --- | --- |
+| `frontend/` | 認証画面、通常画面、God モード画面 | `frontend/dist/` |
+| `staticSiteMarger/` | ランディングページとヘルプを静的 HTML に変換 | `staticSiteMarger/dist/` |
+| `backend/` | API と最終成果物の配信 | Worker と `backend/buildTmp/` |
+
+## API リクエストの流れ
+
+`/apiv1/*` では、最初に Firestore クライアントを準備し、次に Firebase ID トークンを検証します。
+`POST /apiv1/user/createUser` 以外のユーザー API と、Scout、Group、God の各 API は、Firestore の User ドキュメントも読み込んでから処理します。
+
+```text
+リクエスト
+  -> CORS
+  -> firestoreMiddleware
+  -> authorize
+  -> user/createUser または loadUserData
+  -> ドメイン別ルート
+  -> db().users / groups / scouts
+  -> JSON レスポンス
 ```
 
-## 実行フロー
+本番環境はクロスオリジン要求を許可せず、開発環境で `IS_DEV` が `TRUE` の場合だけ CORS のオリジンを `*` にします。
 
-### 認証
+## 認証と画面状態の流れ
 
-1. フロントエンドが Firebase Auth でメール/パスワードログイン
-2. ID トークンを取得 (`getIdToken`)
-3. API 呼び出し時に `Authorization: Bearer <token>` を付与
-4. バックエンドが `authorize` ミドルウェアで検証
-5. メール認証済みか確認 (`email_verified: true`)
-6. `loadUserData` が Firestore のユーザードキュメントを読み込み
-7. トークンは 10 分ごとに自動更新
+フロントエンドは Firebase Authentication の状態変化を監視し、ID トークンを Hono の型付きクライアントへ設定します。
+その後、`GET /apiv1/user/me` からプロフィール、所属、招待、共有を取得します。
+トークンは 10 分ごとに更新し、ログアウト時には React Query のキャッシュを消去します。
 
-### API 呼び出し
+## データの所有関係
 
-1. Hono ルーターがリクエストを受け取る
-2. グローバル CORS ミドルウェア (`IS_DEV` で許可オリジン制御)
-3. `firestoreMiddleware` が Firestore クライアントを初期化
-4. `authorize` で ID トークンを検証
-5. User 操作以外は `loadUserData` が権限情報をコンテキストへ注入
-6. ハンドラーが `db()` 経由で Firestore を操作
-7. JSON を返却
+Scout ドキュメントは `belongGroupId` で Group を参照します。
+一方、Group ドキュメントにはメンバー一覧を保存せず、User の `auth.memberships` に `ROLE;groupId` 形式で所属を保存します。
+招待も User の `auth.invites`、スカウト単位の共有も User の `auth.shares` に保存します。
 
-### 静的配信
+この分散配置では、メンバー、招待、共有の変更が User ドキュメントの読み書きになります。
 
-1. [staticSiteMarger/](../staticSiteMarger/) が Landing と Help を静的生成
-2. `staticSiteMarger/dist/` に出力
-3. `frontend/dist/` にコピー (既存の index.html は spa.html に退避)
-4. `backend/buildTmp/` にコピー
-5. Workers の `ASSETS` バインディングで配信
+## 静的成果物の流れ
 
-## 役割分担
+```text
+frontend のビルド
+  -> frontend/dist/index.html
+staticSiteMarger のビルド
+  -> SPA の index.html を spa.html として保持
+  -> ランディングページを index.html に配置
+  -> help/*.html と画像を結合
+  -> backend/buildTmp/ へコピー
+Wrangler
+  -> buildTmp を ASSETS バインディングで配信
+```
 
-### フロントエンド
-
-- React 19 + React Router 7 + Vite (rolldown-vite)
-- 画面遷移は React Router で制御
-- API クライアントは Hono の型付きクライアント (`hc`)
-- 状態管理は Context API + localStorage/sessionStorage
-
-### バックエンド
-
-- Cloudflare Workers 上の Hono
-- Firestore は REST API を Service Account で操作
-- 認可は `loadUserData` の `memberships` と `shares` を参照
-- 入力検証は Zod + `zValidator`
-
-### 静的サイト生成
-
-- React を `renderToString` で SSR して静的 HTML を生成
-- Landing (6 セクション) と Help (5 記事) を `template.html` へ埋め込み
-- Help は Markdown から `marked` で変換
-
-## 重要な設計メモ
-
-- グループのメンバー情報は Group ドキュメントではなく User ドキュメントに保持
-- メンバーシップは `auth.memberships` に `"ROLE;groupId"` 形式で格納
-- スカウト共有は User の `auth.shares` に `scoutId` 形式で格納
-- ルーティング単位で `/app` `/auth` `/god` は SPA の `spa.html` を返す
-- `/` は Landing の `index.html` を返す
+ビルド順は `frontend`、`staticSiteMarger`、`backend` です。
+ローカルの `build.bat` と GitHub Actions は、この順序で実行します。
