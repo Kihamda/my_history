@@ -50,7 +50,7 @@ const Help = (): React.JSX.Element => {
         ))}
       </div>
 
-      <p className="text-secondary small mt-4 mb-0">最終更新 2026-02-20</p>
+      <p className="text-secondary small mt-4 mb-0">最終更新 2026-08-14</p>
     </div>
   );
 };

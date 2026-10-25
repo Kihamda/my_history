@@ -1,115 +1,73 @@
 # 静的サイト生成
 
-## 目的
+最終更新：2026-08-14
 
-- ランディングページとヘルプを静的 HTML で配信
-- SPA と切り分けて高速配信する
-- SEO フレンドリーなコンテンツ配信
+`staticSiteMarger/` は、ランディングページと利用者ヘルプをビルド時に HTML へ変換し、Vite が生成した SPA と結合します。
+このディレクトリ名は既存のビルド手順に組み込まれているため、そのまま使います。
 
-## 実装
+## 生成する内容
 
-- [staticSiteMarger/](../staticSiteMarger/) が担当
-- React を `renderToString` で SSR
-- `template.html` に差し込んで `dist` へ出力
+ランディングページは React コンポーネントを `renderToString` で HTML に変換します。
+画面は Header、トップ、概要、機能、利用フロー、信頼性情報、モバイル用 CTA で構成します。
 
-### 主要ファイル
+ヘルプの索引は React で生成し、各記事は `staticSiteMarger/help/pages/*.md` を marked で HTML に変換します。
+索引からリンクする記事は、はじめに、アカウントとログイン、スカウト管理、権限と招待、FAQ の 5 件です。
 
-| ファイル                   | 役割                     |
-| -------------------------- | ------------------------ |
-| `build.ts`                 | ビルドエントリーポイント |
-| `lib/main.ts`              | ビルドオーケストレーション |
-| `lib/builder.ts`           | HTML 生成ロジック        |
-| `landing/landing.tsx`      | ランディングページ       |
-| `help/help.tsx`            | ヘルプインデックス       |
-| `help/article.tsx`         | ヘルプ記事テンプレート   |
-| `help/pages/*.md`          | ヘルプ記事 (Markdown)    |
-| `template.html`            | HTML テンプレート        |
+## 主要ファイル
 
-## 生成ページ
+| ファイル | 責務 |
+| --- | --- |
+| `build.ts` | 他プロジェクトへのコピーを含む本番生成 |
+| `test.ts` | コピーを行わない生成確認 |
+| `lib/main.ts` | 出力ディレクトリ、生成、コピーの制御 |
+| `lib/builder.ts` | React SSR、Markdown 変換、テンプレート適用 |
+| `landing/landing.tsx` | ランディングページ |
+| `help/help.tsx` | ヘルプ索引 |
+| `help/article.tsx` | ヘルプ記事の外枠 |
+| `template.html` | 共通 HTML テンプレート |
 
-### ランディング (`/`)
+## 出力の流れ
 
-React コンポーネントを SSR して生成
-
-**セクション構成:**
-1. Header - ナビゲーション
-2. Hero (LandTop) - フルスクリーンヒーロー
-3. About - アプリ説明
-4. Features - 機能紹介
-5. Flow - 利用フロー
-6. Trust - 信頼性情報
-7. Mobile CTA - モバイル用フローティングボタン
-
-### ヘルプ (`/help/*`)
-
-Markdown から HTML に変換
-
-**記事一覧:**
-| スラッグ                  | タイトル           |
-| ------------------------- | ------------------ |
-| `getting-started`         | はじめに           |
-| `account-and-auth`        | アカウントと認証   |
-| `scout-management`        | スカウト管理       |
-| `permissions-and-invites` | 権限と招待         |
-| `faq`                     | よくある質問       |
-
-## 出力フロー
-
-```
-1. staticSiteMarger/
-   ├─ landing/*.tsx  ─→ renderToString ─→ index.html
-   ├─ help/pages/*.md ─→ marked ─→ help/*.html
-   └─ public/ ─────────────────→ assets/
-
-2. staticSiteMarger/dist/
-   ├─ index.html (Landing)
-   ├─ help/index.html
-   ├─ help/{slug}.html
-   └─ assets/
-
-3. [copyToDist]
-   frontend/dist/
-   ├─ index.html (Landing)     ← from staticSiteMarger
-   ├─ spa.html (SPA)           ← 旧 index.html を退避
-   ├─ help/*.html
-   └─ assets/
-
-4. [copyToBackend]
-   backend/buildTmp/
-   └─ (frontend/dist/ の完全コピー)
+```text
+staticSiteMarger/dist/
+  index.html
+  help/index.html
+  help/*.html
+  landing/*.webp
+        |
+        v
+frontend/dist/
+  index.html       ランディングページ
+  spa.html         Vite が作った旧 index.html
+  help/*.html
+  assets/*
+        |
+        v
+backend/buildTmp/
 ```
 
-## ビルドコマンド
+`staticSiteMarger` は、`frontend/dist/spa.html` がまだない場合だけ Vite の `index.html` をコピーします。
+その後、Vite の `index.html` を削除し、静的サイトの `index.html` を配置します。
 
-```bash
-cd staticSiteMarger
-npm run build    # 本番ビルド (copy steps 実行)
-npm run test     # テストビルド (copy steps スキップ)
+## コマンド
+
+コピーを行わずに静的生成だけを確認します。
+
+```powershell
+Set-Location staticSiteMarger
+npm run test
 ```
 
-## 配信
+SPA と結合し、Workers の配信ディレクトリまでコピーします。
 
-Workers が `backend/buildTmp/` を静的配信
-
-| パス         | 配信ファイル | 備考                      |
-| ------------ | ------------ | ------------------------- |
-| `/`          | `index.html` | Landing (静的生成)        |
-| `/help/*`    | `help/*.html`| Help (静的生成)           |
-| `/app/*`     | `spa.html`   | SPA (React Router)        |
-| `/auth/*`    | `spa.html`   | SPA (React Router)        |
-| `/god/*`     | `spa.html`   | SPA (React Router)        |
-| `/assets/*`  | 各種静的ファイル | CSS, JS, 画像など      |
-
-## ビルド順序
-
-**重要: ビルド順序を守ること**
-
-```bash
-1. cd frontend && npm run build     # SPA を frontend/dist に出力
-2. cd staticSiteMarger && npm run build  # 静的ページを生成してマージ
-3. cd backend && npm run deploy     # buildTmp をデプロイ
+```powershell
+Set-Location frontend
+npm run build
+Set-Location ../staticSiteMarger
+npm run build
+Set-Location ../backend
+npm run dry-run
 ```
 
-- フロントエンドが先にビルドされている必要がある
-- staticSiteMarger は frontend/dist の index.html を spa.html に退避
-- backend は最終的な buildTmp をデプロイ
+`frontend` を先にビルドしなければ、結合対象の SPA が存在しません。
+ルートの `build.bat` はこの順序を固定しています。
