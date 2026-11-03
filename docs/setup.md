@@ -2,7 +2,7 @@
 
 最終更新：2026-08-14
 
-ローカルと CI の基準は Node.js 22 です。
+ローカルと CI の基準は Node.js 26 系です。
 Cloudflare Workers と Firebase の本番用、開発用プロジェクトを別に用意します。
 
 ## 依存関係のインストール
@@ -127,7 +127,7 @@ npx wrangler deploy --env=dev --minify
 
 ## GitHub Actions
 
-Pull Request では Node.js 22 を使い、三プロジェクトの `npm ci`、フロントエンドビルド、静的生成、Wrangler dry-run を実行します。
+Pull Request では Node.js 26 を使い、三プロジェクトの `npm ci`、フロントエンドビルド、静的生成、Wrangler dry-run を実行します。
 `dev` への push は GitHub Environment `development` から開発 Worker、`main` への push は `production` から本番 Workerへデプロイします。
 
 各 Environment には `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` が必要です。
