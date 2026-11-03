@@ -14,6 +14,7 @@ const SearchboxCard = ({
   const [SearchRequestInput, setSearchRequestInput] = useState(SearchRequest);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 検索条件の外部変更を入力欄に反映する。
     setSearchRequestInput(SearchRequest);
   }, [SearchRequest]);
 
