@@ -1,0 +1,24 @@
+name: Pull request source
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, reopened, synchronize, edited]
+
+permissions: {}
+
+jobs:
+  validate-source:
+    name: Main PR source is dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source repository and branch
+        env:
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          BASE_REPOSITORY: ${{ github.repository }}
+        run: |
+          if [[ "$HEAD_REPOSITORY" != "$BASE_REPOSITORY" || "$HEAD_BRANCH" != "dev" ]]; then
+            echo "Pull requests to main must originate from this repository's dev branch."
+            exit 1
+          fi
