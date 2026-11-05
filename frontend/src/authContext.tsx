@@ -99,6 +99,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const user = userQuery.data ?? null;
 
+  /* eslint-disable react-hooks/set-state-in-effect -- ユーザー情報と保存済みグループの選択を同期する。 */
   useEffect(() => {
     if (!user) {
       setCurrentGroupState(null);
@@ -119,6 +120,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       currentGroupSlotId: nextCurrentGroup?.id ?? null,
     });
   }, [user]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   /// 自動token更新
   useEffect(() => {

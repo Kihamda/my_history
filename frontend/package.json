@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b  && eslint . && vite build",
+    "build": "node node_modules/typescript-7/bin/tsc -b && eslint . && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -15,24 +15,28 @@
     "@fortawesome/react-fontawesome": "^3.3.0",
     "@tanstack/react-query": "^5.99.0",
     "bootstrap": "^5.3.8",
-    "firebase": "^12.12.0",
-    "json-edit-react": "^1.29.0",
+    "firebase": "^13.2.0",
+    "json-edit-react": "^2.0.5",
     "react": "^19.2.5",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.2.5",
     "react-router": "^8.3.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
+    "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "^4.3.0",
-    "eslint": "^9.39.4",
-    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "typescript": "~6.0.2",
+    "typescript-7": "npm:typescript@^7.0.2",
     "typescript-eslint": "^8.58.1",
     "vite": "^8.0.8"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.7"
   }
 }

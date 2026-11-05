@@ -1,5 +1,15 @@
 # 変更履歴
 
+## 2026-11-05
+
+- Pull Request のビルド検証をフォークからの変更にも適用し、main 向けの送信元チェックを追加
+
+## 2026-11-03
+
+- 依存関係を更新し、Firebase 13、json-edit-react 2、ESLint 10 に対応
+- CI とローカルの Node.js 基準を 26 系に更新
+- フロントエンドの型チェックを TypeScript 7 に更新し、ESLint の解析には対応済みの TypeScript 6 を使用
+
 ## 2026-08-14
 
 - 現行のルート、スキーマ、lockfile、Wrangler、GitHub Actions を基準に開発者向け文書を再構築
